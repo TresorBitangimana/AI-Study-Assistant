@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/study_assistant")
 @CrossOrigin("*")
-public class App {
+
+public class App{
 
     Dotenv dotenv = Dotenv.configure()
             .ignoreIfMissing()
