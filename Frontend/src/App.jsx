@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import Chart from "./Chart";
+import CreateSessionModal from "./CreateSessionModal";
 import Flashcards from "./Flashcards";
 import FocusTimer from "./FocusTimer";
 import Notes from "./Notes";
@@ -7,60 +8,56 @@ import Navation from "./Navation";
 import "./App.css";
 
 const navigationItems = [
-    { id: "dashboard", label: "Dashboard", badge: "3" },
+    { id: "dashboard", label: "Dashboard" },
     { id: "notes", label: "Notes" },
     { id: "flashcards", label: "Flashcards" },
     { id: "timer", label: "Focus Timer" },
 ];
 
-const sessions = [
-    { name: "Calculus II", time: "Today" },
-    { name: "Organic Chemistry", time: "Mon" },
-    { name: "Data Structures", time: "Sun" },
-    { name: "World History", time: "Fri" },
-    { name: "Linear Algebra", time: "Thu" },
-];
-
-const stats = [
-    {
-        label: "Study Hours",
-        value: "47.5",
-        suffix: "h",
-        sub: "↑ +8.2h this week",
-        tone: "text-green",
-    },
-    {
-        label: "Sessions",
-        value: "23",
-        sub: "↑ +4 this week",
-        tone: "text-green",
-    },
-    {
-        label: "Cards Reviewed",
-        value: "312",
-        sub: "↑ 84% accuracy",
-        tone: "text-amber",
-    },
-    {
-        label: "Streak",
-        value: "14",
-        suffix: "d",
-        sub: "Keep it up!",
-        tone: "text-green",
-    },
-];
-
 function App() {
     const [activePanel, setActivePanel] = useState("dashboard");
+    const [sessions, setSessions] = useState([]);
+    const [activeSessionId, setActiveSessionId] = useState(null);
+    const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+    const [sessionDraftName, setSessionDraftName] = useState("");
     const notesSectionRef = useRef(null);
+    const nextSessionNumber = sessions.length + 1;
+    const fallbackSessionName = `New Session ${nextSessionNumber}`;
+
+    const openSessionModal = () => {
+        setSessionDraftName("");
+        setIsSessionModalOpen(true);
+    };
+
+    const closeSessionModal = () => {
+        setSessionDraftName("");
+        setIsSessionModalOpen(false);
+    };
+
+    const createSession = (event) => {
+        event?.preventDefault();
+        const sessionName = sessionDraftName.trim() || fallbackSessionName;
+        const newSession = {
+            id: `session-${Date.now()}`,
+            name: sessionName,
+            time: "Just now",
+        };
+
+        setSessions((current) => [newSession, ...current]);
+        setActiveSessionId(newSession.id);
+        closeSessionModal();
+    };
 
     return (
         <div className="app-shell">
             <div className="app-grid">
                 <Navation
+                    activeSessionId={activeSessionId}
                     navigationItems={navigationItems}
                     activePanel={activePanel}
+                    onCreateSession={openSessionModal}
                     setActivePanel={setActivePanel}
+                    setActiveSessionId={setActiveSessionId}
                     sessions={sessions}
                 />
 
@@ -74,7 +71,11 @@ function App() {
                             }
                         </div>
                         <div className="flex flex-wrap items-center gap-2.5">
-                            <button className="btn-ghost" type="button">
+                            <button
+                                className="btn-ghost"
+                                onClick={openSessionModal}
+                                type="button"
+                            >
                                 New Session
                             </button>
                             <button
@@ -105,29 +106,10 @@ function App() {
                             }
                         >
                             <div className="mb-6 grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4">
-                                {stats.map((stat) => (
-                                    <div
-                                        className="panel-card px-4! py-4!"
-                                        key={stat.label}
-                                    >
-                                        <div className="metric-label">
-                                            {stat.label}
-                                        </div>
-                                        <div className="metric-value">
-                                            {stat.value}
-                                            {stat.suffix ? (
-                                                <span className="ml-0.5 text-lg text-[--text-faint]">
-                                                    {stat.suffix}
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                        <div
-                                            className={`text-[11px] ${stat.tone}`}
-                                        >
-                                            {stat.sub}
-                                        </div>
-                                    </div>
-                                ))}
+                                <div className="panel-card px-4! py-10!"></div>
+                                <div className="panel-card px-4! py-10!"></div>
+                                <div className="panel-card px-4! py-10!"></div>
+                                <div className="panel-card px-4! py-10!"></div>
                             </div>
                         </section>
 
@@ -139,6 +121,16 @@ function App() {
                         <Flashcards active={activePanel === "flashcards"} />
 
                         <FocusTimer active={activePanel === "timer"} />
+
+                        {isSessionModalOpen ? (
+                            <CreateSessionModal
+                                fallbackName={fallbackSessionName}
+                                onCancel={closeSessionModal}
+                                onChange={setSessionDraftName}
+                                onSubmit={createSession}
+                                value={sessionDraftName}
+                            />
+                        ) : null}
                     </div>
                 </main>
 

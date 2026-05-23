@@ -48,8 +48,42 @@ function NavIcon({ id }) {
     );
 }
 
-function Navation({ navigationItems, activePanel, setActivePanel, sessions }) {
+function Navation({
+    navigationItems,
+    activePanel,
+    setActivePanel,
+    sessions,
+    activeSessionId,
+    setActiveSessionId,
+    onCreateSession,
+}) {
     const [mobileSessionsOpen, setMobileSessionsOpen] = useState(false);
+    const hasSessions = sessions.length > 0;
+
+    const renderSessionRow = (session) => {
+        const isActive = session.id === activeSessionId;
+
+        return (
+            <button
+                key={session.id}
+                className={`session-button ${isActive ? "session-button-active" : ""}`}
+                onClick={() => setActiveSessionId(session.id)}
+                type="button"
+            >
+                <div
+                    className={`h-[7px] w-[7px] shrink-0 rounded-full ${
+                        isActive ? "bg-[var(--success)]" : "bg-[var(--text-faint)]"
+                    }`}
+                />
+                <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                    {session.name}
+                </span>
+                <span className="font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
+                    {session.time}
+                </span>
+            </button>
+        );
+    };
 
     return (
         <aside className="sidebar-shell">
@@ -78,9 +112,6 @@ function Navation({ navigationItems, activePanel, setActivePanel, sessions }) {
                     >
                         <NavIcon id={item.id} />
                         <span className="nav-label">{item.label}</span>
-                        {item.badge ? (
-                            <span className="nav-badge">{item.badge}</span>
-                        ) : null}
                     </button>
                 ))}
             </nav>
@@ -115,55 +146,35 @@ function Navation({ navigationItems, activePanel, setActivePanel, sessions }) {
                 {mobileSessionsOpen ? (
                     <div className="session-popover">
                         <div className="session-popover-list">
-                            {sessions.map((session, index) => (
-                                <div
-                                    key={session.name}
-                                    className={`session-button ${
-                                        index === 0 ? "session-button-active" : ""
-                                    }`}
-                                >
-                                    <div
-                                        className={`h-[7px] w-[7px] shrink-0 rounded-full ${
-                                            index === 0
-                                                ? "bg-[var(--success)]"
-                                                : "bg-[var(--text-faint)]"
-                                        }`}
-                                    />
-                                    <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                                        {session.name}
-                                    </span>
-                                    <span className="font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
-                                        {session.time}
-                                    </span>
+                            {hasSessions ? (
+                                sessions.map(renderSessionRow)
+                            ) : (
+                                <div className="session-empty-state">
+                                    No sessions yet
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 ) : null}
 
-                {sessions.map((session, index) => (
-                    <div
-                        key={session.name}
-                        className={`session-button ${
-                            index === 0 ? "session-button-active" : ""
-                        } sidebar-mobile-hide lg:flex`}
-                    >
-                        <div
-                            className={`h-[7px] w-[7px] shrink-0 rounded-full ${
-                                index === 0 ? "bg-[var(--success)]" : "bg-[var(--text-faint)]"
-                            }`}
-                        />
-                        <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                            {session.name}
-                        </span>
-                        <span className="font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
-                            {session.time}
-                        </span>
+                {hasSessions ? (
+                    sessions.map((session) => (
+                        <div className="sidebar-mobile-hide lg:flex" key={session.id}>
+                            {renderSessionRow(session)}
+                        </div>
+                    ))
+                ) : (
+                    <div className="session-empty-state sidebar-mobile-hide">
+                        No sessions yet
                     </div>
-                ))}
+                )}
             </div>
 
-            <button className="sidebar-ghost-button sidebar-mobile-hide" type="button">
+            <button
+                className="sidebar-ghost-button sidebar-mobile-hide"
+                onClick={onCreateSession}
+                type="button"
+            >
                 <svg
                     aria-hidden="true"
                     className="h-[14px] w-[14px]"

@@ -25,6 +25,13 @@ function Notes({ active }, ref) {
     const [openNoteMenuId, setOpenNoteMenuId] = useState(null);
     const noteTextareaRef = useRef(null);
 
+    const createNote = () => {
+        const newNote = createEmptyNote();
+        setNotes((current) => [newNote, ...current]);
+        setActiveNoteId(newNote.id);
+        setOpenNoteMenuId(null);
+    };
+
     useEffect(() => {
         const handleOutsideClick = (event) => {
             if (!openNoteMenuId) {
@@ -48,12 +55,7 @@ function Notes({ active }, ref) {
     }, [openNoteMenuId]);
 
     useImperativeHandle(ref, () => ({
-        createNote() {
-            const newNote = createEmptyNote();
-            setNotes((current) => [newNote, ...current]);
-            setActiveNoteId(newNote.id);
-            setOpenNoteMenuId(null);
-        },
+        createNote,
     }));
 
     const activeNote =
@@ -169,12 +171,7 @@ function Notes({ active }, ref) {
                         <span>NOTES</span>
                         <button
                             className="btn-compact"
-                            onClick={() => {
-                                const newNote = createEmptyNote();
-                                setNotes((current) => [newNote, ...current]);
-                                setActiveNoteId(newNote.id);
-                                setOpenNoteMenuId(null);
-                            }}
+                            onClick={createNote}
                             type="button"
                         >
                             +
