@@ -14,8 +14,11 @@ const navigationItems = [
     { id: "timer", label: "Focus Timer" },
 ];
 
+const dashboardTabs = ["Overview", "Progress", "Resources"];
+
 function App() {
     const [activePanel, setActivePanel] = useState("dashboard");
+    const [activeTab, setActiveTab] = useState("Overview");
     const [sessions, setSessions] = useState([]);
     const [activeSessionId, setActiveSessionId] = useState(null);
     const [sessionModalMode, setSessionModalMode] = useState(null);
@@ -28,6 +31,8 @@ function App() {
         (session) => session.id === editingSessionId,
     );
     const isSessionModalOpen = sessionModalMode !== null;
+    const activeSession =
+        sessions.find((session) => session.id === activeSessionId) ?? null;
 
     const openSessionModal = () => {
         setSessionDraftName("");
@@ -140,13 +145,31 @@ function App() {
                         </div>
                     </div>
 
-                    <div className="tabs-row">
-                        <div className="tab-button tab-button-active">
-                            Overview
+                    {activePanel === "dashboard" ? (
+                        <div className="tabs-row">
+                            <div className="tabs-group">
+                                {activeSession ? (
+                                    <div className="tab-button tab-session-indicator">
+                                        {activeSession.name}
+                                    </div>
+                                ) : null}
+                                {dashboardTabs.map((tab) => (
+                                    <button
+                                        key={tab}
+                                        className={`tab-button ${
+                                            activeTab === tab
+                                                ? "tab-button-active"
+                                                : ""
+                                        }`}
+                                        onClick={() => setActiveTab(tab)}
+                                        type="button"
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div className="tab-button">Progress</div>
-                        <div className="tab-button">Resources</div>
-                    </div>
+                    ) : null}
 
                     <div className="content-scroll">
                         <section
@@ -154,12 +177,117 @@ function App() {
                                 activePanel === "dashboard" ? "block" : "hidden"
                             }
                         >
-                            <div className="mb-6 grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4">
-                                <div className="panel-card px-4! py-10!"></div>
-                                <div className="panel-card px-4! py-10!"></div>
-                                <div className="panel-card px-4! py-10!"></div>
-                                <div className="panel-card px-4! py-10!"></div>
-                            </div>
+                            {activeTab === "Overview" ? (
+                                <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4">
+                                    <div className="panel-card">
+                                        <div className="dashboard-card-label">
+                                            Session Focus
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            {activeSession?.name ??
+                                                "No session selected"}
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            Pick a session to keep your study
+                                            work centered on one topic.
+                                        </div>
+                                    </div>
+                                    <div className="panel-card">
+                                        <div className="dashboard-card-label">
+                                            Study Block
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            45 min
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            Recommended deep work window for the
+                                            current session.
+                                        </div>
+                                    </div>
+                                    <div className="panel-card">
+                                        <div className="dashboard-card-label">
+                                            Flashcards Ready
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            12
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            Quick review cards available for the
+                                            selected topic.
+                                        </div>
+                                    </div>
+                                    <div className="panel-card">
+                                        <div className="dashboard-card-label">
+                                            Notes Status
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            In Progress
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            Capture examples, summaries, and key
+                                            formulas as you study.
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
+
+                            {activeTab === "Progress" ? (
+                                <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.4fr_1fr]">
+                                    <div className="panel-card">
+                                        <div className="dashboard-card-label">
+                                            Progress Snapshot
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            {activeSession?.name ??
+                                                "No session selected"}
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            Track retention, review streaks, and
+                                            completion once this session starts
+                                            collecting study activity.
+                                        </div>
+                                    </div>
+                                    <div className="panel-card">
+                                        <div className="dashboard-card-label">
+                                            Current Status
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            0%
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            No measured progress yet for this
+                                            session.
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
+
+                            {activeTab === "Resources" ? (
+                                <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
+                                    <div className="panel-card lg:col-span-2">
+                                        <div className="dashboard-card-label">
+                                            Resource Hub
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            {activeSession?.name ??
+                                                "No session selected"}
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            Keep links, cheat sheets, and study
+                                            guides tied to the active session.
+                                        </div>
+                                    </div>
+                                    <div className="panel-card">
+                                        <div className="dashboard-card-label">
+                                            Quick Actions
+                                        </div>
+                                        <div className="dashboard-card-copy">
+                                            Add notes, review flashcards, or
+                                            start a timer from this topic.
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
                         </section>
 
                         <Notes
@@ -169,7 +297,12 @@ function App() {
 
                         <Flashcards active={activePanel === "flashcards"} />
 
-                        <FocusTimer active={activePanel === "timer"} />
+                        <FocusTimer
+                            active={activePanel === "timer"}
+                            activeSessionId={activeSessionId}
+                            sessions={sessions}
+                            setActiveSessionId={setActiveSessionId}
+                        />
 
                         {isSessionModalOpen ? (
                             <CreateSessionModal

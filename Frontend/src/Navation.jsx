@@ -160,7 +160,7 @@ function Navation({
 
     return (
         <aside className="sidebar-shell">
-            <div className="flex items-center justify-center gap-2.5 border-b border-(--border) px-2 py-5 lg:justify-start lg:px-4.5 lg:pb-4 lg:pt-5">
+            <div className="flex items-center justify-center gap-2.5 px-2 py-5 lg:justify-start lg:px-4.5 lg:pb-4 lg:pt-5">
                 <div className="brand-chip">S</div>
                 <div className="sidebar-mobile-hide">
                     <span className="font-['Syne'] text-base font-bold tracking-[-0.3px] text-(--text)">
