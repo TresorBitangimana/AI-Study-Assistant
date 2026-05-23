@@ -1,0 +1,3496 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>StudyAI — Intelligent Study Assistant</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            :root {
+                --navy: #0a0f1e;
+                --navy-mid: #111828;
+                --navy-light: #1a2540;
+                --navy-border: #1f2d4a;
+                --navy-hover: #243055;
+                --white: #f0f4ff;
+                --white-dim: #a8b4d0;
+                --white-faint: #4a5578;
+                --accent: #3b82f6;
+                --accent-dim: #1d4ed8;
+                --accent-glow: rgba(59, 130, 246, 0.12);
+                --green: #10b981;
+                --green-dim: rgba(16, 185, 129, 0.1);
+                --amber: #f59e0b;
+                --red: #ef4444;
+                --purple: #8b5cf6;
+                --sidebar-w: 240px;
+                --chat-w: 360px;
+                --font-head: "Syne", sans-serif;
+                --font-body: "DM Sans", sans-serif;
+                --font-mono: "IBM Plex Mono", monospace;
+            }
+
+            html,
+            body {
+                height: 100%;
+                background: var(--navy);
+                color: var(--white);
+                font-family: var(--font-body);
+                font-size: 14px;
+                line-height: 1.5;
+                overflow: hidden;
+            }
+
+            /* ── LAYOUT ── */
+            .app {
+                display: grid;
+                grid-template-columns: var(--sidebar-w) 1fr var(--chat-w);
+                grid-template-rows: 100vh;
+                height: 100vh;
+            }
+
+            /* ── SIDEBAR ── */
+            .sidebar {
+                background: var(--navy-mid);
+                border-right: 1px solid var(--navy-border);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .sidebar-brand {
+                padding: 20px 18px 16px;
+                border-bottom: 1px solid var(--navy-border);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .brand-icon {
+                width: 30px;
+                height: 30px;
+                background: var(--accent);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 15px;
+                font-weight: 700;
+                color: #fff;
+                font-family: var(--font-head);
+                flex-shrink: 0;
+            }
+
+            .brand-name {
+                font-family: var(--font-head);
+                font-size: 16px;
+                font-weight: 700;
+                color: var(--white);
+                letter-spacing: -0.3px;
+            }
+
+            .brand-badge {
+                font-size: 9px;
+                background: var(--accent);
+                color: #fff;
+                border-radius: 4px;
+                padding: 1px 5px;
+                font-family: var(--font-mono);
+                margin-left: 2px;
+                vertical-align: middle;
+            }
+
+            .sidebar-section {
+                padding: 14px 10px 6px;
+                font-size: 9px;
+                font-family: var(--font-mono);
+                letter-spacing: 1.5px;
+                color: var(--white-faint);
+                text-transform: uppercase;
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 12px;
+                margin: 1px 6px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.15s;
+                color: var(--white-dim);
+                font-size: 13.5px;
+                position: relative;
+            }
+
+            .nav-item:hover {
+                background: var(--navy-hover);
+                color: var(--white);
+            }
+            .nav-item.active {
+                background: var(--accent-glow);
+                color: var(--accent);
+                border: 1px solid rgba(59, 130, 246, 0.2);
+            }
+
+            .nav-icon {
+                width: 16px;
+                height: 16px;
+                flex-shrink: 0;
+                opacity: 0.9;
+            }
+
+            .nav-badge {
+                margin-left: auto;
+                background: var(--accent);
+                color: #fff;
+                font-size: 10px;
+                font-family: var(--font-mono);
+                border-radius: 10px;
+                padding: 1px 6px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .sidebar-sessions {
+                flex: 1;
+                overflow-y: auto;
+                padding-bottom: 12px;
+            }
+
+            .sidebar-sessions::-webkit-scrollbar {
+                width: 3px;
+            }
+            .sidebar-sessions::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .sidebar-sessions::-webkit-scrollbar-thumb {
+                background: var(--navy-border);
+                border-radius: 4px;
+            }
+
+            .session-item {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                padding: 8px 12px;
+                margin: 1px 6px;
+                border-radius: 7px;
+                cursor: pointer;
+                transition: background 0.15s;
+                color: var(--white-dim);
+                font-size: 12.5px;
+            }
+
+            .session-item:hover {
+                background: var(--navy-hover);
+                color: var(--white);
+            }
+            .session-item.active-session {
+                background: var(--navy-light);
+                color: var(--white);
+                border-left: 2px solid var(--accent);
+                padding-left: 10px;
+            }
+
+            .session-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: var(--white-faint);
+                flex-shrink: 0;
+            }
+
+            .session-item.active-session .session-dot {
+                background: var(--green);
+            }
+
+            .session-label {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .session-time {
+                font-size: 10px;
+                font-family: var(--font-mono);
+                color: var(--white-faint);
+                flex-shrink: 0;
+            }
+
+            .new-session-btn {
+                margin: 8px 10px;
+                padding: 9px 14px;
+                background: transparent;
+                border: 1px dashed var(--navy-border);
+                border-radius: 8px;
+                color: var(--white-faint);
+                font-family: var(--font-body);
+                font-size: 12.5px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.15s;
+                width: calc(100% - 20px);
+            }
+
+            .new-session-btn:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+                background: var(--accent-glow);
+            }
+
+            .sidebar-footer {
+                border-top: 1px solid var(--navy-border);
+                padding: 12px 10px;
+            }
+
+            .user-pill {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+
+            .user-pill:hover {
+                background: var(--navy-hover);
+            }
+
+            .avatar {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                background: var(--purple);
+                color: #fff;
+                font-size: 11px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: var(--font-head);
+                flex-shrink: 0;
+            }
+
+            .user-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .user-name {
+                font-size: 12.5px;
+                color: var(--white);
+                font-weight: 500;
+            }
+            .user-plan {
+                font-size: 10px;
+                color: var(--white-faint);
+                font-family: var(--font-mono);
+            }
+
+            /* ── MAIN AREA ── */
+            .main {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                background: var(--navy);
+            }
+
+            .main-header {
+                padding: 18px 28px 16px;
+                border-bottom: 1px solid var(--navy-border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-shrink: 0;
+            }
+
+            .main-title {
+                font-family: var(--font-head);
+                font-size: 20px;
+                font-weight: 700;
+                color: var(--white);
+                letter-spacing: -0.4px;
+            }
+
+            .main-subtitle {
+                font-size: 12px;
+                color: var(--white-faint);
+                margin-top: 2px;
+                font-family: var(--font-mono);
+            }
+
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-family: var(--font-body);
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                border: none;
+                transition: all 0.15s;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .btn-primary {
+                background: var(--accent);
+                color: #fff;
+            }
+            .btn-primary:hover {
+                background: var(--accent-dim);
+            }
+
+            .btn-ghost {
+                background: transparent;
+                border: 1px solid var(--navy-border);
+                color: var(--white-dim);
+            }
+            .btn-ghost:hover {
+                background: var(--navy-hover);
+                color: var(--white);
+                border-color: var(--navy-hover);
+            }
+
+            .btn-danger {
+                background: transparent;
+                border: 1px solid rgba(239, 68, 68, 0.3);
+                color: var(--red);
+            }
+            .btn-danger:hover {
+                background: rgba(239, 68, 68, 0.1);
+            }
+
+            .btn-sm {
+                padding: 5px 10px;
+                font-size: 12px;
+                border-radius: 6px;
+            }
+
+            /* ── TABS ── */
+            .tab-bar {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                padding: 0 28px;
+                border-bottom: 1px solid var(--navy-border);
+                flex-shrink: 0;
+            }
+
+            .tab {
+                padding: 12px 16px;
+                font-size: 13px;
+                color: var(--white-faint);
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+                transition: all 0.15s;
+                font-family: var(--font-body);
+                white-space: nowrap;
+            }
+
+            .tab:hover {
+                color: var(--white-dim);
+            }
+            .tab.active {
+                color: var(--accent);
+                border-bottom-color: var(--accent);
+            }
+
+            /* ── MAIN CONTENT ── */
+            .main-content {
+                flex: 1;
+                overflow-y: auto;
+                padding: 24px 28px;
+            }
+
+            .main-content::-webkit-scrollbar {
+                width: 4px;
+            }
+            .main-content::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .main-content::-webkit-scrollbar-thumb {
+                background: var(--navy-border);
+                border-radius: 4px;
+            }
+
+            /* ── PANELS ── */
+            .panel {
+                display: none;
+            }
+            .panel.active {
+                display: block;
+            }
+
+            /* ── DASHBOARD ── */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 14px;
+                margin-bottom: 24px;
+            }
+
+            .stat-card {
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                border-radius: 12px;
+                padding: 16px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+                font-family: var(--font-mono);
+                color: var(--white-faint);
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                margin-bottom: 8px;
+            }
+
+            .stat-value {
+                font-size: 26px;
+                font-family: var(--font-head);
+                font-weight: 700;
+                color: var(--white);
+                line-height: 1;
+                margin-bottom: 4px;
+            }
+
+            .stat-sub {
+                font-size: 11px;
+                color: var(--white-faint);
+            }
+
+            .stat-accent {
+                color: var(--green);
+            }
+
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            .card {
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                border-radius: 12px;
+                padding: 18px 20px;
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 16px;
+            }
+
+            .card-title {
+                font-family: var(--font-head);
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--white);
+            }
+
+            .card-tag {
+                font-size: 10px;
+                font-family: var(--font-mono);
+                padding: 2px 8px;
+                border-radius: 20px;
+                background: var(--accent-glow);
+                color: var(--accent);
+                border: 1px solid rgba(59, 130, 246, 0.2);
+            }
+
+            /* progress bars */
+            .subject-row {
+                margin-bottom: 14px;
+            }
+
+            .subject-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 6px;
+                font-size: 12.5px;
+                color: var(--white-dim);
+            }
+
+            .subject-pct {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                color: var(--white-faint);
+            }
+
+            .progress-track {
+                height: 4px;
+                background: var(--navy-light);
+                border-radius: 4px;
+                overflow: hidden;
+            }
+
+            .progress-fill {
+                height: 100%;
+                border-radius: 4px;
+                transition: width 0.6s ease;
+            }
+
+            /* upcoming tasks */
+            .task-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 0;
+                border-bottom: 1px solid var(--navy-border);
+            }
+
+            .task-item:last-child {
+                border-bottom: none;
+            }
+
+            .task-check {
+                width: 18px;
+                height: 18px;
+                border-radius: 5px;
+                border: 1.5px solid var(--navy-border);
+                cursor: pointer;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s;
+            }
+
+            .task-check:hover {
+                border-color: var(--accent);
+            }
+            .task-check.done {
+                background: var(--green);
+                border-color: var(--green);
+            }
+            .task-check.done::after {
+                content: "✓";
+                color: #fff;
+                font-size: 11px;
+            }
+
+            .task-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .task-name {
+                font-size: 13px;
+                color: var(--white-dim);
+            }
+            .task-name.done-text {
+                text-decoration: line-through;
+                color: var(--white-faint);
+            }
+            .task-due {
+                font-size: 11px;
+                color: var(--white-faint);
+                font-family: var(--font-mono);
+                margin-top: 1px;
+            }
+
+            .task-priority {
+                font-size: 10px;
+                padding: 2px 8px;
+                border-radius: 20px;
+                font-family: var(--font-mono);
+            }
+
+            .priority-high {
+                background: rgba(239, 68, 68, 0.1);
+                color: var(--red);
+            }
+            .priority-med {
+                background: rgba(245, 158, 11, 0.1);
+                color: var(--amber);
+            }
+            .priority-low {
+                background: var(--green-dim);
+                color: var(--green);
+            }
+
+            /* activity heatmap */
+            .heatmap {
+                display: grid;
+                grid-template-columns: repeat(12, 1fr);
+                gap: 3px;
+                margin-top: 4px;
+            }
+
+            .heat-cell {
+                aspect-ratio: 1;
+                border-radius: 3px;
+                background: var(--navy-light);
+                cursor: pointer;
+                transition: opacity 0.1s;
+            }
+
+            .heat-cell:hover {
+                opacity: 0.7;
+            }
+            .heat-1 {
+                background: rgba(59, 130, 246, 0.2);
+            }
+            .heat-2 {
+                background: rgba(59, 130, 246, 0.45);
+            }
+            .heat-3 {
+                background: rgba(59, 130, 246, 0.7);
+            }
+            .heat-4 {
+                background: var(--accent);
+            }
+
+            /* ── NOTES / EDITOR PANEL ── */
+            .notes-layout {
+                display: grid;
+                grid-template-columns: 220px 1fr;
+                gap: 16px;
+                height: calc(100vh - 160px);
+            }
+
+            .notes-sidebar {
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                border-radius: 12px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .notes-sidebar-header {
+                padding: 12px 14px;
+                border-bottom: 1px solid var(--navy-border);
+                font-size: 12px;
+                font-family: var(--font-mono);
+                color: var(--white-faint);
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .note-list {
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            .note-list::-webkit-scrollbar {
+                width: 3px;
+            }
+            .note-list::-webkit-scrollbar-thumb {
+                background: var(--navy-border);
+            }
+
+            .note-list-item {
+                padding: 10px 14px;
+                border-bottom: 1px solid var(--navy-border);
+                cursor: pointer;
+                transition: background 0.12s;
+            }
+
+            .note-list-item:hover {
+                background: var(--navy-hover);
+            }
+            .note-list-item.active-note {
+                background: var(--navy-light);
+                border-left: 2px solid var(--accent);
+            }
+
+            .note-item-title {
+                font-size: 12.5px;
+                color: var(--white-dim);
+                margin-bottom: 3px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-weight: 500;
+            }
+
+            .note-item-title.active-note {
+                color: var(--white);
+            }
+
+            .note-item-meta {
+                font-size: 10px;
+                color: var(--white-faint);
+                font-family: var(--font-mono);
+            }
+
+            .editor-area {
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .editor-toolbar {
+                padding: 10px 16px;
+                border-bottom: 1px solid var(--navy-border);
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex-shrink: 0;
+                flex-wrap: wrap;
+            }
+
+            .toolbar-btn {
+                padding: 5px 9px;
+                background: transparent;
+                border: none;
+                color: var(--white-faint);
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 12px;
+                font-family: var(--font-mono);
+                transition: all 0.12s;
+            }
+
+            .toolbar-btn:hover {
+                background: var(--navy-hover);
+                color: var(--white);
+            }
+
+            .toolbar-sep {
+                width: 1px;
+                height: 16px;
+                background: var(--navy-border);
+                margin: 0 4px;
+            }
+
+            .note-editor {
+                flex: 1;
+                padding: 20px 24px;
+                overflow-y: auto;
+                outline: none;
+            }
+
+            .note-editor h1 {
+                font-family: var(--font-head);
+                font-size: 22px;
+                font-weight: 700;
+                color: var(--white);
+                margin-bottom: 16px;
+                line-height: 1.3;
+            }
+            .note-editor h2 {
+                font-family: var(--font-head);
+                font-size: 17px;
+                font-weight: 600;
+                color: var(--white);
+                margin: 16px 0 10px;
+            }
+            .note-editor p {
+                color: var(--white-dim);
+                line-height: 1.75;
+                margin-bottom: 10px;
+                font-size: 14px;
+            }
+            .note-editor code {
+                font-family: var(--font-mono);
+                font-size: 12px;
+                background: var(--navy-light);
+                padding: 1px 6px;
+                border-radius: 4px;
+                color: var(--accent);
+            }
+            .note-editor blockquote {
+                border-left: 3px solid var(--accent);
+                padding-left: 14px;
+                color: var(--white-faint);
+                margin: 12px 0;
+            }
+
+            .note-editor::-webkit-scrollbar {
+                width: 4px;
+            }
+            .note-editor::-webkit-scrollbar-thumb {
+                background: var(--navy-border);
+            }
+
+            /* ── FLASHCARDS ── */
+            .flashcard-controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .flashcard-deck-selector {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .deck-chip {
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 12px;
+                cursor: pointer;
+                border: 1px solid var(--navy-border);
+                color: var(--white-faint);
+                transition: all 0.15s;
+            }
+
+            .deck-chip:hover {
+                border-color: var(--accent);
+                color: var(--white-dim);
+            }
+            .deck-chip.active {
+                background: var(--accent-glow);
+                border-color: rgba(59, 130, 246, 0.35);
+                color: var(--accent);
+            }
+
+            .flashcard-area {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .flashcard {
+                width: 100%;
+                max-width: 580px;
+                height: 260px;
+                perspective: 1200px;
+                cursor: pointer;
+            }
+
+            .flashcard-inner {
+                width: 100%;
+                height: 100%;
+                position: relative;
+                transform-style: preserve-3d;
+                transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .flashcard.flipped .flashcard-inner {
+                transform: rotateY(180deg);
+            }
+
+            .flashcard-face {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                backface-visibility: hidden;
+                border-radius: 16px;
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 32px;
+                text-align: center;
+            }
+
+            .flashcard-face.back {
+                transform: rotateY(180deg);
+                background: var(--navy-light);
+                border-color: rgba(59, 130, 246, 0.25);
+            }
+
+            .face-label {
+                font-size: 9px;
+                font-family: var(--font-mono);
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: var(--white-faint);
+                margin-bottom: 16px;
+            }
+
+            .face-label.ans {
+                color: var(--accent);
+            }
+
+            .face-text {
+                font-size: 19px;
+                font-family: var(--font-head);
+                color: var(--white);
+                font-weight: 600;
+                line-height: 1.4;
+            }
+
+            .face-hint {
+                margin-top: 16px;
+                font-size: 12px;
+                color: var(--white-faint);
+                font-family: var(--font-mono);
+            }
+
+            .flashcard-nav {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .fc-counter {
+                font-family: var(--font-mono);
+                font-size: 13px;
+                color: var(--white-faint);
+                min-width: 60px;
+                text-align: center;
+            }
+
+            .flashcard-rating {
+                display: flex;
+                gap: 10px;
+                margin-top: 4px;
+            }
+
+            .rating-btn {
+                padding: 8px 20px;
+                border-radius: 8px;
+                font-size: 12.5px;
+                cursor: pointer;
+                border: 1px solid;
+                font-family: var(--font-body);
+                font-weight: 500;
+                transition: all 0.15s;
+            }
+
+            .rating-hard {
+                border-color: rgba(239, 68, 68, 0.4);
+                color: var(--red);
+                background: rgba(239, 68, 68, 0.05);
+            }
+            .rating-hard:hover {
+                background: rgba(239, 68, 68, 0.12);
+            }
+            .rating-ok {
+                border-color: rgba(245, 158, 11, 0.4);
+                color: var(--amber);
+                background: rgba(245, 158, 11, 0.05);
+            }
+            .rating-ok:hover {
+                background: rgba(245, 158, 11, 0.12);
+            }
+            .rating-easy {
+                border-color: rgba(16, 185, 129, 0.4);
+                color: var(--green);
+                background: rgba(16, 185, 129, 0.05);
+            }
+            .rating-easy:hover {
+                background: rgba(16, 185, 129, 0.12);
+            }
+
+            /* ── TIMER ── */
+            .timer-layout {
+                display: grid;
+                grid-template-columns: 1fr 320px;
+                gap: 20px;
+            }
+
+            .timer-main {
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                border-radius: 16px;
+                padding: 36px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 24px;
+            }
+
+            .timer-mode-tabs {
+                display: flex;
+                background: var(--navy-light);
+                border-radius: 10px;
+                padding: 3px;
+                gap: 2px;
+            }
+
+            .timer-mode-tab {
+                padding: 7px 18px;
+                border-radius: 8px;
+                font-size: 12.5px;
+                cursor: pointer;
+                color: var(--white-faint);
+                transition: all 0.15s;
+            }
+
+            .timer-mode-tab.active {
+                background: var(--navy-mid);
+                color: var(--white);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            }
+
+            .timer-display {
+                font-family: var(--font-mono);
+                font-size: 72px;
+                font-weight: 500;
+                color: var(--white);
+                letter-spacing: -2px;
+                line-height: 1;
+                text-align: center;
+            }
+
+            .timer-display.running {
+                color: var(--accent);
+            }
+            .timer-display.break-mode {
+                color: var(--green);
+            }
+
+            .timer-session-label {
+                font-size: 12px;
+                font-family: var(--font-mono);
+                color: var(--white-faint);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .timer-controls {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .timer-btn {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                transition: all 0.15s;
+            }
+
+            .timer-btn-play {
+                background: var(--accent);
+                color: #fff;
+                width: 60px;
+                height: 60px;
+                font-size: 22px;
+            }
+
+            .timer-btn-play:hover {
+                background: var(--accent-dim);
+            }
+
+            .timer-btn-secondary {
+                background: var(--navy-light);
+                color: var(--white-dim);
+                border: 1px solid var(--navy-border);
+            }
+
+            .timer-btn-secondary:hover {
+                background: var(--navy-hover);
+                color: var(--white);
+            }
+
+            .pomodoro-dots {
+                display: flex;
+                gap: 8px;
+            }
+
+            .pomo-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: var(--navy-light);
+                border: 1.5px solid var(--navy-border);
+            }
+
+            .pomo-dot.filled {
+                background: var(--accent);
+                border-color: var(--accent);
+            }
+
+            .timer-sidebar-content {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .timer-log-card {
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                border-radius: 12px;
+                padding: 16px;
+                flex: 1;
+            }
+
+            .log-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--navy-border);
+                font-size: 12.5px;
+            }
+
+            .log-item:last-child {
+                border-bottom: none;
+            }
+
+            .log-subject {
+                color: var(--white-dim);
+            }
+            .log-duration {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                color: var(--accent);
+            }
+
+            /* ── CHAT PANEL ── */
+            .chat-panel {
+                background: var(--navy-mid);
+                border-left: 1px solid var(--navy-border);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .chat-header {
+                padding: 16px 18px;
+                border-bottom: 1px solid var(--navy-border);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+
+            .chat-ai-icon {
+                width: 30px;
+                height: 30px;
+                border-radius: 8px;
+                background: var(--accent);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
+
+            .chat-header-info {
+                flex: 1;
+            }
+            .chat-ai-name {
+                font-size: 13.5px;
+                font-weight: 600;
+                color: var(--white);
+                font-family: var(--font-head);
+            }
+            .chat-ai-status {
+                font-size: 10px;
+                color: var(--green);
+                font-family: var(--font-mono);
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .status-dot {
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background: var(--green);
+            }
+
+            .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .chat-messages::-webkit-scrollbar {
+                width: 3px;
+            }
+            .chat-messages::-webkit-scrollbar-thumb {
+                background: var(--navy-border);
+            }
+
+            .msg {
+                display: flex;
+                gap: 8px;
+                animation: msgIn 0.2s ease;
+            }
+
+            @keyframes msgIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(6px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+
+            .msg.user {
+                flex-direction: row-reverse;
+            }
+
+            .msg-avatar {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: 600;
+                color: #fff;
+                margin-top: 2px;
+            }
+
+            .msg-avatar.ai {
+                background: var(--accent);
+            }
+            .msg-avatar.user {
+                background: var(--purple);
+            }
+
+            .msg-bubble {
+                max-width: 84%;
+                padding: 10px 13px;
+                border-radius: 12px;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .msg.ai .msg-bubble {
+                background: var(--navy-light);
+                color: var(--white-dim);
+                border-radius: 4px 12px 12px 12px;
+            }
+
+            .msg.user .msg-bubble {
+                background: var(--accent);
+                color: #fff;
+                border-radius: 12px 4px 12px 12px;
+            }
+
+            .msg-time {
+                font-size: 10px;
+                color: var(--white-faint);
+                font-family: var(--font-mono);
+                margin-top: 4px;
+                text-align: right;
+            }
+
+            .msg.user .msg-time {
+                text-align: right;
+            }
+            .msg.ai .msg-time {
+                text-align: left;
+            }
+
+            .typing-indicator {
+                display: flex;
+                gap: 4px;
+                align-items: center;
+                padding: 10px 13px;
+                background: var(--navy-light);
+                border-radius: 4px 12px 12px 12px;
+                width: fit-content;
+            }
+
+            .typing-dot {
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background: var(--accent);
+                animation: typingBounce 1.2s infinite;
+            }
+
+            .typing-dot:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+            .typing-dot:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+            @keyframes typingBounce {
+                0%,
+                60%,
+                100% {
+                    opacity: 0.3;
+                    transform: translateY(0);
+                }
+                30% {
+                    opacity: 1;
+                    transform: translateY(-4px);
+                }
+            }
+
+            .quick-prompts {
+                padding: 10px 16px;
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+                border-top: 1px solid var(--navy-border);
+                flex-shrink: 0;
+            }
+
+            .quick-chip {
+                padding: 5px 11px;
+                border-radius: 20px;
+                font-size: 11px;
+                background: var(--navy-light);
+                color: var(--white-faint);
+                cursor: pointer;
+                border: 1px solid var(--navy-border);
+                transition: all 0.12s;
+                white-space: nowrap;
+            }
+
+            .quick-chip:hover {
+                background: var(--accent-glow);
+                color: var(--accent);
+                border-color: rgba(59, 130, 246, 0.3);
+            }
+
+            .chat-input-area {
+                padding: 12px 16px;
+                border-top: 1px solid var(--navy-border);
+                display: flex;
+                gap: 8px;
+                flex-shrink: 0;
+            }
+
+            .chat-input {
+                flex: 1;
+                background: var(--navy-light);
+                border: 1px solid var(--navy-border);
+                border-radius: 10px;
+                padding: 10px 14px;
+                color: var(--white);
+                font-family: var(--font-body);
+                font-size: 13px;
+                outline: none;
+                resize: none;
+                transition: border-color 0.15s;
+                line-height: 1.5;
+                min-height: 40px;
+                max-height: 110px;
+            }
+
+            .chat-input::placeholder {
+                color: var(--white-faint);
+            }
+            .chat-input:focus {
+                border-color: rgba(59, 130, 246, 0.5);
+            }
+
+            .send-btn {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                background: var(--accent);
+                border: none;
+                color: #fff;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                flex-shrink: 0;
+                transition: background 0.15s;
+                align-self: flex-end;
+            }
+
+            .send-btn:hover {
+                background: var(--accent-dim);
+            }
+
+            /* ── MODAL ── */
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(5, 8, 18, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s;
+                backdrop-filter: blur(4px);
+            }
+
+            .modal-overlay.open {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .modal {
+                background: var(--navy-mid);
+                border: 1px solid var(--navy-border);
+                border-radius: 16px;
+                padding: 28px;
+                width: 440px;
+                max-width: calc(100vw - 40px);
+                transform: scale(0.95);
+                transition: transform 0.2s;
+            }
+
+            .modal-overlay.open .modal {
+                transform: scale(1);
+            }
+
+            .modal-title {
+                font-family: var(--font-head);
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--white);
+                margin-bottom: 6px;
+            }
+
+            .modal-subtitle {
+                font-size: 13px;
+                color: var(--white-faint);
+                margin-bottom: 22px;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .form-label {
+                display: block;
+                font-size: 12px;
+                font-family: var(--font-mono);
+                color: var(--white-faint);
+                margin-bottom: 6px;
+                letter-spacing: 0.3px;
+            }
+
+            .form-input,
+            .form-select {
+                width: 100%;
+                background: var(--navy-light);
+                border: 1px solid var(--navy-border);
+                border-radius: 8px;
+                padding: 10px 14px;
+                color: var(--white);
+                font-family: var(--font-body);
+                font-size: 13.5px;
+                outline: none;
+                transition: border-color 0.15s;
+                appearance: none;
+            }
+
+            .form-input::placeholder {
+                color: var(--white-faint);
+            }
+            .form-input:focus,
+            .form-select:focus {
+                border-color: rgba(59, 130, 246, 0.5);
+            }
+
+            .form-select {
+                cursor: pointer;
+            }
+
+            .form-color-row {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .color-swatch {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                cursor: pointer;
+                border: 2px solid transparent;
+                transition: all 0.15s;
+            }
+
+            .color-swatch.selected {
+                border-color: var(--white);
+                transform: scale(1.15);
+            }
+
+            .modal-actions {
+                display: flex;
+                gap: 10px;
+                justify-content: flex-end;
+                margin-top: 22px;
+            }
+
+            /* ── TOAST ── */
+            .toast {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                background: var(--navy-light);
+                border: 1px solid var(--navy-border);
+                border-radius: 10px;
+                padding: 12px 18px;
+                font-size: 13px;
+                color: var(--white-dim);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                z-index: 2000;
+                transform: translateY(20px);
+                opacity: 0;
+                transition: all 0.25s;
+                pointer-events: none;
+            }
+
+            .toast.show {
+                transform: none;
+                opacity: 1;
+            }
+            .toast-icon {
+                font-size: 16px;
+            }
+
+            /* ── SCROLLBAR global ── */
+            ::-webkit-scrollbar {
+                width: 4px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: var(--navy-border);
+                border-radius: 4px;
+            }
+
+            /* svgs for icons */
+            svg {
+                fill: currentColor;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app">
+            <!-- ══ SIDEBAR ══ -->
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <div class="brand-icon">S</div>
+                    <div>
+                        <span class="brand-name">StudyAI</span>
+                        <span class="brand-badge">PRO</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">Navigation</div>
+
+                <nav>
+                    <div
+                        class="nav-item active"
+                        onclick="switchPanel('dashboard', this)"
+                    >
+                        <svg class="nav-icon" viewBox="0 0 20 20">
+                            <rect x="2" y="2" width="7" height="7" rx="1.5" />
+                            <rect x="11" y="2" width="7" height="7" rx="1.5" />
+                            <rect x="2" y="11" width="7" height="7" rx="1.5" />
+                            <rect x="11" y="11" width="7" height="7" rx="1.5" />
+                        </svg>
+                        Dashboard
+                        <span class="nav-badge" style="background: var(--green)"
+                            >3</span
+                        >
+                    </div>
+                    <div class="nav-item" onclick="switchPanel('notes', this)">
+                        <svg class="nav-icon" viewBox="0 0 20 20">
+                            <path
+                                d="M4 2h9l5 5v11a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zm8 0v5h5M7 9h6M7 12h6M7 15h4"
+                            />
+                        </svg>
+                        Notes
+                    </div>
+                    <div
+                        class="nav-item"
+                        onclick="switchPanel('flashcards', this)"
+                    >
+                        <svg class="nav-icon" viewBox="0 0 20 20">
+                            <rect x="2" y="5" width="16" height="11" rx="1.5" />
+                            <path d="M6 9h8M6 12h5" />
+                        </svg>
+                        Flashcards
+                    </div>
+                    <div class="nav-item" onclick="switchPanel('timer', this)">
+                        <svg class="nav-icon" viewBox="0 0 20 20">
+                            <circle cx="10" cy="11" r="7" />
+                            <path d="M10 7v4l3 2M8 2h4" />
+                        </svg>
+                        Focus Timer
+                    </div>
+                </nav>
+
+                <div class="sidebar-section">Sessions</div>
+
+                <div class="sidebar-sessions" id="sessionList">
+                    <div
+                        class="session-item active-session"
+                        onclick="
+                            selectSession(this, 'Calculus II', 'Calculus II')
+                        "
+                    >
+                        <div class="session-dot"></div>
+                        <span class="session-label">Calculus II</span>
+                        <span class="session-time">Today</span>
+                    </div>
+                    <div
+                        class="session-item"
+                        onclick="
+                            selectSession(
+                                this,
+                                'Organic Chemistry',
+                                'Organic Chemistry',
+                            )
+                        "
+                    >
+                        <div class="session-dot"></div>
+                        <span class="session-label">Organic Chemistry</span>
+                        <span class="session-time">Mon</span>
+                    </div>
+                    <div
+                        class="session-item"
+                        onclick="
+                            selectSession(
+                                this,
+                                'Data Structures',
+                                'Data Structures',
+                            )
+                        "
+                    >
+                        <div class="session-dot"></div>
+                        <span class="session-label">Data Structures</span>
+                        <span class="session-time">Sun</span>
+                    </div>
+                    <div
+                        class="session-item"
+                        onclick="
+                            selectSession(
+                                this,
+                                'World History',
+                                'World History',
+                            )
+                        "
+                    >
+                        <div class="session-dot"></div>
+                        <span class="session-label">World History</span>
+                        <span class="session-time">Fri</span>
+                    </div>
+                    <div
+                        class="session-item"
+                        onclick="
+                            selectSession(
+                                this,
+                                'Linear Algebra',
+                                'Linear Algebra',
+                            )
+                        "
+                    >
+                        <div class="session-dot"></div>
+                        <span class="session-label">Linear Algebra</span>
+                        <span class="session-time">Thu</span>
+                    </div>
+                </div>
+
+                <button class="new-session-btn" onclick="openSessionModal()">
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 14 14"
+                        fill="currentColor"
+                    >
+                        <path d="M7 1v12M1 7h12" />
+                    </svg>
+                    New Session
+                </button>
+
+                <div class="sidebar-footer">
+                    <div class="user-pill">
+                        <div class="avatar">AS</div>
+                        <div class="user-info">
+                            <div class="user-name">Alex S.</div>
+                            <div class="user-plan">Pro Plan · 14 days</div>
+                        </div>
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="currentColor"
+                            style="color: var(--white-faint); flex-shrink: 0"
+                        >
+                            <circle cx="7" cy="4" r="1.2" />
+                            <circle cx="7" cy="7" r="1.2" />
+                            <circle cx="7" cy="10" r="1.2" />
+                        </svg>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ══ MAIN AREA ══ -->
+            <main class="main">
+                <div class="main-header">
+                    <div>
+                        <div class="main-title" id="mainTitle">Dashboard</div>
+                        <div class="main-subtitle" id="mainSubtitle">
+                            Calculus II · Monday, May 18
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button
+                            class="btn btn-ghost"
+                            onclick="openSessionModal()"
+                        >
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 13 13"
+                                fill="currentColor"
+                            >
+                                <path d="M6.5 1v11M1 6.5h11" />
+                            </svg>
+                            New Session
+                        </button>
+                        <button
+                            class="btn btn-primary"
+                            onclick="openSessionModal()"
+                        >
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 13 13"
+                                fill="currentColor"
+                            >
+                                <path d="M6.5 1v11M1 6.5h11" />
+                            </svg>
+                            Add Note
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-bar" id="tabBar">
+                    <div
+                        class="tab active"
+                        onclick="switchTab('overview', this)"
+                    >
+                        Overview
+                    </div>
+                    <div class="tab" onclick="switchTab('progress', this)">
+                        Progress
+                    </div>
+                    <div class="tab" onclick="switchTab('resources', this)">
+                        Resources
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <!-- DASHBOARD PANEL -->
+                    <div id="panel-dashboard" class="panel active">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Study Hours</div>
+                                <div class="stat-value">
+                                    47.5<span
+                                        style="
+                                            font-size: 18px;
+                                            color: var(--white-faint);
+                                        "
+                                        >h</span
+                                    >
+                                </div>
+                                <div class="stat-sub stat-accent">
+                                    ↑ +8.2h this week
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Sessions</div>
+                                <div class="stat-value">23</div>
+                                <div class="stat-sub stat-accent">
+                                    ↑ +4 this week
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Cards Reviewed</div>
+                                <div class="stat-value">312</div>
+                                <div
+                                    class="stat-sub"
+                                    style="color: var(--amber)"
+                                >
+                                    ↑ 84% accuracy
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Streak</div>
+                                <div class="stat-value">
+                                    14<span
+                                        style="
+                                            font-size: 18px;
+                                            color: var(--white-faint);
+                                        "
+                                        >d</span
+                                    >
+                                </div>
+                                <div class="stat-sub stat-accent">
+                                    Keep it up!
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        Subject Progress
+                                    </div>
+                                    <span class="card-tag">This Month</span>
+                                </div>
+                                <div class="subject-row">
+                                    <div class="subject-top">
+                                        <span>Calculus II</span>
+                                        <span class="subject-pct">78%</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div
+                                            class="progress-fill"
+                                            style="
+                                                width: 78%;
+                                                background: var(--accent);
+                                            "
+                                        ></div>
+                                    </div>
+                                </div>
+                                <div class="subject-row">
+                                    <div class="subject-top">
+                                        <span>Organic Chemistry</span>
+                                        <span class="subject-pct">55%</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div
+                                            class="progress-fill"
+                                            style="
+                                                width: 55%;
+                                                background: var(--amber);
+                                            "
+                                        ></div>
+                                    </div>
+                                </div>
+                                <div class="subject-row">
+                                    <div class="subject-top">
+                                        <span>Data Structures</span>
+                                        <span class="subject-pct">92%</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div
+                                            class="progress-fill"
+                                            style="
+                                                width: 92%;
+                                                background: var(--green);
+                                            "
+                                        ></div>
+                                    </div>
+                                </div>
+                                <div class="subject-row">
+                                    <div class="subject-top">
+                                        <span>World History</span>
+                                        <span class="subject-pct">41%</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div
+                                            class="progress-fill"
+                                            style="
+                                                width: 41%;
+                                                background: var(--purple);
+                                            "
+                                        ></div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="subject-row"
+                                    style="margin-bottom: 0"
+                                >
+                                    <div class="subject-top">
+                                        <span>Linear Algebra</span>
+                                        <span class="subject-pct">63%</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div
+                                            class="progress-fill"
+                                            style="
+                                                width: 63%;
+                                                background: var(--red);
+                                            "
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">Today's Tasks</div>
+                                    <button
+                                        class="btn btn-ghost btn-sm"
+                                        onclick="addTask()"
+                                    >
+                                        + Add
+                                    </button>
+                                </div>
+                                <div id="taskList">
+                                    <div class="task-item">
+                                        <div
+                                            class="task-check"
+                                            onclick="toggleTask(this)"
+                                        ></div>
+                                        <div class="task-info">
+                                            <div class="task-name">
+                                                Chapter 6: Integration by Parts
+                                            </div>
+                                            <div class="task-due">
+                                                Due · Today, 11:59 PM
+                                            </div>
+                                        </div>
+                                        <span
+                                            class="task-priority priority-high"
+                                            >HIGH</span
+                                        >
+                                    </div>
+                                    <div class="task-item">
+                                        <div
+                                            class="task-check"
+                                            onclick="toggleTask(this)"
+                                        ></div>
+                                        <div class="task-info">
+                                            <div class="task-name">
+                                                Flashcard review — Chem Bonds
+                                            </div>
+                                            <div class="task-due">
+                                                Due · Tomorrow
+                                            </div>
+                                        </div>
+                                        <span class="task-priority priority-med"
+                                            >MED</span
+                                        >
+                                    </div>
+                                    <div class="task-item">
+                                        <div
+                                            class="task-check done"
+                                            onclick="toggleTask(this)"
+                                        ></div>
+                                        <div class="task-info">
+                                            <div class="task-name done-text">
+                                                Practice problem set #4
+                                            </div>
+                                            <div class="task-due">
+                                                Completed · 10:24 AM
+                                            </div>
+                                        </div>
+                                        <span class="task-priority priority-low"
+                                            >DONE</span
+                                        >
+                                    </div>
+                                    <div class="task-item">
+                                        <div
+                                            class="task-check"
+                                            onclick="toggleTask(this)"
+                                        ></div>
+                                        <div class="task-info">
+                                            <div class="task-name">
+                                                Watch lecture: Binary Trees
+                                            </div>
+                                            <div class="task-due">
+                                                Due · Friday
+                                            </div>
+                                        </div>
+                                        <span class="task-priority priority-low"
+                                            >LOW</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" style="grid-column: 1/-1">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        Activity — Last 12 Weeks
+                                    </div>
+                                    <span
+                                        class="card-tag"
+                                        style="
+                                            background: var(--green-dim);
+                                            color: var(--green);
+                                            border-color: rgba(
+                                                16,
+                                                185,
+                                                129,
+                                                0.25
+                                            );
+                                        "
+                                        >14-day streak</span
+                                    >
+                                </div>
+                                <div class="heatmap" id="heatmap"></div>
+                                <div
+                                    style="
+                                        display: flex;
+                                        gap: 6px;
+                                        align-items: center;
+                                        margin-top: 10px;
+                                    "
+                                >
+                                    <span
+                                        style="
+                                            font-size: 11px;
+                                            color: var(--white-faint);
+                                            font-family: var(--font-mono);
+                                        "
+                                        >Less</span
+                                    >
+                                    <div
+                                        class="heat-cell"
+                                        style="
+                                            width: 12px;
+                                            height: 12px;
+                                            aspect-ratio: auto;
+                                            flex-shrink: 0;
+                                        "
+                                    ></div>
+                                    <div
+                                        class="heat-cell heat-1"
+                                        style="
+                                            width: 12px;
+                                            height: 12px;
+                                            aspect-ratio: auto;
+                                            flex-shrink: 0;
+                                        "
+                                    ></div>
+                                    <div
+                                        class="heat-cell heat-2"
+                                        style="
+                                            width: 12px;
+                                            height: 12px;
+                                            aspect-ratio: auto;
+                                            flex-shrink: 0;
+                                        "
+                                    ></div>
+                                    <div
+                                        class="heat-cell heat-3"
+                                        style="
+                                            width: 12px;
+                                            height: 12px;
+                                            aspect-ratio: auto;
+                                            flex-shrink: 0;
+                                        "
+                                    ></div>
+                                    <div
+                                        class="heat-cell heat-4"
+                                        style="
+                                            width: 12px;
+                                            height: 12px;
+                                            aspect-ratio: auto;
+                                            flex-shrink: 0;
+                                        "
+                                    ></div>
+                                    <span
+                                        style="
+                                            font-size: 11px;
+                                            color: var(--white-faint);
+                                            font-family: var(--font-mono);
+                                        "
+                                        >More</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NOTES PANEL -->
+                    <div id="panel-notes" class="panel">
+                        <div class="notes-layout">
+                            <div class="notes-sidebar">
+                                <div class="notes-sidebar-header">
+                                    <span>NOTES</span>
+                                    <button
+                                        class="btn btn-ghost btn-sm"
+                                        onclick="newNote()"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <div class="note-list" id="noteList">
+                                    <div
+                                        class="note-list-item active-note"
+                                        onclick="loadNote(this, 0)"
+                                    >
+                                        <div
+                                            class="note-item-title active-note"
+                                        >
+                                            Integration by Parts
+                                        </div>
+                                        <div class="note-item-meta">
+                                            Calculus II · Today
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="note-list-item"
+                                        onclick="loadNote(this, 1)"
+                                    >
+                                        <div class="note-item-title">
+                                            Nucleophilic Substitution
+                                        </div>
+                                        <div class="note-item-meta">
+                                            Org. Chem · Yesterday
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="note-list-item"
+                                        onclick="loadNote(this, 2)"
+                                    >
+                                        <div class="note-item-title">
+                                            Binary Search Trees
+                                        </div>
+                                        <div class="note-item-meta">
+                                            Data Structures · Sun
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="note-list-item"
+                                        onclick="loadNote(this, 3)"
+                                    >
+                                        <div class="note-item-title">
+                                            WWI: Causes & Aftermath
+                                        </div>
+                                        <div class="note-item-meta">
+                                            World History · Fri
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="editor-area">
+                                <div class="editor-toolbar">
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="formatDoc('bold')"
+                                    >
+                                        <b>B</b>
+                                    </button>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="formatDoc('italic')"
+                                    >
+                                        <i>I</i>
+                                    </button>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="formatDoc('underline')"
+                                    >
+                                        <u>U</u>
+                                    </button>
+                                    <div class="toolbar-sep"></div>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="insertHeading()"
+                                    >
+                                        H1
+                                    </button>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="insertHeading2()"
+                                    >
+                                        H2
+                                    </button>
+                                    <div class="toolbar-sep"></div>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="
+                                            formatDoc('insertUnorderedList')
+                                        "
+                                    >
+                                        • List
+                                    </button>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="formatDoc('insertOrderedList')"
+                                    >
+                                        # List
+                                    </button>
+                                    <div class="toolbar-sep"></div>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="formatCode()"
+                                    >
+                                        &lt;/&gt;
+                                    </button>
+                                    <button
+                                        class="toolbar-btn"
+                                        onclick="formatQuote('blockquote')"
+                                    >
+                                        ❝
+                                    </button>
+                                    <div class="toolbar-sep"></div>
+                                    <button
+                                        class="toolbar-btn btn-ghost"
+                                        onclick="askAIAboutNote()"
+                                        style="
+                                            margin-left: auto;
+                                            color: var(--accent);
+                                            border: 1px solid
+                                                rgba(59, 130, 246, 0.3);
+                                            padding: 4px 10px;
+                                            border-radius: 5px;
+                                            font-size: 11px;
+                                        "
+                                    >
+                                        ✦ Ask AI
+                                    </button>
+                                </div>
+                                <div
+                                    class="note-editor"
+                                    id="noteEditor"
+                                    contenteditable="true"
+                                    spellcheck="false"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FLASHCARDS PANEL -->
+                    <div id="panel-flashcards" class="panel">
+                        <div class="flashcard-controls">
+                            <div class="flashcard-deck-selector">
+                                <span
+                                    style="
+                                        font-size: 12px;
+                                        color: var(--white-faint);
+                                        font-family: var(--font-mono);
+                                        margin-right: 4px;
+                                    "
+                                    >DECK:</span
+                                >
+                                <div
+                                    class="deck-chip active"
+                                    onclick="selectDeck(this, 'calc')"
+                                >
+                                    Calculus II
+                                </div>
+                                <div
+                                    class="deck-chip"
+                                    onclick="selectDeck(this, 'chem')"
+                                >
+                                    Org. Chem
+                                </div>
+                                <div
+                                    class="deck-chip"
+                                    onclick="selectDeck(this, 'ds')"
+                                >
+                                    Data Struct.
+                                </div>
+                                <div
+                                    class="deck-chip"
+                                    onclick="selectDeck(this, 'hist')"
+                                >
+                                    History
+                                </div>
+                            </div>
+                            <div
+                                style="
+                                    display: flex;
+                                    gap: 8px;
+                                    align-items: center;
+                                "
+                            >
+                                <span
+                                    style="
+                                        font-size: 11px;
+                                        font-family: var(--font-mono);
+                                        color: var(--white-faint);
+                                    "
+                                    >12 cards due</span
+                                >
+                                <button
+                                    class="btn btn-ghost btn-sm"
+                                    onclick="openAddCardModal()"
+                                >
+                                    + Add Card
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flashcard-area">
+                            <div
+                                class="flashcard"
+                                id="flashcard"
+                                onclick="flipCard()"
+                            >
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-face front">
+                                        <div class="face-label">Question</div>
+                                        <div class="face-text" id="fcQuestion">
+                                            What is the formula for Integration
+                                            by Parts?
+                                        </div>
+                                        <div class="face-hint">
+                                            Click to reveal answer
+                                        </div>
+                                    </div>
+                                    <div class="flashcard-face back">
+                                        <div class="face-label ans">Answer</div>
+                                        <div class="face-text" id="fcAnswer">
+                                            ∫u dv = uv − ∫v du<br /><br />Choose
+                                            u and dv so that the resulting
+                                            integral is simpler.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flashcard-nav">
+                                <button
+                                    class="btn btn-ghost btn-sm"
+                                    onclick="prevCard()"
+                                >
+                                    ← Prev
+                                </button>
+                                <span class="fc-counter" id="fcCounter"
+                                    >1 / 8</span
+                                >
+                                <button
+                                    class="btn btn-ghost btn-sm"
+                                    onclick="nextCard()"
+                                >
+                                    Next →
+                                </button>
+                            </div>
+
+                            <div
+                                class="flashcard-rating"
+                                id="ratingBar"
+                                style="display: none"
+                            >
+                                <button
+                                    class="rating-btn rating-hard"
+                                    onclick="rateCard('hard')"
+                                >
+                                    Hard
+                                </button>
+                                <button
+                                    class="rating-btn rating-ok"
+                                    onclick="rateCard('ok')"
+                                >
+                                    Got it
+                                </button>
+                                <button
+                                    class="rating-btn rating-easy"
+                                    onclick="rateCard('easy')"
+                                >
+                                    Easy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TIMER PANEL -->
+                    <div id="panel-timer" class="panel">
+                        <div class="timer-layout">
+                            <div class="timer-main">
+                                <div class="timer-mode-tabs">
+                                    <div
+                                        class="timer-mode-tab active"
+                                        onclick="
+                                            setTimerMode(
+                                                'pomodoro',
+                                                this,
+                                                25 * 60,
+                                            )
+                                        "
+                                    >
+                                        Pomodoro
+                                    </div>
+                                    <div
+                                        class="timer-mode-tab"
+                                        onclick="
+                                            setTimerMode('short', this, 5 * 60)
+                                        "
+                                    >
+                                        Short Break
+                                    </div>
+                                    <div
+                                        class="timer-mode-tab"
+                                        onclick="
+                                            setTimerMode('long', this, 15 * 60)
+                                        "
+                                    >
+                                        Long Break
+                                    </div>
+                                    <div
+                                        class="timer-mode-tab"
+                                        onclick="
+                                            setTimerMode('custom', this, 0)
+                                        "
+                                    >
+                                        Custom
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div
+                                        class="timer-session-label"
+                                        id="timerSessionLabel"
+                                    >
+                                        FOCUS SESSION · CALCULUS II
+                                    </div>
+                                </div>
+
+                                <div class="timer-display" id="timerDisplay">
+                                    25:00
+                                </div>
+
+                                <div class="pomodoro-dots" id="pomoDots">
+                                    <div class="pomo-dot"></div>
+                                    <div class="pomo-dot"></div>
+                                    <div class="pomo-dot"></div>
+                                    <div class="pomo-dot"></div>
+                                </div>
+
+                                <div class="timer-controls">
+                                    <button
+                                        class="timer-btn timer-btn-secondary"
+                                        onclick="resetTimer()"
+                                    >
+                                        ↺
+                                    </button>
+                                    <button
+                                        class="timer-btn timer-btn-play"
+                                        id="playBtn"
+                                        onclick="toggleTimer()"
+                                    >
+                                        ▶
+                                    </button>
+                                    <button
+                                        class="timer-btn timer-btn-secondary"
+                                        onclick="skipTimer()"
+                                    >
+                                        ⏭
+                                    </button>
+                                </div>
+
+                                <div
+                                    style="
+                                        display: flex;
+                                        gap: 10px;
+                                        width: 100%;
+                                        max-width: 260px;
+                                    "
+                                >
+                                    <select
+                                        class="form-select"
+                                        id="timerSession"
+                                        style="
+                                            flex: 1;
+                                            font-size: 12px;
+                                            padding: 7px 12px;
+                                        "
+                                    >
+                                        <option>Calculus II</option>
+                                        <option>Organic Chemistry</option>
+                                        <option>Data Structures</option>
+                                        <option>World History</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="timer-sidebar-content">
+                                <div class="card" style="flex-shrink: 0">
+                                    <div
+                                        class="card-header"
+                                        style="margin-bottom: 12px"
+                                    >
+                                        <div class="card-title">
+                                            Today's Sessions
+                                        </div>
+                                        <span
+                                            style="
+                                                font-size: 12px;
+                                                font-family: var(--font-mono);
+                                                color: var(--white-faint);
+                                            "
+                                            >3h 15m total</span
+                                        >
+                                    </div>
+                                    <div class="log-item">
+                                        <span class="log-subject"
+                                            >Calculus II</span
+                                        >
+                                        <span class="log-duration">50:00</span>
+                                    </div>
+                                    <div class="log-item">
+                                        <span class="log-subject"
+                                            >Data Structures</span
+                                        >
+                                        <span class="log-duration">75:00</span>
+                                    </div>
+                                    <div class="log-item">
+                                        <span class="log-subject"
+                                            >Org. Chemistry</span
+                                        >
+                                        <span class="log-duration">70:00</span>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div
+                                        class="card-header"
+                                        style="margin-bottom: 12px"
+                                    >
+                                        <div class="card-title">
+                                            Timer Settings
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="form-group"
+                                        style="margin-bottom: 12px"
+                                    >
+                                        <label class="form-label"
+                                            >Focus Duration (min)</label
+                                        >
+                                        <input
+                                            type="number"
+                                            class="form-input"
+                                            value="25"
+                                            min="1"
+                                            max="120"
+                                            id="focusDur"
+                                            style="padding: 7px 12px"
+                                        />
+                                    </div>
+                                    <div
+                                        class="form-group"
+                                        style="margin-bottom: 12px"
+                                    >
+                                        <label class="form-label"
+                                            >Short Break (min)</label
+                                        >
+                                        <input
+                                            type="number"
+                                            class="form-input"
+                                            value="5"
+                                            min="1"
+                                            max="30"
+                                            id="shortDur"
+                                            style="padding: 7px 12px"
+                                        />
+                                    </div>
+                                    <div
+                                        class="form-group"
+                                        style="margin-bottom: 0"
+                                    >
+                                        <label class="form-label"
+                                            >Long Break (min)</label
+                                        >
+                                        <input
+                                            type="number"
+                                            class="form-input"
+                                            value="15"
+                                            min="1"
+                                            max="60"
+                                            id="longDur"
+                                            style="padding: 7px 12px"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end main-content -->
+            </main>
+
+            <!-- ══ CHAT PANEL ══ -->
+            <aside class="chat-panel">
+                <div class="chat-header">
+                    <div class="chat-ai-icon">✦</div>
+                    <div class="chat-header-info">
+                        <div class="chat-ai-name">StudyAI Assistant</div>
+                        <div class="chat-ai-status">
+                            <div class="status-dot"></div>
+                            Online · GPT-powered
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-ghost btn-sm"
+                        onclick="clearChat()"
+                        style="padding: 5px 8px; font-size: 11px"
+                    >
+                        Clear
+                    </button>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="msg ai">
+                        <div class="msg-avatar ai">✦</div>
+                        <div>
+                            <div class="msg-bubble">
+                                Hi! I'm your StudyAI assistant. I can help you
+                                understand topics, create study plans, generate
+                                flashcards, explain concepts, and answer any
+                                questions about your coursework. What are we
+                                studying today?
+                            </div>
+                            <div class="msg-time">10:30 AM</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-prompts">
+                    <span
+                        class="quick-chip"
+                        onclick="sendQuick('Explain this topic simply')"
+                        >Explain simply</span
+                    >
+                    <span
+                        class="quick-chip"
+                        onclick="sendQuick('Create flashcards for this')"
+                        >Make flashcards</span
+                    >
+                    <span
+                        class="quick-chip"
+                        onclick="sendQuick('Give me practice problems')"
+                        >Practice problems</span
+                    >
+                    <span
+                        class="quick-chip"
+                        onclick="sendQuick('Summarize my notes')"
+                        >Summarize notes</span
+                    >
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea
+                        class="chat-input"
+                        id="chatInput"
+                        placeholder="Ask anything about your studies…"
+                        rows="1"
+                        onkeydown="handleChatKey(event)"
+                        oninput="autoResize(this)"
+                    ></textarea>
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </aside>
+        </div>
+        <!-- end .app -->
+
+        <!-- ── NEW SESSION MODAL ── -->
+        <div class="modal-overlay" id="sessionModal">
+            <div class="modal">
+                <div class="modal-title">New Study Session</div>
+                <div class="modal-subtitle">
+                    Create a focused study session to track your progress
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Session Name</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="sessionName"
+                        placeholder="e.g. Quantum Mechanics Ch. 4"
+                    />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <select class="form-select" id="sessionSubject">
+                        <option>Calculus II</option>
+                        <option>Organic Chemistry</option>
+                        <option>Data Structures</option>
+                        <option>World History</option>
+                        <option>Linear Algebra</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Goal</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="sessionGoal"
+                        placeholder="e.g. Complete chapter review and practice problems"
+                    />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color Tag</label>
+                    <div class="form-color-row">
+                        <div
+                            class="color-swatch selected"
+                            style="background: var(--accent)"
+                            data-color="accent"
+                            onclick="selectColor(this)"
+                        ></div>
+                        <div
+                            class="color-swatch"
+                            style="background: var(--green)"
+                            data-color="green"
+                            onclick="selectColor(this)"
+                        ></div>
+                        <div
+                            class="color-swatch"
+                            style="background: var(--amber)"
+                            data-color="amber"
+                            onclick="selectColor(this)"
+                        ></div>
+                        <div
+                            class="color-swatch"
+                            style="background: var(--purple)"
+                            data-color="purple"
+                            onclick="selectColor(this)"
+                        ></div>
+                        <div
+                            class="color-swatch"
+                            style="background: var(--red)"
+                            data-color="red"
+                            onclick="selectColor(this)"
+                        ></div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button
+                        class="btn btn-ghost"
+                        onclick="closeModal('sessionModal')"
+                    >
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary" onclick="createSession()">
+                        Create Session
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ADD CARD MODAL ── -->
+        <div class="modal-overlay" id="cardModal">
+            <div class="modal">
+                <div class="modal-title">Add Flashcard</div>
+                <div class="modal-subtitle">
+                    Add a new card to your current deck
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Question</label>
+                    <textarea
+                        class="form-input"
+                        id="newCardQ"
+                        rows="3"
+                        placeholder="Enter your question…"
+                        style="resize: vertical"
+                    ></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Answer</label>
+                    <textarea
+                        class="form-input"
+                        id="newCardA"
+                        rows="3"
+                        placeholder="Enter the answer…"
+                        style="resize: vertical"
+                    ></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        class="btn btn-ghost"
+                        onclick="closeModal('cardModal')"
+                    >
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary" onclick="saveCard()">
+                        Save Card
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOAST -->
+        <div class="toast" id="toast">
+            <span class="toast-icon" id="toastIcon">✓</span>
+            <span id="toastMsg">Done!</span>
+        </div>
+
+        <script>
+            // ── NOTES ──
+            const noteContents = [
+                `<h1>Integration by Parts</h1>
+<p>Integration by Parts is a technique for evaluating integrals that arise from the product rule for differentiation.</p>
+<h2>The Formula</h2>
+<p>∫u dv = uv − ∫v du</p>
+<p>The key is choosing <code>u</code> and <code>dv</code> wisely. Use the <strong>LIATE</strong> rule as a guide:</p>
+<blockquote>Logarithms, Inverse trig, Algebraic, Trigonometric, Exponentials</blockquote>
+<h2>Example</h2>
+<p>Evaluate ∫x·eˣ dx. Let <code>u = x</code> and <code>dv = eˣ dx</code>, so <code>du = dx</code> and <code>v = eˣ</code>.</p>
+<p>Applying the formula: ∫x·eˣ dx = x·eˣ − ∫eˣ dx = x·eˣ − eˣ + C = eˣ(x − 1) + C</p>`,
+                `<h1>Nucleophilic Substitution</h1>
+<p>Nucleophilic substitution reactions are reactions in which one nucleophile replaces another in a chemical compound.</p>
+<h2>SN1 vs SN2</h2>
+<p><code>SN1</code> — Unimolecular, two-step, forms carbocation intermediate. Favored by tertiary substrates and polar protic solvents.</p>
+<p><code>SN2</code> — Bimolecular, one-step, backside attack with inversion. Favored by primary substrates and polar aprotic solvents.</p>`,
+                `<h1>Binary Search Trees</h1>
+<p>A BST is a binary tree where each node's left subtree contains only values less than the node, and the right subtree contains only values greater.</p>
+<h2>Operations</h2>
+<p>Search, insertion, and deletion are all O(h) where h is the height. For a balanced tree: O(log n). Worst case (skewed): O(n).</p>`,
+                `<h1>WWI: Causes & Aftermath</h1>
+<p>The causes of WWI are often remembered by the acronym <code>MAIN</code>: Militarism, Alliance systems, Imperialism, and Nationalism.</p>
+<h2>Key Outcomes</h2>
+<p>The Treaty of Versailles (1919) imposed heavy reparations on Germany, redrew European boundaries, and created the League of Nations — but its harsh terms contributed to the conditions that led to WWII.</p>`,
+            ];
+
+            function loadNote(el, idx) {
+                document
+                    .querySelectorAll(".note-list-item")
+                    .forEach((i) => i.classList.remove("active-note"));
+                document
+                    .querySelectorAll(".note-item-title")
+                    .forEach((i) => i.classList.remove("active-note"));
+                el.classList.add("active-note");
+                el.querySelector(".note-item-title").classList.add(
+                    "active-note",
+                );
+                document.getElementById("noteEditor").innerHTML =
+                    noteContents[idx];
+            }
+
+            function newNote() {
+                const name = prompt("Note title:");
+                if (!name) return;
+                const list = document.getElementById("noteList");
+                const item = document.createElement("div");
+                item.className = "note-list-item";
+                const idx = noteContents.length;
+                noteContents.push(
+                    `<h1>${name}</h1><p>Start writing your notes here…</p>`,
+                );
+                item.innerHTML = `<div class="note-item-title">${name}</div><div class="note-item-meta">New · Just now</div>`;
+                item.onclick = () => loadNote(item, idx);
+                list.prepend(item);
+                loadNote(item, idx);
+                showToast("✦", "New note created");
+            }
+
+            function formatDoc(cmd) {
+                document.execCommand(cmd, false, null);
+            }
+
+            function insertHeading() {
+                document.execCommand("formatBlock", false, "h1");
+            }
+
+            function insertHeading2() {
+                document.execCommand("formatBlock", false, "h2");
+            }
+
+            function formatCode() {
+                const sel = window.getSelection();
+                if (sel && sel.toString()) {
+                    document.execCommand(
+                        "insertHTML",
+                        false,
+                        `<code>${sel.toString()}</code>`,
+                    );
+                }
+            }
+
+            function formatQuote() {
+                document.execCommand("formatBlock", false, "blockquote");
+            }
+
+            function askAIAboutNote() {
+                const text = document
+                    .getElementById("noteEditor")
+                    .innerText.slice(0, 300);
+                sendQuick(
+                    `Help me understand and expand on: "${text.slice(0, 120)}..."`,
+                );
+                switchPanel("dashboard", null);
+            }
+
+            // Load first note
+            document.getElementById("noteEditor").innerHTML = noteContents[0];
+
+            // ── PANELS ──
+            function switchPanel(panel, navEl) {
+                document
+                    .querySelectorAll(".panel")
+                    .forEach((p) => p.classList.remove("active"));
+                document
+                    .getElementById("panel-" + panel)
+                    .classList.add("active");
+
+                if (navEl) {
+                    document
+                        .querySelectorAll(".nav-item")
+                        .forEach((n) => n.classList.remove("active"));
+                    navEl.classList.add("active");
+                }
+
+                const titles = {
+                    dashboard: "Dashboard",
+                    notes: "Notes",
+                    flashcards: "Flashcards",
+                    timer: "Focus Timer",
+                };
+                document.getElementById("mainTitle").textContent =
+                    titles[panel] || panel;
+            }
+
+            // ── TASKS ──
+            function toggleTask(el) {
+                el.classList.toggle("done");
+                const nameEl = el
+                    .closest(".task-item")
+                    .querySelector(".task-name");
+                nameEl.classList.toggle("done-text");
+                if (el.classList.contains("done"))
+                    showToast("✓", "Task completed!");
+            }
+
+            function addTask() {
+                const name = prompt("Task name:");
+                if (!name) return;
+                const list = document.getElementById("taskList");
+                const item = document.createElement("div");
+                item.className = "task-item";
+                item.innerHTML = `
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="task-info">
+      <div class="task-name">${name}</div>
+      <div class="task-due">Added · Just now</div>
+    </div>
+    <span class="task-priority priority-med">MED</span>`;
+                list.appendChild(item);
+                showToast("✦", "Task added");
+            }
+
+            // ── HEATMAP ──
+            function buildHeatmap() {
+                const hm = document.getElementById("heatmap");
+                const pattern = [
+                    0, 1, 0, 2, 1, 3, 2, 4, 2, 3, 1, 2, 0, 1, 3, 2, 4, 3, 2, 1,
+                    0, 2, 3, 2, 1, 4, 3, 2, 3, 4, 3, 2, 4, 3, 2, 1, 2, 3, 2, 1,
+                    3, 4, 3, 2, 4, 3, 4, 3, 2, 3, 4, 3, 4, 3, 4, 4, 3, 4, 4, 3,
+                    4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                    4, 4, 4, 4,
+                ];
+                const cl = ["", "heat-1", "heat-2", "heat-3", "heat-4"];
+                pattern.forEach((v) => {
+                    const d = document.createElement("div");
+                    d.className = "heat-cell " + (cl[v] || "");
+                    d.title = v > 0 ? `${v * 30} mins studied` : "No activity";
+                    hm.appendChild(d);
+                });
+            }
+            buildHeatmap();
+
+            // ── FLASHCARDS ──
+            const decks = {
+                calc: [
+                    {
+                        q: "What is the formula for Integration by Parts?",
+                        a: "∫u dv = uv − ∫v du\n\nChoose u and dv so that the resulting integral is simpler.",
+                    },
+                    {
+                        q: "State the Fundamental Theorem of Calculus, Part 1",
+                        a: "If f is continuous on [a,b] and F(x) = ∫ₐˣ f(t) dt, then F'(x) = f(x).",
+                    },
+                    {
+                        q: "What is L'Hôpital's Rule used for?",
+                        a: "Evaluating limits of the form 0/0 or ∞/∞ by differentiating numerator and denominator separately.",
+                    },
+                    {
+                        q: "What is the disk method formula?",
+                        a: "V = π ∫[a→b] [f(x)]² dx\n\nUsed when rotating a region around the x-axis.",
+                    },
+                    {
+                        q: "Define a convergent series",
+                        a: "A series Σaₙ converges if the sequence of partial sums Sₙ approaches a finite limit L as n → ∞.",
+                    },
+                    {
+                        q: "State the Ratio Test",
+                        a: "If lim|aₙ₊₁/aₙ| = L < 1, the series converges absolutely. If L > 1, it diverges. If L = 1, inconclusive.",
+                    },
+                    {
+                        q: "What is Taylor series expansion of eˣ?",
+                        a: "eˣ = Σ (xⁿ/n!) = 1 + x + x²/2! + x³/3! + …\n\nConverges for all real x.",
+                    },
+                    {
+                        q: "Explain the Squeeze Theorem",
+                        a: "If g(x) ≤ f(x) ≤ h(x) near a, and lim g(x) = lim h(x) = L, then lim f(x) = L.",
+                    },
+                ],
+                chem: [
+                    {
+                        q: "What is an electrophile?",
+                        a: "An electron-deficient species that accepts an electron pair from a nucleophile. Examples: H⁺, BF₃, carbocations.",
+                    },
+                    {
+                        q: "Difference between SN1 and SN2?",
+                        a: "SN1: Two steps, carbocation intermediate, first-order kinetics.\nSN2: One step, backside attack, second-order kinetics.",
+                    },
+                    {
+                        q: "What is Markovnikov's rule?",
+                        a: "In addition of HX to an alkene, the H adds to the carbon with more H's (less substituted), and X adds to the more substituted carbon.",
+                    },
+                ],
+                ds: [
+                    {
+                        q: "Time complexity of QuickSort (average)?",
+                        a: "O(n log n) on average, O(n²) worst case. Space: O(log n) stack frames.",
+                    },
+                    {
+                        q: "What is a hash collision?",
+                        a: "When two distinct keys map to the same hash table index. Resolved via chaining or open addressing.",
+                    },
+                ],
+                hist: [
+                    {
+                        q: "What does MAIN stand for (WWI causes)?",
+                        a: "Militarism, Alliance systems, Imperialism, Nationalism — the four main causes of World War I.",
+                    },
+                    {
+                        q: "When was the Treaty of Versailles signed?",
+                        a: "June 28, 1919 — exactly five years after the assassination of Archduke Franz Ferdinand.",
+                    },
+                ],
+            };
+
+            let currentDeck = "calc";
+            let cardIndex = 0;
+            let isFlipped = false;
+
+            function selectDeck(el, deck) {
+                document
+                    .querySelectorAll(".deck-chip")
+                    .forEach((c) => c.classList.remove("active"));
+                el.classList.add("active");
+                currentDeck = deck;
+                cardIndex = 0;
+                isFlipped = false;
+                document
+                    .getElementById("flashcard")
+                    .classList.remove("flipped");
+                document.getElementById("ratingBar").style.display = "none";
+                updateCard();
+            }
+
+            function updateCard() {
+                const d = decks[currentDeck];
+                document.getElementById("fcQuestion").textContent =
+                    d[cardIndex].q;
+                document.getElementById("fcAnswer").innerHTML = d[
+                    cardIndex
+                ].a.replace(/\n/g, "<br>");
+                document.getElementById("fcCounter").textContent =
+                    `${cardIndex + 1} / ${d.length}`;
+                isFlipped = false;
+                document
+                    .getElementById("flashcard")
+                    .classList.remove("flipped");
+                document.getElementById("ratingBar").style.display = "none";
+            }
+
+            function flipCard() {
+                isFlipped = !isFlipped;
+                document
+                    .getElementById("flashcard")
+                    .classList.toggle("flipped", isFlipped);
+                document.getElementById("ratingBar").style.display = isFlipped
+                    ? "flex"
+                    : "none";
+            }
+
+            function nextCard() {
+                const d = decks[currentDeck];
+                cardIndex = (cardIndex + 1) % d.length;
+                updateCard();
+            }
+
+            function prevCard() {
+                const d = decks[currentDeck];
+                cardIndex = (cardIndex - 1 + d.length) % d.length;
+                updateCard();
+            }
+
+            function rateCard(r) {
+                const msgs = {
+                    hard: "📌 Marked for review",
+                    ok: "👍 Got it!",
+                    easy: "⚡ Easy — moving on!",
+                };
+                showToast("✦", msgs[r]);
+                nextCard();
+            }
+
+            function openAddCardModal() {
+                document.getElementById("cardModal").classList.add("open");
+            }
+
+            function saveCard() {
+                const q = document.getElementById("newCardQ").value.trim();
+                const a = document.getElementById("newCardA").value.trim();
+                if (!q || !a) return;
+                decks[currentDeck].push({ q, a });
+                closeModal("cardModal");
+                showToast("✦", "Flashcard added!");
+                document.getElementById("newCardQ").value = "";
+                document.getElementById("newCardA").value = "";
+                updateCard();
+            }
+
+            // ── TIMER ──
+            let timerInterval = null;
+            let timerSeconds = 25 * 60;
+            let timerRunning = false;
+            let pomodoroCount = 0;
+            let currentMode = "pomodoro";
+
+            function pad(n) {
+                return String(n).padStart(2, "0");
+            }
+
+            function displayTimer() {
+                const m = Math.floor(timerSeconds / 60);
+                const s = timerSeconds % 60;
+                document.getElementById("timerDisplay").textContent =
+                    `${pad(m)}:${pad(s)}`;
+            }
+
+            function toggleTimer() {
+                if (timerRunning) {
+                    clearInterval(timerInterval);
+                    timerRunning = false;
+                    document.getElementById("playBtn").textContent = "▶";
+                    document
+                        .getElementById("timerDisplay")
+                        .classList.remove("running");
+                } else {
+                    timerRunning = true;
+                    document.getElementById("playBtn").textContent = "⏸";
+                    document
+                        .getElementById("timerDisplay")
+                        .classList.add("running");
+                    timerInterval = setInterval(() => {
+                        timerSeconds--;
+                        displayTimer();
+                        if (timerSeconds <= 0) {
+                            clearInterval(timerInterval);
+                            timerRunning = false;
+                            document.getElementById("playBtn").textContent =
+                                "▶";
+                            document
+                                .getElementById("timerDisplay")
+                                .classList.remove("running");
+                            if (currentMode === "pomodoro") {
+                                pomodoroCount = Math.min(pomodoroCount + 1, 4);
+                                document
+                                    .querySelectorAll(".pomo-dot")
+                                    .forEach((d, i) =>
+                                        d.classList.toggle(
+                                            "filled",
+                                            i < pomodoroCount,
+                                        ),
+                                    );
+                            }
+                            showToast("⏰", "Time's up! Take a break.");
+                        }
+                    }, 1000);
+                }
+            }
+
+            function resetTimer() {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                document.getElementById("playBtn").textContent = "▶";
+                document
+                    .getElementById("timerDisplay")
+                    .classList.remove("running", "break-mode");
+                const dur =
+                    parseInt(document.getElementById("focusDur").value) || 25;
+                timerSeconds = dur * 60;
+                displayTimer();
+            }
+
+            function skipTimer() {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                timerSeconds = 0;
+                displayTimer();
+                showToast("⏭", "Session skipped");
+            }
+
+            function setTimerMode(mode, el, secs) {
+                document
+                    .querySelectorAll(".timer-mode-tab")
+                    .forEach((t) => t.classList.remove("active"));
+                el.classList.add("active");
+                currentMode = mode;
+                clearInterval(timerInterval);
+                timerRunning = false;
+                document.getElementById("playBtn").textContent = "▶";
+                const disp = document.getElementById("timerDisplay");
+                disp.classList.remove("running", "break-mode");
+
+                if (mode === "pomodoro") {
+                    timerSeconds =
+                        (parseInt(document.getElementById("focusDur").value) ||
+                            25) * 60;
+                    document.getElementById("timerSessionLabel").textContent =
+                        "FOCUS SESSION · CALCULUS II";
+                } else if (mode === "short") {
+                    timerSeconds =
+                        (parseInt(document.getElementById("shortDur").value) ||
+                            5) * 60;
+                    disp.classList.add("break-mode");
+                    document.getElementById("timerSessionLabel").textContent =
+                        "SHORT BREAK";
+                } else if (mode === "long") {
+                    timerSeconds =
+                        (parseInt(document.getElementById("longDur").value) ||
+                            15) * 60;
+                    disp.classList.add("break-mode");
+                    document.getElementById("timerSessionLabel").textContent =
+                        "LONG BREAK";
+                } else {
+                    const m =
+                        parseInt(prompt("Custom duration (minutes):")) || 25;
+                    timerSeconds = m * 60;
+                    document.getElementById("timerSessionLabel").textContent =
+                        "CUSTOM FOCUS";
+                }
+                displayTimer();
+            }
+
+            // ── SESSIONS ──
+            function openSessionModal() {
+                document.getElementById("sessionModal").classList.add("open");
+                setTimeout(
+                    () => document.getElementById("sessionName").focus(),
+                    50,
+                );
+            }
+
+            function closeModal(id) {
+                document.getElementById(id).classList.remove("open");
+            }
+
+            function createSession() {
+                const name = document
+                    .getElementById("sessionName")
+                    .value.trim();
+                if (!name) {
+                    showToast("⚠", "Please enter a session name");
+                    return;
+                }
+                const list = document.getElementById("sessionList");
+                const item = document.createElement("div");
+                item.className = "session-item";
+                item.innerHTML = `<div class="session-dot"></div><span class="session-label">${name}</span><span class="session-time">Now</span>`;
+                item.onclick = () => selectSession(item, name, name);
+                list.prepend(item);
+                closeModal("sessionModal");
+                selectSession(item, name, name);
+                showToast("✦", `Session "${name}" created`);
+                document.getElementById("sessionName").value = "";
+                document.getElementById("sessionGoal").value = "";
+            }
+
+            function selectSession(el, name, subject) {
+                document
+                    .querySelectorAll(".session-item")
+                    .forEach((s) => s.classList.remove("active-session"));
+                el.classList.add("active-session");
+                document.getElementById("mainSubtitle").textContent =
+                    `${subject} · Monday, May 18`;
+            }
+
+            function selectColor(el) {
+                document
+                    .querySelectorAll(".color-swatch")
+                    .forEach((s) => s.classList.remove("selected"));
+                el.classList.add("selected");
+            }
+
+            // close modals on backdrop click
+            document.querySelectorAll(".modal-overlay").forEach((o) => {
+                o.addEventListener("click", (e) => {
+                    if (e.target === o) o.classList.remove("open");
+                });
+            });
+
+            // ── CHAT ──
+            const aiResponses = {
+                default: [
+                    "Great question! Let me break that down for you. This topic is fundamental to understanding the broader concepts in your course. I'd recommend starting with the core definition before moving to applications.",
+                    "That's a key concept. Here's a clear explanation: think of it as a structured relationship between the components. Once you grasp the pattern, the problems become much more systematic.",
+                    "I can help with that! Based on your current session, this connects directly to what you've been studying. The key insight is that these concepts build on each other progressively.",
+                    "Excellent! Here's how I'd approach this: first identify what you know, then map out the unknowns. This method — called working backwards from the goal — is especially effective for problem-solving in this subject.",
+                    "Good thinking. This is actually one of the most commonly tested topics. I'd suggest creating a few practice problems using the formula, and then reviewing edge cases where it might not apply directly.",
+                ],
+                flashcards:
+                    "I'll generate flashcards for that topic! Based on the key concepts, here are 5 cards I'd recommend: 1) Core definition, 2) Main formula or rule, 3) A worked example, 4) Common exceptions, 5) Connection to related topics. Want me to add these to your deck?",
+                explain:
+                    "Let me explain this simply: imagine you're building with blocks. Each concept is a block that sits on top of previous ones. The foundation is the basic definition, the middle layer is the formula or method, and the top is the application. Does that framing help?",
+                practice:
+                    "Here are 3 practice problems for you:\n\n1. (Beginner) Apply the core formula to a straightforward case.\n2. (Intermediate) Solve a problem with an extra step of simplification.\n3. (Challenge) A multi-part problem combining two techniques.\n\nWould you like me to walk through any of these?",
+                summarize:
+                    "Here's a concise summary of your notes: The main topic covers the core technique, which is applied when you encounter a specific pattern. Key formula: see your notes. Remember the special cases and the most common mistakes. For exam prep, focus on recognizing when to apply this vs. alternative methods.",
+            };
+
+            function getAIResponse(text) {
+                const t = text.toLowerCase();
+                if (t.includes("flashcard")) return aiResponses.flashcards;
+                if (
+                    t.includes("explain") ||
+                    t.includes("simply") ||
+                    t.includes("what is")
+                )
+                    return aiResponses.explain;
+                if (t.includes("practice") || t.includes("problem"))
+                    return aiResponses.practice;
+                if (t.includes("summar") || t.includes("notes"))
+                    return aiResponses.summarize;
+                const r = aiResponses.default;
+                return r[Math.floor(Math.random() * r.length)];
+            }
+
+            function nowTime() {
+                const d = new Date();
+                return `${d.getHours()}:${pad(d.getMinutes())}`;
+            }
+
+            function appendMsg(role, text) {
+                const msgs = document.getElementById("chatMessages");
+                const div = document.createElement("div");
+                div.className = `msg ${role}`;
+                const initials = role === "ai" ? "✦" : "AS";
+                div.innerHTML = `
+    <div class="msg-avatar ${role}">${initials}</div>
+    <div>
+      <div class="msg-bubble">${text.replace(/\n/g, "<br>")}</div>
+      <div class="msg-time">${nowTime()}</div>
+    </div>`;
+                msgs.appendChild(div);
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+
+            function showTyping() {
+                const msgs = document.getElementById("chatMessages");
+                const div = document.createElement("div");
+                div.className = "msg ai";
+                div.id = "typingMsg";
+                div.innerHTML = `
+    <div class="msg-avatar ai">✦</div>
+    <div>
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+                msgs.appendChild(div);
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+
+            function removeTyping() {
+                const t = document.getElementById("typingMsg");
+                if (t) t.remove();
+            }
+
+            function sendMessage() {
+                const input = document.getElementById("chatInput");
+                const text = input.value.trim();
+                if (!text) return;
+                input.value = "";
+                input.style.height = "auto";
+                appendMsg("user", text);
+                showTyping();
+                setTimeout(
+                    () => {
+                        removeTyping();
+                        appendMsg("ai", getAIResponse(text));
+                    },
+                    900 + Math.random() * 600,
+                );
+            }
+
+            function sendQuick(text) {
+                document.getElementById("chatInput").value = text;
+                sendMessage();
+            }
+
+            function handleChatKey(e) {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            }
+
+            function autoResize(el) {
+                el.style.height = "auto";
+                el.style.height = Math.min(el.scrollHeight, 110) + "px";
+            }
+
+            function clearChat() {
+                const msgs = document.getElementById("chatMessages");
+                msgs.innerHTML = "";
+                appendMsg(
+                    "ai",
+                    "Chat cleared. Ready to help you study! What would you like to work on?",
+                );
+            }
+
+            // ── TOAST ──
+            function showToast(icon, msg) {
+                const t = document.getElementById("toast");
+                document.getElementById("toastIcon").textContent = icon;
+                document.getElementById("toastMsg").textContent = msg;
+                t.classList.add("show");
+                setTimeout(() => t.classList.remove("show"), 2600);
+            }
+
+            // ── TABS ──
+            function switchTab(tab, el) {
+                document
+                    .querySelectorAll(".tab")
+                    .forEach((t) => t.classList.remove("active"));
+                el.classList.add("active");
+            }
+
+            // init
+            displayTimer();
+        </script>
+    </body>
+</html>

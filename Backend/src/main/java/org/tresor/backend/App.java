@@ -9,12 +9,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/study_assistant")
 @CrossOrigin("*")
 
-public class App{
+public class App {
 
     Dotenv dotenv = Dotenv.configure()
             .ignoreIfMissing()
             .load();
 
     String LocalAiBaseUrl = dotenv.get("LOCAL_AI_BASE_URL");
+
+    public static void main(String[] args) {
+        
+
+    }
 
 }
