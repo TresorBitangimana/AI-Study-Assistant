@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 const TIMER_MODES = [
-    { id: "pomodoro", label: "Pomodoro", minutes: 25, tone: "focus" },
+    { id: "timer", label: "Timer", minutes: 25, tone: "focus" },
     { id: "shortBreak", label: "Short Break", minutes: 5, tone: "break" },
     { id: "longBreak", label: "Long Break", minutes: 15, tone: "break" },
     { id: "custom", label: "Custom", minutes: 45, tone: "focus" },
 ];
 
-const POMODORO_TARGET = 4;
+const TIMER_CYCLE_TARGET = 4;
 
 function getDurationSeconds(mode, customMinutes) {
     const modeConfig =
@@ -27,18 +27,13 @@ function formatTime(totalSeconds) {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function FocusTimer({
-    active,
-    sessions = [],
-    activeSessionId,
-    setActiveSessionId,
-}) {
-    const [mode, setMode] = useState("pomodoro");
+function FocusTimer({ active }) {
+    const [mode, setMode] = useState("timer");
     const [isRunning, setIsRunning] = useState(false);
-    const [completedPomodoros, setCompletedPomodoros] = useState(0);
+    const [completedTimerCycles, setCompletedTimerCycles] = useState(0);
     const [customMinutes, setCustomMinutes] = useState(45);
     const [timeLeft, setTimeLeft] = useState(() =>
-        getDurationSeconds("pomodoro", 45),
+        getDurationSeconds("timer", 45),
     );
     const modeConfig = useMemo(
         () => TIMER_MODES.find((item) => item.id === mode) ?? TIMER_MODES[0],
@@ -57,29 +52,27 @@ function FocusTimer({
                     window.clearInterval(timerId);
                     setIsRunning(false);
 
-                    if (mode === "pomodoro") {
+                    if (mode === "timer") {
                         const nextCompleted = Math.min(
-                            completedPomodoros + 1,
-                            POMODORO_TARGET,
+                            completedTimerCycles + 1,
+                            TIMER_CYCLE_TARGET,
                         );
-                        setCompletedPomodoros(nextCompleted);
+                        setCompletedTimerCycles(nextCompleted);
                         const nextMode =
-                            nextCompleted === POMODORO_TARGET
+                            nextCompleted === TIMER_CYCLE_TARGET
                                 ? "longBreak"
                                 : "shortBreak";
                         setMode(nextMode);
-                        setTimeLeft(getDurationSeconds(nextMode, customMinutes));
+                        setTimeLeft(
+                            getDurationSeconds(nextMode, customMinutes),
+                        );
                     } else if (mode === "longBreak") {
-                        setCompletedPomodoros(0);
-                        setMode("pomodoro");
-                        setTimeLeft(
-                            getDurationSeconds("pomodoro", customMinutes),
-                        );
+                        setCompletedTimerCycles(0);
+                        setMode("timer");
+                        setTimeLeft(getDurationSeconds("timer", customMinutes));
                     } else {
-                        setMode("pomodoro");
-                        setTimeLeft(
-                            getDurationSeconds("pomodoro", customMinutes),
-                        );
+                        setMode("timer");
+                        setTimeLeft(getDurationSeconds("timer", customMinutes));
                     }
 
                     return 0;
@@ -90,12 +83,12 @@ function FocusTimer({
         }, 1000);
 
         return () => window.clearInterval(timerId);
-    }, [completedPomodoros, customMinutes, isRunning, mode]);
+    }, [completedTimerCycles, customMinutes, isRunning, mode]);
 
-    const cycleDots = Array.from({ length: POMODORO_TARGET }, (_, index) => (
+    const cycleDots = Array.from({ length: TIMER_CYCLE_TARGET }, (_, index) => (
         <div
             className={`timer-dot ${
-                index < completedPomodoros ? "timer-dot-filled" : ""
+                index < completedTimerCycles ? "timer-dot-filled" : ""
             }`}
             key={index}
         />
@@ -115,25 +108,27 @@ function FocusTimer({
     const handleSkip = () => {
         setIsRunning(false);
 
-        if (mode === "pomodoro") {
+        if (mode === "timer") {
             const nextCompleted = Math.min(
-                completedPomodoros + 1,
-                POMODORO_TARGET,
+                completedTimerCycles + 1,
+                TIMER_CYCLE_TARGET,
             );
-            setCompletedPomodoros(nextCompleted);
+            setCompletedTimerCycles(nextCompleted);
             const nextMode =
-                nextCompleted === POMODORO_TARGET ? "longBreak" : "shortBreak";
+                nextCompleted === TIMER_CYCLE_TARGET
+                    ? "longBreak"
+                    : "shortBreak";
             setMode(nextMode);
             setTimeLeft(getDurationSeconds(nextMode, customMinutes));
             return;
         }
 
         if (mode === "longBreak") {
-            setCompletedPomodoros(0);
+            setCompletedTimerCycles(0);
         }
 
-        setMode("pomodoro");
-        setTimeLeft(getDurationSeconds("pomodoro", customMinutes));
+        setMode("timer");
+        setTimeLeft(getDurationSeconds("timer", customMinutes));
     };
 
     const timerToneClass =
@@ -192,23 +187,8 @@ function FocusTimer({
                         </button>
                     </div>
 
-                    <div className="timer-config-row">
-                        <select
-                            className="field-input-compact"
-                            onChange={(event) =>
-                                setActiveSessionId?.(event.target.value || null)
-                            }
-                            value={activeSessionId ?? ""}
-                        >
-                            <option value="">Select session</option>
-                            {sessions.map((session) => (
-                                <option key={session.id} value={session.id}>
-                                    {session.name}
-                                </option>
-                            ))}
-                        </select>
-
-                        {mode === "custom" ? (
+                    {mode === "custom" ? (
+                        <div className="timer-config-row">
                             <input
                                 className="field-input-compact"
                                 min="1"
@@ -220,14 +200,17 @@ function FocusTimer({
                                     setIsRunning(false);
                                     setCustomMinutes(nextMinutes);
                                     setTimeLeft(
-                                        getDurationSeconds("custom", nextMinutes),
+                                        getDurationSeconds(
+                                            "custom",
+                                            nextMinutes,
+                                        ),
                                     );
                                 }}
                                 type="number"
                                 value={customMinutes}
                             />
-                        ) : null}
-                    </div>
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </section>
