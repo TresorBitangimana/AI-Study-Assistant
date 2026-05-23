@@ -107,7 +107,7 @@ function App() {
                             <div className="mb-6 grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4">
                                 {stats.map((stat) => (
                                     <div
-                                        className="panel-card !px-4 !py-4"
+                                        className="panel-card px-4! py-4!"
                                         key={stat.label}
                                     >
                                         <div className="metric-label">
@@ -116,7 +116,7 @@ function App() {
                                         <div className="metric-value">
                                             {stat.value}
                                             {stat.suffix ? (
-                                                <span className="ml-0.5 text-lg text-[var(--text-faint)]">
+                                                <span className="ml-0.5 text-lg text-[--text-faint]">
                                                     {stat.suffix}
                                                 </span>
                                             ) : null}

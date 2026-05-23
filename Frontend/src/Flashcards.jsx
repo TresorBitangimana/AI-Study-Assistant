@@ -2,8 +2,8 @@ function Flashcards({ active }) {
     return (
         <section className={active ? "block" : "hidden"}>
             <div className="flex flex-col items-center gap-5">
-                <div className="w-full max-w-[580px] [perspective:1200px]">
-                    <div className="relative h-[260px] w-full">
+                <div className="w-full max-w-145 perspective-distant">
+                    <div className="relative h-65 w-full">
                         <div className="flashcard-face flashcard-front">
                             <div className="flashcard-label">Question</div>
                             <div className="flashcard-text">
@@ -20,7 +20,7 @@ function Flashcards({ active }) {
                     <button className="btn-compact" type="button">
                         ← Prev
                     </button>
-                    <span className="min-w-[60px] text-center font-['IBM_Plex_Mono'] text-[13px] text-[var(--text-faint)]">
+                    <span className="min-w-15 text-center font-['IBM_Plex_Mono'] text-[13px] text-[--text-faint]">
                         1 / 3
                     </span>
                     <button className="btn-compact" type="button">
