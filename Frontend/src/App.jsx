@@ -18,25 +18,60 @@ function App() {
     const [activePanel, setActivePanel] = useState("dashboard");
     const [sessions, setSessions] = useState([]);
     const [activeSessionId, setActiveSessionId] = useState(null);
-    const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+    const [sessionModalMode, setSessionModalMode] = useState(null);
+    const [editingSessionId, setEditingSessionId] = useState(null);
     const [sessionDraftName, setSessionDraftName] = useState("");
     const notesSectionRef = useRef(null);
     const nextSessionNumber = sessions.length + 1;
     const fallbackSessionName = `New Session ${nextSessionNumber}`;
+    const editingSession = sessions.find(
+        (session) => session.id === editingSessionId,
+    );
+    const isSessionModalOpen = sessionModalMode !== null;
 
     const openSessionModal = () => {
         setSessionDraftName("");
-        setIsSessionModalOpen(true);
+        setEditingSessionId(null);
+        setSessionModalMode("create");
+    };
+
+    const openRenameSessionModal = (sessionId) => {
+        const session = sessions.find((item) => item.id === sessionId);
+        if (!session) {
+            return;
+        }
+
+        setSessionDraftName(session.name);
+        setEditingSessionId(sessionId);
+        setSessionModalMode("rename");
     };
 
     const closeSessionModal = () => {
         setSessionDraftName("");
-        setIsSessionModalOpen(false);
+        setEditingSessionId(null);
+        setSessionModalMode(null);
     };
 
-    const createSession = (event) => {
+    const saveSession = (event) => {
         event?.preventDefault();
-        const sessionName = sessionDraftName.trim() || fallbackSessionName;
+        const sessionName =
+            sessionDraftName.trim() ||
+            (sessionModalMode === "rename" && editingSession
+                ? editingSession.name
+                : fallbackSessionName);
+
+        if (sessionModalMode === "rename" && editingSessionId) {
+            setSessions((current) =>
+                current.map((session) =>
+                    session.id === editingSessionId
+                        ? { ...session, name: sessionName }
+                        : session,
+                ),
+            );
+            closeSessionModal();
+            return;
+        }
+
         const newSession = {
             id: `session-${Date.now()}`,
             name: sessionName,
@@ -48,6 +83,18 @@ function App() {
         closeSessionModal();
     };
 
+    const deleteSession = (sessionId) => {
+        setSessions((current) => {
+            const remaining = current.filter(
+                (session) => session.id !== sessionId,
+            );
+            if (activeSessionId === sessionId) {
+                setActiveSessionId(remaining[0]?.id ?? null);
+            }
+            return remaining;
+        });
+    };
+
     return (
         <div className="app-shell">
             <div className="app-grid">
@@ -56,6 +103,8 @@ function App() {
                     navigationItems={navigationItems}
                     activePanel={activePanel}
                     onCreateSession={openSessionModal}
+                    onDeleteSession={deleteSession}
+                    onRenameSession={openRenameSessionModal}
                     setActivePanel={setActivePanel}
                     setActiveSessionId={setActiveSessionId}
                     sessions={sessions}
@@ -124,10 +173,35 @@ function App() {
 
                         {isSessionModalOpen ? (
                             <CreateSessionModal
-                                fallbackName={fallbackSessionName}
+                                fallbackName={
+                                    sessionModalMode === "rename" &&
+                                    editingSession
+                                        ? editingSession.name
+                                        : fallbackSessionName
+                                }
                                 onCancel={closeSessionModal}
                                 onChange={setSessionDraftName}
-                                onSubmit={createSession}
+                                onSubmit={saveSession}
+                                submitLabel={
+                                    sessionModalMode === "rename"
+                                        ? "Save Changes"
+                                        : "Create Session"
+                                }
+                                subtitle={
+                                    sessionModalMode === "rename"
+                                        ? "Update the session name without changing the rest of your study setup."
+                                        : "Give this session a label so it is easier to organize your work later."
+                                }
+                                title={
+                                    sessionModalMode === "rename"
+                                        ? "Rename this study session"
+                                        : "Name your study session"
+                                }
+                                toneLabel={
+                                    sessionModalMode === "rename"
+                                        ? "Rename Session"
+                                        : "New Session"
+                                }
                                 value={sessionDraftName}
                             />
                         ) : null}

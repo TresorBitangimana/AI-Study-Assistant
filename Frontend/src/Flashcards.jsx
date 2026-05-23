@@ -1,51 +1,56 @@
+import { useState } from "react";
+
 function Flashcards({ active }) {
+    const [isFlipped, setIsFlipped] = useState(false);
+
     return (
         <section className={active ? "block" : "hidden"}>
-            <div className="flex flex-col items-center gap-5">
-                <div className="w-full max-w-145 perspective-distant">
-                    <div className="relative h-65 w-full">
-                        <div className="flashcard-face flashcard-front">
-                            <div className="flashcard-label">Question</div>
-                            <div className="flashcard-text">
-                                What is the formula for Integration by Parts?
+            <div className="flex flex-col items-center gap-7">
+                <div className="flashcard-shell">
+                    <button
+                        className={`flashcard-stage ${isFlipped ? "flashcard-stage-flipped" : ""}`}
+                        onClick={() => setIsFlipped((current) => !current)}
+                        type="button"
+                    >
+                        <div className="flashcard-inner">
+                            <div className="flashcard-face flashcard-front">
+                                <div className="flashcard-content">
+                                    <div className="flashcard-label">Question</div>
+                                    <div className="flashcard-text">
+                                        What is the formula for Integration by Parts?
+                                    </div>
+                                    <div className="flashcard-hint">
+                                        Click to reveal answer
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flashcard-hint">
-                                Click to reveal answer
+
+                            <div className="flashcard-face flashcard-back">
+                                <div className="flashcard-content">
+                                    <div className="flashcard-label flashcard-label-answer">
+                                        Answer
+                                    </div>
+                                    <div className="flashcard-text flashcard-text-answer">
+                                        ∫u dv = uv - ∫v du
+                                    </div>
+                                    <div className="flashcard-hint">
+                                        Click again to flip back
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </button>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <button className="btn-compact" type="button">
+                <div className="flashcard-controls">
+                    <button className="flashcard-control-button" type="button">
                         ← Prev
                     </button>
-                    <span className="min-w-15 text-center font-['IBM_Plex_Mono'] text-[13px] text-[--text-faint]">
+                    <span className="flashcard-progress">
                         1 / 3
                     </span>
-                    <button className="btn-compact" type="button">
+                    <button className="flashcard-control-button" type="button">
                         Next →
-                    </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2.5">
-                    <button
-                        className="rating-button rating-button-hard"
-                        type="button"
-                    >
-                        Hard
-                    </button>
-                    <button
-                        className="rating-button rating-button-warn"
-                        type="button"
-                    >
-                        Got it
-                    </button>
-                    <button
-                        className="rating-button rating-button-success"
-                        type="button"
-                    >
-                        Easy
                     </button>
                 </div>
             </div>

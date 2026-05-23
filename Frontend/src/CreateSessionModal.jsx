@@ -1,8 +1,14 @@
 function CreateSessionModal({
+    errorMessage = "",
     fallbackName,
     onCancel,
     onChange,
     onSubmit,
+    submitLabel = "Create Session",
+    submitDisabled = false,
+    subtitle = "Give this session a label so it is easier to organize your work later.",
+    title = "Name your study session",
+    toneLabel = "New Session",
     value,
 }) {
     return (
@@ -13,24 +19,24 @@ function CreateSessionModal({
                 className="session-modal-card"
                 role="dialog"
             >
-                <div className="section-label">New Session</div>
+                <div className="section-label">{toneLabel}</div>
                 <h2 className="session-modal-title" id="create-session-title">
-                    Name your study session
+                    {title}
                 </h2>
-                <p className="session-modal-copy">
-                    Give this session a label so it is easier to organize your
-                    work later.
-                </p>
+                <p className="session-modal-copy">{subtitle}</p>
 
                 <form className="session-modal-form" onSubmit={onSubmit}>
                     <input
                         autoFocus
-                        className="field-input"
+                        className={`field-input ${errorMessage ? "field-input-error" : ""}`}
                         onChange={(event) => onChange(event.target.value)}
                         placeholder={fallbackName}
                         type="text"
                         value={value}
                     />
+                    {errorMessage ? (
+                        <div className="field-error-text">{errorMessage}</div>
+                    ) : null}
                     <div className="session-modal-actions">
                         <button
                             className="btn-ghost session-modal-button"
@@ -41,9 +47,10 @@ function CreateSessionModal({
                         </button>
                         <button
                             className="btn-primary session-modal-button"
+                            disabled={submitDisabled}
                             type="submit"
                         >
-                            Create Session
+                            {submitLabel}
                         </button>
                     </div>
                 </form>

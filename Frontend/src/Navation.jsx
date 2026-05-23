@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function NavIcon({ id }) {
     const commonProps = {
@@ -56,32 +56,107 @@ function Navation({
     activeSessionId,
     setActiveSessionId,
     onCreateSession,
+    onDeleteSession,
+    onRenameSession,
 }) {
     const [mobileSessionsOpen, setMobileSessionsOpen] = useState(false);
+    const [openSessionMenuId, setOpenSessionMenuId] = useState(null);
     const hasSessions = sessions.length > 0;
+
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (!openSessionMenuId) {
+                return;
+            }
+
+            const target = event.target;
+            if (
+                target instanceof Element &&
+                target.closest('[data-session-menu-root="true"]')
+            ) {
+                return;
+            }
+
+            setOpenSessionMenuId(null);
+        };
+
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () =>
+            document.removeEventListener("mousedown", handleOutsideClick);
+    }, [openSessionMenuId]);
 
     const renderSessionRow = (session) => {
         const isActive = session.id === activeSessionId;
+        const isMenuOpen = session.id === openSessionMenuId;
 
         return (
-            <button
+            <div
                 key={session.id}
                 className={`session-button ${isActive ? "session-button-active" : ""}`}
-                onClick={() => setActiveSessionId(session.id)}
-                type="button"
+                data-session-menu-root="true"
             >
-                <div
-                    className={`h-[7px] w-[7px] shrink-0 rounded-full ${
-                        isActive ? "bg-[var(--success)]" : "bg-[var(--text-faint)]"
-                    }`}
-                />
-                <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                    {session.name}
-                </span>
-                <span className="font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
-                    {session.time}
-                </span>
-            </button>
+                <button
+                    className="session-row-body"
+                    onClick={() => {
+                        setActiveSessionId(session.id);
+                        setOpenSessionMenuId(null);
+                    }}
+                    type="button"
+                >
+                    <div
+                        className={`h-[7px] w-[7px] shrink-0 rounded-full ${
+                            isActive
+                                ? "bg-[var(--success)]"
+                                : "bg-[var(--text-faint)]"
+                        }`}
+                    />
+                    <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {session.name}
+                    </span>
+                    <span className="font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
+                        {session.time}
+                    </span>
+                </button>
+                <div className="session-row-actions">
+                    <button
+                        aria-label={`Session options for ${session.name}`}
+                        className="session-row-menu"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            setOpenSessionMenuId((current) =>
+                                current === session.id ? null : session.id,
+                            );
+                        }}
+                        type="button"
+                    >
+                        ⋯
+                    </button>
+                    {isMenuOpen ? (
+                        <div className="session-row-menu-panel">
+                            <button
+                                className="session-row-menu-item"
+                                onClick={() => {
+                                    onRenameSession(session.id);
+                                    setOpenSessionMenuId(null);
+                                }}
+                                type="button"
+                            >
+                                Rename
+                            </button>
+                            <button
+                                className="session-row-menu-item session-row-menu-item-danger"
+                                onClick={() => {
+                                    onDeleteSession(session.id);
+                                    setOpenSessionMenuId(null);
+                                }}
+                                type="button"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    ) : null}
+                </div>
+            </div>
         );
     };
 
@@ -159,7 +234,10 @@ function Navation({
 
                 {hasSessions ? (
                     sessions.map((session) => (
-                        <div className="sidebar-mobile-hide lg:flex" key={session.id}>
+                        <div
+                            className="sidebar-mobile-hide lg:flex"
+                            key={session.id}
+                        >
                             {renderSessionRow(session)}
                         </div>
                     ))
@@ -191,13 +269,10 @@ function Navation({
 
             <div className="sidebar-mobile-hide border-t border-[var(--border)] p-2.5">
                 <div className="profile-pill">
-                    <div className="avatar-pill">AS</div>
+                    <div className="avatar-pill">U</div>
                     <div className="min-w-0 flex-1">
                         <div className="text-[12.5px] font-medium text-[var(--text)]">
-                            Alex S.
-                        </div>
-                        <div className="font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
-                            Pro Plan · 14 days
+                            User 101
                         </div>
                     </div>
                     <svg
