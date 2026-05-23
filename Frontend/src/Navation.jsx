@@ -104,16 +104,14 @@ function Navation({
                     type="button"
                 >
                     <div
-                        className={`h-[7px] w-[7px] shrink-0 rounded-full ${
-                            isActive
-                                ? "bg-[var(--success)]"
-                                : "bg-[var(--text-faint)]"
+                        className={`h-1.75 w-1.75 shrink-0 rounded-full ${
+                            isActive ? "bg-(--success)" : "bg-(--text-faint)"
                         }`}
                     />
                     <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                         {session.name}
                     </span>
-                    <span className="font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
+                    <span className="font-['IBM_Plex_Mono'] text-[10px] text-(--text-faint)">
                         {session.time}
                     </span>
                 </button>
@@ -162,10 +160,10 @@ function Navation({
 
     return (
         <aside className="sidebar-shell">
-            <div className="flex items-center justify-center gap-2.5 border-b border-[var(--border)] px-2 py-5 lg:justify-start lg:px-[18px] lg:pb-4 lg:pt-5">
+            <div className="flex items-center justify-center gap-2.5 border-b border-(--border) px-2 py-5 lg:justify-start lg:px-4.5 lg:pb-4 lg:pt-5">
                 <div className="brand-chip">S</div>
                 <div className="sidebar-mobile-hide">
-                    <span className="font-['Syne'] text-base font-bold tracking-[-0.3px] text-[var(--text)]">
+                    <span className="font-['Syne'] text-base font-bold tracking-[-0.3px] text-(--text)">
                         StudyAI
                     </span>
                 </div>
@@ -255,7 +253,7 @@ function Navation({
             >
                 <svg
                     aria-hidden="true"
-                    className="h-[14px] w-[14px]"
+                    className="h-3.5 w-3.5"
                     viewBox="0 0 14 14"
                     fill="none"
                     stroke="currentColor"
@@ -267,17 +265,17 @@ function Navation({
                 New Session
             </button>
 
-            <div className="sidebar-mobile-hide border-t border-[var(--border)] p-2.5">
+            <div className="sidebar-mobile-hide border-t border-(--border) p-2.5">
                 <div className="profile-pill">
                     <div className="avatar-pill">U</div>
                     <div className="min-w-0 flex-1">
-                        <div className="text-[12.5px] font-medium text-[var(--text)]">
+                        <div className="text-[12.5px] font-medium text-(--text)">
                             User 101
                         </div>
                     </div>
                     <svg
                         aria-hidden="true"
-                        className="h-[14px] w-[14px] shrink-0 text-[var(--text-faint)]"
+                        className="h-3.5 w-3.5 shrink-0 text-(--text-faint)"
                         viewBox="0 0 14 14"
                         fill="currentColor"
                     >
