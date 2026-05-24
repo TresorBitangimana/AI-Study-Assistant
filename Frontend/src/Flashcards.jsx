@@ -15,9 +15,9 @@ function Flashcards({ active }) {
                         <div className="flashcard-inner">
                             <div className="flashcard-face flashcard-front">
                                 <div className="flashcard-content">
-                                    <div className="flashcard-label">Question</div>
                                     <div className="flashcard-text">
-                                        What is the formula for Integration by Parts?
+                                        What is the formula for Integration by
+                                        Parts?
                                     </div>
                                     <div className="flashcard-hint">
                                         Click to reveal answer
@@ -33,9 +33,6 @@ function Flashcards({ active }) {
                                     <div className="flashcard-text flashcard-text-answer">
                                         ∫u dv = uv - ∫v du
                                     </div>
-                                    <div className="flashcard-hint">
-                                        Click again to flip back
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -46,9 +43,7 @@ function Flashcards({ active }) {
                     <button className="flashcard-control-button" type="button">
                         ← Prev
                     </button>
-                    <span className="flashcard-progress">
-                        1 / 3
-                    </span>
+                    <span className="flashcard-progress">1 / 3</span>
                     <button className="flashcard-control-button" type="button">
                         Next →
                     </button>

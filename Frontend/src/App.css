@@ -509,7 +509,7 @@
     }
 
     .flashcard-stage {
-        @apply h-[320px] w-full cursor-pointer p-0 text-left;
+        @apply h-[400px] w-full cursor-pointer p-0 text-left;
         perspective: 1200px;
     }
 
@@ -558,7 +558,9 @@
     }
 
     .flashcard-text {
-        @apply font-['Syne'] text-[24px] font-semibold leading-[1.35] sm:text-[29px];
+        @apply text-[24px] leading-[1.35] sm:text-[29px];
+        font-family: "Times New Roman", Times, serif;
+        font-weight: 700;
         color: var(--text);
     }
 
@@ -567,7 +569,7 @@
     }
 
     .flashcard-hint {
-        @apply mt-5 font-['IBM_Plex_Mono'] text-[13px];
+        @apply mt-5 font-['IBM_Plex_Mono'] text-[13px] text-[#424d6d00];
         color: var(--text-faint);
     }
 
