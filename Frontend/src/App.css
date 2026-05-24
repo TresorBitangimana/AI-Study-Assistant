@@ -318,8 +318,13 @@
         @apply min-w-[132px];
     }
 
+    .panel-card-file-upload {
+        @apply rounded-xl border px-5 py-[18px] py-5;
+        border-color: var(--border);
+        background: var(--panel);
+    }
     .panel-card {
-        @apply rounded-xl border px-5 py-[18px];
+        @apply rounded-xl border px-5 py-[18px] py-5 items-center flex justify-center cursor-pointer;
         border-color: var(--border);
         background: var(--panel);
     }
@@ -703,14 +708,22 @@
         @apply flex min-h-[240px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-8 text-center transition;
         border-color: var(--border);
         background:
-            radial-gradient(circle at top, rgba(59, 130, 246, 0.08), transparent 44%),
+            radial-gradient(
+                circle at top,
+                rgba(59, 130, 246, 0.08),
+                transparent 44%
+            ),
             var(--panel-soft);
     }
 
     .document-upload-dropzone:hover {
         border-color: rgba(59, 130, 246, 0.3);
         background:
-            radial-gradient(circle at top, rgba(59, 130, 246, 0.12), transparent 44%),
+            radial-gradient(
+                circle at top,
+                rgba(59, 130, 246, 0.12),
+                transparent 44%
+            ),
             var(--panel-soft);
     }
 
@@ -734,9 +747,15 @@
     }
 
     .document-upload-list {
-        @apply rounded-2xl border p-4;
+        @apply max-h-[240px] overflow-y-auto rounded-2xl border p-4;
         border-color: var(--border);
         background: var(--panel-soft);
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .document-upload-list::-webkit-scrollbar {
+        display: none;
     }
 
     .document-upload-item {

@@ -103,14 +103,16 @@ function App() {
 
     const handleDocumentUpload = (event) => {
         const files = Array.from(event.target.files ?? []);
-        setUploadedDocuments(
-            files.map((file) => ({
+        setUploadedDocuments((current) => [
+            ...current,
+            ...files.map((file) => ({
                 id: `${file.name}-${file.lastModified}`,
                 name: file.name,
                 size: `${(file.size / 1024).toFixed(1)} KB`,
                 type: file.type === "application/pdf" ? "PDF" : "Text Document",
             })),
-        );
+        ]);
+        event.target.value = "";
     };
 
     return (
@@ -193,7 +195,7 @@ function App() {
                             {activeTab === "Overview" ? (
                                 <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4">
                                     {/* add file option  */}
-                                    <div className="panel-card lg:col-span-2">
+                                    <div className="panel-card-file-upload lg:col-span-2">
                                         <div className="dashboard-card-label">
                                             Document Uploads
                                         </div>
@@ -268,16 +270,18 @@ function App() {
                                     </div>
 
                                     {/* User menu options */}
-                                    <div className="panel-card py-5">
+                                    <div className="panel-card">
                                         Create Flashcards
                                     </div>
-                                    <div className="panel-card py-5">
+                                    <div className="panel-card">
                                         Generate Quiz
                                     </div>
-                                    <div className="panel-card py-5">
+                                    <div className="panel-card">
                                         Chat with AI
                                     </div>
-                                    <div className="panel-card py-5"></div>
+                                    <div className="panel-card">
+                                        Expain like I'm 5
+                                    </div>
                                 </div>
                             ) : null}
 
