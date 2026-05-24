@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import Chart from "./Chart";
 import CreateSessionModal from "./CreateSessionModal";
+import Dashboard from "./Dashboard";
 import Flashcards from "./Flashcards";
 import FocusTimer from "./FocusTimer";
 import Notes from "./Notes";
@@ -15,6 +16,7 @@ const navigationItems = [
 ];
 
 const dashboardTabs = ["Overview", "Progress", "Resources"];
+const normalizeSessionName = (value) => value.trim().toLowerCase();
 
 function App() {
     const [activePanel, setActivePanel] = useState("dashboard");
@@ -34,6 +36,21 @@ function App() {
     const isSessionModalOpen = sessionModalMode !== null;
     const activeSession =
         sessions.find((session) => session.id === activeSessionId) ?? null;
+    const proposedSessionName =
+        sessionDraftName.trim() ||
+        (sessionModalMode === "rename" && editingSession
+            ? editingSession.name
+            : fallbackSessionName);
+    const hasDuplicateSessionName = sessions.some((session) => {
+        if (session.id === editingSessionId) {
+            return false;
+        }
+
+        return (
+            normalizeSessionName(session.name) ===
+            normalizeSessionName(proposedSessionName)
+        );
+    });
 
     const openSessionModal = () => {
         setSessionDraftName("");
@@ -60,11 +77,11 @@ function App() {
 
     const saveSession = (event) => {
         event?.preventDefault();
-        const sessionName =
-            sessionDraftName.trim() ||
-            (sessionModalMode === "rename" && editingSession
-                ? editingSession.name
-                : fallbackSessionName);
+        const sessionName = proposedSessionName;
+
+        if (hasDuplicateSessionName) {
+            return;
+        }
 
         if (sessionModalMode === "rename" && editingSessionId) {
             setSessions((current) =>
@@ -86,6 +103,8 @@ function App() {
 
         setSessions((current) => [newSession, ...current]);
         setActiveSessionId(newSession.id);
+        setActivePanel("dashboard");
+        setActiveTab("Overview");
         closeSessionModal();
     };
 
@@ -166,168 +185,17 @@ function App() {
                         </div>
                     </div>
 
-                    {activePanel === "dashboard" ? (
-                        <div className="tabs-row">
-                            <div className="tabs-group">
-                                {activeSession ? (
-                                    <div className="tab-button tab-session-indicator">
-                                        {activeSession.name}
-                                    </div>
-                                ) : null}
-                                {dashboardTabs.map((tab) => (
-                                    <button
-                                        key={tab}
-                                        className={`tab-button ${
-                                            activeTab === tab
-                                                ? "tab-button-active"
-                                                : ""
-                                        }`}
-                                        onClick={() => setActiveTab(tab)}
-                                        type="button"
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    ) : null}
-
                     <div className="content-scroll">
-                        <section
-                            className={
-                                activePanel === "dashboard" ? "block" : "hidden"
-                            }
-                        >
-                            {activeTab === "Overview" ? (
-                                <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4">
-                                    {/* add file option  */}
-                                    <div className="panel-card-file-upload lg:col-span-2">
-                                        <div className="dashboard-card-label">
-                                            Document Uploads
-                                        </div>
-                                        <div className="dashboard-card-value">
-                                            Study Materials
-                                        </div>
-                                        <div className="document-upload-shell">
-                                            <label
-                                                className="document-upload-dropzone"
-                                                htmlFor="resource-upload"
-                                            >
-                                                <input
-                                                    accept=".txt,.md,.pdf,text/plain,application/pdf"
-                                                    className="document-upload-input"
-                                                    id="resource-upload"
-                                                    multiple
-                                                    onChange={
-                                                        handleDocumentUpload
-                                                    }
-                                                    type="file"
-                                                />
-                                                <div className="document-upload-icon">
-                                                    ↑
-                                                </div>
-                                                <div className="document-upload-title">
-                                                    Upload text or PDF files
-                                                </div>
-                                                <div className="document-upload-copy">
-                                                    Drag and drop is optional.
-                                                    Click here to choose study
-                                                    documents.
-                                                </div>
-                                            </label>
-
-                                            <div className="document-upload-list">
-                                                {uploadedDocuments.length >
-                                                0 ? (
-                                                    uploadedDocuments.map(
-                                                        (document) => (
-                                                            <div
-                                                                className="document-upload-item"
-                                                                key={
-                                                                    document.id
-                                                                }
-                                                            >
-                                                                <div className="document-upload-item-row">
-                                                                    <div>
-                                                                        <div className="document-upload-name">
-                                                                            {
-                                                                                document.name
-                                                                            }
-                                                                        </div>
-                                                                        <div className="document-upload-meta">
-                                                                            {
-                                                                                document.type
-                                                                            }{" "}
-                                                                            ·{" "}
-                                                                            {
-                                                                                document.size
-                                                                            }
-                                                                        </div>
-                                                                    </div>
-                                                                    <button
-                                                                        className="document-upload-remove"
-                                                                        onClick={() =>
-                                                                            removeUploadedDocument(
-                                                                                document.id,
-                                                                            )
-                                                                        }
-                                                                        type="button"
-                                                                    >
-                                                                        Remove
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        ),
-                                                    )
-                                                ) : (
-                                                    <div className="document-upload-empty">
-                                                        No files uploaded yet.
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* User menu options */}
-                                    <div className="panel-card">
-                                        Create Flashcards
-                                    </div>
-                                    <div className="panel-card">
-                                        Generate Quiz
-                                    </div>
-                                    <div className="panel-card">
-                                        Chat with AI
-                                    </div>
-                                    <div className="panel-card">
-                                        Expain like I'm 5
-                                    </div>
-                                </div>
-                            ) : null}
-
-                            {activeTab === "Progress" ? (
-                                <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.4fr_1fr]">
-                                    <div className="panel-card">
-                                        <div className="dashboard-card-label">
-                                            Progress Snapshot
-                                        </div>
-                                        <div className="dashboard-card-value">
-                                            <h1>Hello World!!!</h1>
-                                        </div>
-                                    </div>
-                                    <div className="panel-card">
-                                        <div className="dashboard-card-label">
-                                            Current Status
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : null}
-
-                            {activeTab === "Resources" ? (
-                                <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
-                                    <div className="panel-card lg:col-span-3 py-15"></div>
-                                </div>
-                            ) : null}
-                        </section>
+                        <Dashboard
+                            active={activePanel === "dashboard"}
+                            activeSession={activeSession}
+                            activeTab={activeTab}
+                            dashboardTabs={dashboardTabs}
+                            handleDocumentUpload={handleDocumentUpload}
+                            removeUploadedDocument={removeUploadedDocument}
+                            setActiveTab={setActiveTab}
+                            uploadedDocuments={uploadedDocuments}
+                        />
 
                         <Notes
                             active={activePanel === "notes"}
@@ -340,6 +208,11 @@ function App() {
 
                         {isSessionModalOpen ? (
                             <CreateSessionModal
+                                errorMessage={
+                                    hasDuplicateSessionName
+                                        ? "A session with this name already exists."
+                                        : ""
+                                }
                                 fallbackName={
                                     sessionModalMode === "rename" &&
                                     editingSession
@@ -349,6 +222,7 @@ function App() {
                                 onCancel={closeSessionModal}
                                 onChange={setSessionDraftName}
                                 onSubmit={saveSession}
+                                submitDisabled={hasDuplicateSessionName}
                                 submitLabel={
                                     sessionModalMode === "rename"
                                         ? "Save Changes"
