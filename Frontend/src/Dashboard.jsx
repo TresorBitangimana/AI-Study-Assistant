@@ -78,36 +78,44 @@ function Dashboard({
 
                                     <div className="document-upload-list">
                                         {uploadedDocuments.length > 0 ? (
-                                            uploadedDocuments.map((document) => (
-                                                <div
-                                                    className="document-upload-item"
-                                                    key={document.id}
-                                                >
-                                                    <div className="document-upload-item-row">
-                                                        <div>
-                                                            <div className="document-upload-name">
-                                                                {document.name}
+                                            uploadedDocuments.map(
+                                                (document) => (
+                                                    <div
+                                                        className="document-upload-item"
+                                                        key={document.id}
+                                                    >
+                                                        <div className="document-upload-item-row">
+                                                            <div>
+                                                                <div className="document-upload-name">
+                                                                    {
+                                                                        document.name
+                                                                    }
+                                                                </div>
+                                                                <div className="document-upload-meta">
+                                                                    {
+                                                                        document.type
+                                                                    }{" "}
+                                                                    ·{" "}
+                                                                    {
+                                                                        document.size
+                                                                    }
+                                                                </div>
                                                             </div>
-                                                            <div className="document-upload-meta">
-                                                                {document.type}{" "}
-                                                                ·{" "}
-                                                                {document.size}
-                                                            </div>
+                                                            <button
+                                                                className="document-upload-remove"
+                                                                onClick={() =>
+                                                                    removeUploadedDocument(
+                                                                        document.id,
+                                                                    )
+                                                                }
+                                                                type="button"
+                                                            >
+                                                                Remove
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            className="document-upload-remove"
-                                                            onClick={() =>
-                                                                removeUploadedDocument(
-                                                                    document.id,
-                                                                )
-                                                            }
-                                                            type="button"
-                                                        >
-                                                            Remove
-                                                        </button>
                                                     </div>
-                                                </div>
-                                            ))
+                                                ),
+                                            )
                                         ) : (
                                             <div className="document-upload-empty">
                                                 No files uploaded yet.
@@ -150,7 +158,6 @@ function Dashboard({
                         </div>
                     ) : (
                         <div className="dashboard-instructions">
-                            <div className="section-label">Overview</div>
                             <h2 className="dashboard-instructions-title">
                                 Start by creating a new study session
                             </h2>

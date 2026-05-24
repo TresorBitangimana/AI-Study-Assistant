@@ -6,6 +6,7 @@ import Flashcards from "./Flashcards";
 import FocusTimer from "./FocusTimer";
 import Notes from "./Notes";
 import Navation from "./Navation";
+import Sessions from "./Sessions";
 import "./App.css";
 
 const navigationItems = [
@@ -31,24 +32,6 @@ function createSessionId() {
     }
 
     return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function SessionPanel({ active, session }) {
-    if (!active || !session) {
-        return null;
-    }
-
-    return (
-        <section className="block">
-            <div className="session-content-shell">
-                <div className="session-content-meta">
-                    <span className="section-label">Session Type</span>
-                    <span className="session-content-type">{session.type}</span>
-                </div>
-                <div className="session-content-stage" />
-            </div>
-        </section>
-    );
 }
 
 function App() {
@@ -259,7 +242,7 @@ function App() {
 
                         <FocusTimer active={activePanel === "timer"} />
 
-                        <SessionPanel
+                        <Sessions
                             active={activePanel === "session"}
                             session={activeSession}
                         />

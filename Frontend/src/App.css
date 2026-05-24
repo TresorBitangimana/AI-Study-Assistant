@@ -335,7 +335,7 @@
     }
 
     .dashboard-instructions {
-        @apply mt-5 rounded-2xl border px-6 py-6 sm:px-7 sm:py-7;
+        @apply mt-5 min-h-[calc(100vh-220px)] rounded-2xl border px-6 py-6 sm:px-7 sm:py-7;
         border-color: var(--border);
         background:
             radial-gradient(
@@ -356,6 +356,9 @@
         @apply mt-3 max-w-3xl text-sm leading-[1.8];
         font-family: sans-serif;
         color: var(--text-dim);
+    }
+    .dashboard-instructions-actions {
+        @apply mt-5;
     }
 
     .dashboard-session-grid {
@@ -959,7 +962,7 @@
     }
 
     .session-content-shell {
-        @apply flex flex-col gap-4;
+        @apply flex h-full min-h-0 flex-col gap-4;
     }
 
     .session-content-meta {
@@ -974,7 +977,7 @@
     }
 
     .session-content-stage {
-        @apply min-h-[420px] rounded-2xl;
-        background: #000;
+        @apply min-h-0 flex-1 rounded-2xl;
+        background: var(--panel-solid);
     }
 }
