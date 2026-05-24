@@ -55,10 +55,10 @@ function Navation({
     setActivePanel,
     sessions,
     activeSessionId,
-    setActiveSessionId,
     onCreateSession,
     onDeleteSession,
     onRenameSession,
+    onSelectSession,
 }) {
     const [mobileSessionsOpen, setMobileSessionsOpen] = useState(false);
     const [openSessionMenuId, setOpenSessionMenuId] = useState(null);
@@ -99,7 +99,8 @@ function Navation({
                 <button
                     className="session-row-body"
                     onClick={() => {
-                        setActiveSessionId(session.id);
+                        onSelectSession(session.id);
+                        setMobileSessionsOpen(false);
                         setOpenSessionMenuId(null);
                     }}
                     type="button"

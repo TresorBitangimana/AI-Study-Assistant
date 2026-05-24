@@ -322,6 +322,61 @@
         border-color: var(--border);
         background: var(--panel);
     }
+
+    .dashboard-session-setup {
+        @apply rounded-xl border px-5 py-5;
+        border-color: var(--border);
+        background: var(--panel);
+    }
+
+    .dashboard-session-copy {
+        @apply mt-2 text-[13px] leading-[1.7];
+        color: var(--text-dim);
+    }
+
+    .dashboard-session-grid {
+        @apply mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2;
+    }
+
+    .session-type-card {
+        @apply rounded-xl border p-4 text-left transition flex justify-center items-center cursor-pointer;
+        border-color: var(--border);
+        background:
+            linear-gradient(
+                180deg,
+                rgba(26, 37, 64, 0.75),
+                rgba(17, 24, 40, 0.95)
+            ),
+            var(--panel);
+    }
+
+    .session-type-card:hover:not(:disabled) {
+        border-color: var(--accent-border);
+        background:
+            linear-gradient(
+                180deg,
+                rgba(59, 130, 246, 0.14),
+                rgba(17, 24, 40, 0.95)
+            ),
+            var(--panel);
+        transform: translateY(-1px);
+    }
+
+    .session-type-card:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+    }
+
+    .session-type-card-label {
+        @apply font-['IBM_Plex_Mono'] text-[10px] uppercase tracking-[1.2px];
+        color: var(--text-faint);
+    }
+
+    .session-type-card-title {
+        @apply mt-2 font-['Syne'] text-[18px] font-semibold tracking-[-0.3px];
+        color: var(--text);
+    }
+
     .panel-card {
         @apply rounded-xl border px-5 py-[18px] py-5 items-center flex justify-center cursor-pointer;
         border-color: var(--border);
@@ -877,5 +932,25 @@
 
     .send-button:hover {
         background: var(--accent-dark);
+    }
+
+    .session-content-shell {
+        @apply flex flex-col gap-4;
+    }
+
+    .session-content-meta {
+        @apply flex items-center gap-3;
+    }
+
+    .session-content-type {
+        @apply inline-flex rounded-full border px-4 py-2 font-['IBM_Plex_Mono'] text-xs uppercase tracking-[1.5px];
+        border-color: var(--accent-border);
+        color: var(--accent);
+        background: var(--accent-glow);
+    }
+
+    .session-content-stage {
+        @apply min-h-[420px] rounded-2xl;
+        background: #000;
     }
 }

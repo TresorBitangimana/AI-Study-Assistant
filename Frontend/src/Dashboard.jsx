@@ -4,10 +4,15 @@ function Dashboard({
     activeTab,
     dashboardTabs,
     handleDocumentUpload,
+    onSelectSessionType,
+    pendingSessionName,
     removeUploadedDocument,
+    sessionTypeOptions,
     setActiveTab,
     uploadedDocuments,
 }) {
+    const hasPendingSession = pendingSessionName.trim().length > 0;
+
     return (
         <>
             {active ? (
@@ -38,9 +43,6 @@ function Dashboard({
                 {activeTab === "Overview" ? (
                     <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4 mt-5">
                         <div className="panel-card-file-upload lg:col-span-2">
-                            <div className="dashboard-card-label">
-                                Document Uploads
-                            </div>
                             <div className="dashboard-card-value">
                                 Study Materials
                             </div>
@@ -109,11 +111,35 @@ function Dashboard({
                             </div>
                         </div>
 
-                        <div className="panel-card">Create Flashcards</div>
-                        <div className="panel-card">Generate Quiz</div>
-                        <div className="panel-card">Chat with AI</div>
-                        <div className="panel-card">
-                            Explain like I&apos;m 5
+                        <div className="dashboard-session-setup lg:col-span-2">
+                            <div className="dashboard-card-value">
+                                {hasPendingSession
+                                    ? pendingSessionName
+                                    : "Choose a workflow"}
+                            </div>
+                            <div className="dashboard-session-copy">
+                                {hasPendingSession
+                                    ? "Select one of the workflows below to create the session and open it inside the app."
+                                    : "Name a new session first. The session will only be created after you choose a workflow."}
+                            </div>
+
+                            <div className="dashboard-session-grid">
+                                {sessionTypeOptions.map((option) => (
+                                    <button
+                                        key={option.id}
+                                        className="session-type-card"
+                                        disabled={!hasPendingSession}
+                                        onClick={() =>
+                                            onSelectSessionType(option)
+                                        }
+                                        type="button"
+                                    >
+                                        <div className="session-type-card-title">
+                                            {option.label}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 ) : null}

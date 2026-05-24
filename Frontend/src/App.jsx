@@ -16,18 +16,53 @@ const navigationItems = [
 ];
 
 const dashboardTabs = ["Overview", "Progress", "Resources"];
+const sessionTypeOptions = [
+    { id: "flashcards", label: "Create Flashcards" },
+    { id: "quiz", label: "Generate Quiz" },
+    { id: "chat", label: "Chat with AI" },
+    { id: "explain", label: "Explain like I'm 5" },
+];
+
 const normalizeSessionName = (value) => value.trim().toLowerCase();
 
+function createSessionId() {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+
+    return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function SessionPanel({ active, session }) {
+    if (!active || !session) {
+        return null;
+    }
+
+    return (
+        <section className="block">
+            <div className="session-content-shell">
+                <div className="session-content-meta">
+                    <span className="section-label">Session Type</span>
+                    <span className="session-content-type">{session.type}</span>
+                </div>
+                <div className="session-content-stage" />
+            </div>
+        </section>
+    );
+}
+
 function App() {
+    const notesSectionRef = useRef(null);
     const [activePanel, setActivePanel] = useState("dashboard");
     const [activeTab, setActiveTab] = useState("Overview");
     const [sessions, setSessions] = useState([]);
     const [activeSessionId, setActiveSessionId] = useState(null);
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
+    const [pendingSessionName, setPendingSessionName] = useState("");
     const [sessionModalMode, setSessionModalMode] = useState(null);
     const [editingSessionId, setEditingSessionId] = useState(null);
     const [sessionDraftName, setSessionDraftName] = useState("");
-    const notesSectionRef = useRef(null);
+
     const nextSessionNumber = sessions.length + 1;
     const fallbackSessionName = `New Session ${nextSessionNumber}`;
     const editingSession = sessions.find(
@@ -95,16 +130,28 @@ function App() {
             return;
         }
 
+        setPendingSessionName(sessionName);
+        setActivePanel("dashboard");
+        setActiveTab("Overview");
+        closeSessionModal();
+    };
+
+    const createSessionFromType = (sessionType) => {
+        if (!pendingSessionName) {
+            return;
+        }
+
         const newSession = {
-            id: `session-${Date.now()}`,
-            name: sessionName,
+            id: createSessionId(),
+            name: pendingSessionName,
+            type: sessionType.label,
+            time: "Just now",
         };
 
         setSessions((current) => [newSession, ...current]);
         setActiveSessionId(newSession.id);
-        setActivePanel("dashboard");
-        setActiveTab("Overview");
-        closeSessionModal();
+        setActivePanel("session");
+        setPendingSessionName("");
     };
 
     const deleteSession = (sessionId) => {
@@ -139,30 +186,33 @@ function App() {
         );
     };
 
+    const headerTitle =
+        activePanel === "session" && activeSession
+            ? activeSession.name
+            : navigationItems.find((item) => item.id === activePanel)?.label ??
+              "Dashboard";
+
     return (
         <div className="app-shell">
             <div className="app-grid">
                 <Navation
+                    activePanel={activePanel}
                     activeSessionId={activeSessionId}
                     navigationItems={navigationItems}
-                    activePanel={activePanel}
                     onCreateSession={openSessionModal}
                     onDeleteSession={deleteSession}
                     onRenameSession={openRenameSessionModal}
+                    onSelectSession={(sessionId) => {
+                        setActiveSessionId(sessionId);
+                        setActivePanel("session");
+                    }}
                     setActivePanel={setActivePanel}
-                    setActiveSessionId={setActiveSessionId}
                     sessions={sessions}
                 />
 
                 <main className="app-main">
                     <div className="app-header">
-                        <div className="app-title">
-                            {
-                                navigationItems.find(
-                                    (item) => item.id === activePanel,
-                                )?.label
-                            }
-                        </div>
+                        <div className="app-title">{headerTitle}</div>
                         <div className="flex flex-wrap items-center gap-2.5">
                             <button
                                 className="btn-ghost"
@@ -191,7 +241,10 @@ function App() {
                             activeTab={activeTab}
                             dashboardTabs={dashboardTabs}
                             handleDocumentUpload={handleDocumentUpload}
+                            onSelectSessionType={createSessionFromType}
+                            pendingSessionName={pendingSessionName}
                             removeUploadedDocument={removeUploadedDocument}
+                            sessionTypeOptions={sessionTypeOptions}
                             setActiveTab={setActiveTab}
                             uploadedDocuments={uploadedDocuments}
                         />
@@ -204,6 +257,11 @@ function App() {
                         <Flashcards active={activePanel === "flashcards"} />
 
                         <FocusTimer active={activePanel === "timer"} />
+
+                        <SessionPanel
+                            active={activePanel === "session"}
+                            session={activeSession}
+                        />
 
                         {isSessionModalOpen ? (
                             <CreateSessionModal
@@ -225,12 +283,12 @@ function App() {
                                 submitLabel={
                                     sessionModalMode === "rename"
                                         ? "Save Changes"
-                                        : "Create Session"
+                                        : "Continue"
                                 }
                                 subtitle={
                                     sessionModalMode === "rename"
                                         ? "Update the session name without changing the rest of your study setup."
-                                        : "Give this session a label so it is easier to organize your work later."
+                                        : "Name the session first, then choose the study workflow from the dashboard."
                                 }
                                 title={
                                     sessionModalMode === "rename"
@@ -243,7 +301,6 @@ function App() {
                                         : "New Session"
                                 }
                                 value={sessionDraftName}
-                                type={sessionType === ""}
                             />
                         ) : null}
                     </div>
