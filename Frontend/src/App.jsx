@@ -222,6 +222,12 @@ function App() {
                             active={activePanel === "dashboard"}
                             activeSession={activeSession}
                             activeTab={activeTab}
+                            onCancelPendingSession={() => {
+                                setPendingSessionName("");
+                                setUploadedDocuments([]);
+                                setActivePanel("dashboard");
+                                setActiveTab("Overview");
+                            }}
                             dashboardTabs={dashboardTabs}
                             handleDocumentUpload={handleDocumentUpload}
                             onCreateSession={openSessionModal}

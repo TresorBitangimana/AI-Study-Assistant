@@ -47,13 +47,7 @@
 
     .app-grid {
         @apply grid min-h-screen grid-cols-[72px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)];
-        background:
-            radial-gradient(
-                circle at top center,
-                rgba(59, 130, 246, 0.12),
-                transparent 32%
-            ),
-            linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 65%);
+        background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 65%);
     }
 
     .sidebar-shell {
@@ -318,7 +312,7 @@
     }
 
     .panel-card-file-upload {
-        @apply rounded-xl border px-5 py-[18px] py-5;
+        @apply relative rounded-xl border px-5 py-[18px] py-5;
         border-color: var(--border);
         background: var(--panel);
     }
@@ -332,6 +326,14 @@
     .dashboard-session-copy {
         @apply mt-2 text-[13px] leading-[1.7];
         color: var(--text-dim);
+    }
+
+    .dashboard-setup-shell {
+        @apply mt-5;
+    }
+
+    .dashboard-setup-card-actions {
+        @apply absolute right-5 top-5 z-10;
     }
 
     .dashboard-instructions {
