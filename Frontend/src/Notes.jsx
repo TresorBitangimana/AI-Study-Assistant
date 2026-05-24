@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from "react";
 
 const createEmptyNote = () => ({
     id: `note-${Date.now()}`,
@@ -254,9 +260,6 @@ function Notes({ active }, ref) {
                                 {tool}
                             </button>
                         ))}
-                        <button className="btn-toolbar-accent" type="button">
-                            ✦ Ask AI
-                        </button>
                     </div>
                     <div className="editor-content">
                         <input

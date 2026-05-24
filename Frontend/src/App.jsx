@@ -21,6 +21,7 @@ function App() {
     const [activeTab, setActiveTab] = useState("Overview");
     const [sessions, setSessions] = useState([]);
     const [activeSessionId, setActiveSessionId] = useState(null);
+    const [uploadedDocuments, setUploadedDocuments] = useState([]);
     const [sessionModalMode, setSessionModalMode] = useState(null);
     const [editingSessionId, setEditingSessionId] = useState(null);
     const [sessionDraftName, setSessionDraftName] = useState("");
@@ -98,6 +99,18 @@ function App() {
             }
             return remaining;
         });
+    };
+
+    const handleDocumentUpload = (event) => {
+        const files = Array.from(event.target.files ?? []);
+        setUploadedDocuments(
+            files.map((file) => ({
+                id: `${file.name}-${file.lastModified}`,
+                name: file.name,
+                size: `${(file.size / 1024).toFixed(1)} KB`,
+                type: file.type === "application/pdf" ? "PDF" : "Text Document",
+            })),
+        );
     };
 
     return (
@@ -179,10 +192,92 @@ function App() {
                         >
                             {activeTab === "Overview" ? (
                                 <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4">
-                                    <div className="panel-card py-15"></div>
-                                    <div className="panel-card py-15"></div>
-                                    <div className="panel-card py-15"></div>
-                                    <div className="panel-card py-15"></div>
+                                    {/* add file option  */}
+                                    <div className="panel-card lg:col-span-2">
+                                        <div className="dashboard-card-label">
+                                            Document Uploads
+                                        </div>
+                                        <div className="dashboard-card-value">
+                                            Study Materials
+                                        </div>
+                                        <div className="document-upload-shell">
+                                            <label
+                                                className="document-upload-dropzone"
+                                                htmlFor="resource-upload"
+                                            >
+                                                <input
+                                                    accept=".txt,.md,.pdf,text/plain,application/pdf"
+                                                    className="document-upload-input"
+                                                    id="resource-upload"
+                                                    multiple
+                                                    onChange={
+                                                        handleDocumentUpload
+                                                    }
+                                                    type="file"
+                                                />
+                                                <div className="document-upload-icon">
+                                                    ↑
+                                                </div>
+                                                <div className="document-upload-title">
+                                                    Upload text or PDF files
+                                                </div>
+                                                <div className="document-upload-copy">
+                                                    Drag and drop is optional.
+                                                    Click here to choose study
+                                                    documents.
+                                                </div>
+                                            </label>
+
+                                            <div className="document-upload-list">
+                                                {uploadedDocuments.length >
+                                                0 ? (
+                                                    uploadedDocuments.map(
+                                                        (document) => (
+                                                            <div
+                                                                className="document-upload-item"
+                                                                key={
+                                                                    document.id
+                                                                }
+                                                            >
+                                                                <div>
+                                                                    <div className="document-upload-name">
+                                                                        {
+                                                                            document.name
+                                                                        }
+                                                                    </div>
+                                                                    <div className="document-upload-meta">
+                                                                        {
+                                                                            document.type
+                                                                        }{" "}
+                                                                        ·{" "}
+                                                                        {
+                                                                            document.size
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ),
+                                                    )
+                                                ) : (
+                                                    <div className="document-upload-empty">
+                                                        No files uploaded yet.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* User menu options */}
+                                    <div className="panel-card py-5">
+                                        Create Flashcards
+                                    </div>
+                                    <div className="panel-card py-5">
+                                        Generate Quiz
+                                    </div>
+                                    <div className="panel-card py-5">
+                                        Chat with AI
+                                    </div>
+                                    <div className="panel-card py-5"></div>
                                 </div>
                             ) : null}
 

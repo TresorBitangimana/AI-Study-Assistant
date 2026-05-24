@@ -695,6 +695,76 @@
         color: var(--text);
     }
 
+    .document-upload-shell {
+        @apply mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)];
+    }
+
+    .document-upload-dropzone {
+        @apply flex min-h-[240px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-8 text-center transition;
+        border-color: var(--border);
+        background:
+            radial-gradient(circle at top, rgba(59, 130, 246, 0.08), transparent 44%),
+            var(--panel-soft);
+    }
+
+    .document-upload-dropzone:hover {
+        border-color: rgba(59, 130, 246, 0.3);
+        background:
+            radial-gradient(circle at top, rgba(59, 130, 246, 0.12), transparent 44%),
+            var(--panel-soft);
+    }
+
+    .document-upload-input {
+        @apply hidden;
+    }
+
+    .document-upload-icon {
+        @apply mb-4 flex h-12 w-12 items-center justify-center rounded-full text-xl text-white;
+        background: var(--accent);
+    }
+
+    .document-upload-title {
+        @apply font-['Syne'] text-[22px] font-semibold;
+        color: var(--text);
+    }
+
+    .document-upload-copy {
+        @apply mt-2 max-w-[360px] text-[13px] leading-[1.7];
+        color: var(--text-dim);
+    }
+
+    .document-upload-list {
+        @apply rounded-2xl border p-4;
+        border-color: var(--border);
+        background: var(--panel-soft);
+    }
+
+    .document-upload-item {
+        @apply rounded-[12px] border px-4 py-3;
+        border-color: var(--border);
+        background: rgba(17, 24, 40, 0.8);
+    }
+
+    .document-upload-item + .document-upload-item {
+        @apply mt-3;
+    }
+
+    .document-upload-name {
+        @apply text-[13.5px] font-medium;
+        color: var(--text);
+    }
+
+    .document-upload-meta {
+        @apply mt-1 font-['IBM_Plex_Mono'] text-[10px];
+        color: var(--text-faint);
+    }
+
+    .document-upload-empty {
+        @apply rounded-[12px] border border-dashed px-4 py-8 text-center text-[13px];
+        border-color: var(--border);
+        color: var(--text-faint);
+    }
+
     .chat-header {
         @apply flex items-center gap-2.5 border-b px-[18px] py-4;
         border-color: var(--border);
