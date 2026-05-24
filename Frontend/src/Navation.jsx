@@ -193,7 +193,7 @@ function Navation({
                 Sessions
             </div>
 
-            <div className="relative flex-1 overflow-visible pb-3">
+            <div className="relative flex-1 overflow-auto scrollbar-none pb-3">
                 <button
                     className="session-button session-button-mobile-trigger lg:hidden"
                     onClick={() => setMobileSessionsOpen((current) => !current)}

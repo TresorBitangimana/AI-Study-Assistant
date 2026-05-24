@@ -31,16 +31,16 @@ function Chart() {
                     <div className="chat-header">
                         <div className="chat-chip">✦</div>
                         <div className="flex-1">
-                            <div className="font-['Syne'] text-[13.5px] font-semibold text-[var(--text)]">
+                            <div className="font-['Syne'] text-[13.5px] font-semibold text-(--text)">
                                 StudyAI Assistant
                             </div>
-                            <div className="flex items-center gap-1 font-['IBM_Plex_Mono'] text-[10px] text-[var(--success)]">
+                            <div className="flex items-center gap-1 font-['IBM_Plex_Mono'] text-[10px] text-(--success)">
                                 <div className="status-dot" />
                                 Online · GPT-powered
                             </div>
                         </div>
                         <button
-                            className="btn-compact !px-2 !py-[5px] !text-[11px]"
+                            className="btn-compact px-2! py-1.25! text-[11px]!"
                             type="button"
                         >
                             Clear
@@ -56,7 +56,7 @@ function Chart() {
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4">
-                        <div className="flex flex-col gap-[14px]">
+                        <div className="flex flex-col gap-3.5">
                             {chatMessages.map((message) => (
                                 <div
                                     className={`message-row ${
@@ -85,7 +85,7 @@ function Chart() {
                                         >
                                             {message.text}
                                         </div>
-                                        <div className="mt-1 font-['IBM_Plex_Mono'] text-[10px] text-[var(--text-faint)]">
+                                        <div className="mt-1 font-['IBM_Plex_Mono'] text-[10px] text-(--text-faint)">
                                             {message.time}
                                         </div>
                                     </div>
@@ -94,7 +94,7 @@ function Chart() {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5 border-t border-[var(--border)] px-4 py-2.5">
+                    <div className="flex flex-wrap gap-1.5 border-t border-(--border) px-4 py-2.5">
                         <button className="quick-chip" type="button">
                             Explain simply
                         </button>
@@ -109,7 +109,7 @@ function Chart() {
                         </button>
                     </div>
 
-                    <div className="flex gap-2 border-t border-[var(--border)] px-4 py-3">
+                    <div className="flex gap-2 border-t border-(--border) px-4 py-3">
                         <textarea
                             className="chat-input"
                             placeholder="Ask anything about your studies…"
