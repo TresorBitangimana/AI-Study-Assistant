@@ -241,6 +241,7 @@ function App() {
                             activeTab={activeTab}
                             dashboardTabs={dashboardTabs}
                             handleDocumentUpload={handleDocumentUpload}
+                            onCreateSession={openSessionModal}
                             onSelectSessionType={createSessionFromType}
                             pendingSessionName={pendingSessionName}
                             removeUploadedDocument={removeUploadedDocument}

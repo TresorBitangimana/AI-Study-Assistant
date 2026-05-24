@@ -334,6 +334,30 @@
         color: var(--text-dim);
     }
 
+    .dashboard-instructions {
+        @apply mt-5 rounded-2xl border px-6 py-6 sm:px-7 sm:py-7;
+        border-color: var(--border);
+        background:
+            radial-gradient(
+                circle at top left,
+                rgba(59, 130, 246, 0.12),
+                transparent 30%
+            ),
+            var(--panel);
+    }
+
+    .dashboard-instructions-title {
+        @apply mt-3 text-[28px] font-bold tracking-[-0.7px];
+        font-family: sans-serif;
+        color: var(--text);
+    }
+
+    .dashboard-instructions-copy {
+        @apply mt-3 max-w-3xl text-sm leading-[1.8];
+        font-family: sans-serif;
+        color: var(--text-dim);
+    }
+
     .dashboard-session-grid {
         @apply mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2;
     }
