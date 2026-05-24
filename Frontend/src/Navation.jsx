@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import logo from "./assets/Logo.png";
 
 function NavIcon({ id }) {
     const commonProps = {
@@ -161,12 +162,7 @@ function Navation({
     return (
         <aside className="sidebar-shell">
             <div className="flex items-center justify-center gap-2.5 px-2 py-5 lg:justify-start lg:px-4.5 lg:pb-4 lg:pt-5">
-                <div className="brand-chip">S</div>
-                <div className="sidebar-mobile-hide">
-                    <span className="font-['Syne'] text-base font-bold tracking-[-0.3px] text-(--text)">
-                        StudyAI
-                    </span>
-                </div>
+                <img alt="StudyAI" className="brand-logo" src={logo} />
             </div>
 
             <div className="section-label px-2.5 pb-1.5 pt-3.5 sidebar-mobile-hide">
