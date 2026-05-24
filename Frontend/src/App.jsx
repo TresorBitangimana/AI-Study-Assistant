@@ -115,6 +115,12 @@ function App() {
         event.target.value = "";
     };
 
+    const removeUploadedDocument = (documentId) => {
+        setUploadedDocuments((current) =>
+            current.filter((document) => document.id !== documentId),
+        );
+    };
+
     return (
         <div className="app-shell">
             <div className="app-grid">
@@ -241,21 +247,34 @@ function App() {
                                                                     document.id
                                                                 }
                                                             >
-                                                                <div>
-                                                                    <div className="document-upload-name">
-                                                                        {
-                                                                            document.name
-                                                                        }
+                                                                <div className="document-upload-item-row">
+                                                                    <div>
+                                                                        <div className="document-upload-name">
+                                                                            {
+                                                                                document.name
+                                                                            }
+                                                                        </div>
+                                                                        <div className="document-upload-meta">
+                                                                            {
+                                                                                document.type
+                                                                            }{" "}
+                                                                            ·{" "}
+                                                                            {
+                                                                                document.size
+                                                                            }
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="document-upload-meta">
-                                                                        {
-                                                                            document.type
-                                                                        }{" "}
-                                                                        ·{" "}
-                                                                        {
-                                                                            document.size
+                                                                    <button
+                                                                        className="document-upload-remove"
+                                                                        onClick={() =>
+                                                                            removeUploadedDocument(
+                                                                                document.id,
+                                                                            )
                                                                         }
-                                                                    </div>
+                                                                        type="button"
+                                                                    >
+                                                                        Remove
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         ),
