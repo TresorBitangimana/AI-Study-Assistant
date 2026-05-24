@@ -98,7 +98,6 @@ function App() {
         const newSession = {
             id: `session-${Date.now()}`,
             name: sessionName,
-            time: "Just now",
         };
 
         setSessions((current) => [newSession, ...current]);
@@ -244,6 +243,7 @@ function App() {
                                         : "New Session"
                                 }
                                 value={sessionDraftName}
+                                type={sessionType === ""}
                             />
                         ) : null}
                     </div>

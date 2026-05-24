@@ -9,7 +9,6 @@ import {
 const createEmptyNote = () => ({
     id: `note-${Date.now()}`,
     title: "Untitled Note",
-    meta: "Start writing · Just now",
     content: "",
 });
 
@@ -206,9 +205,6 @@ function Notes({ active }, ref) {
                                             className={`note-title ${isSelected ? "note-title-active" : ""}`}
                                         >
                                             {note.title || "Untitled Note"}
-                                        </div>
-                                        <div className="note-meta">
-                                            {note.meta}
                                         </div>
                                     </button>
                                     <div className="note-row-actions">
