@@ -10,7 +10,6 @@ function CreateSessionModal({
     title = "Name your study session",
     toneLabel = "New Session",
     value,
-    sessionType,
 }) {
     return (
         <div className="session-modal-overlay" role="presentation">

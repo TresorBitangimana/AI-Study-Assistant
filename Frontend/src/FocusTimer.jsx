@@ -137,7 +137,7 @@ function FocusTimer({ active }) {
             : "timer-display-focus";
 
     return (
-        <section className={active ? "block" : "hidden"}>
+        <section className={active ? "block h-full" : "hidden"}>
             <div className="timer-shell">
                 <div className="timer-main-card">
                     <div className="timer-mode-group">
