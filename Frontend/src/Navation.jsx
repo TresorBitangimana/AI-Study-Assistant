@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import logo from "./assets/Logo.png";
+import darkLogo from "./assets/dark_logo.png";
+import lightLogo from "./assets/light_logo.png";
 
 function NavIcon({ id }) {
     const commonProps = {
@@ -59,32 +60,38 @@ function Navation({
     onDeleteSession,
     onRenameSession,
     onSelectSession,
+    theme,
+    onToggleTheme,
 }) {
     const [mobileSessionsOpen, setMobileSessionsOpen] = useState(false);
     const [openSessionMenuId, setOpenSessionMenuId] = useState(null);
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const hasSessions = sessions.length > 0;
+    const activeLogo = theme === "dark" ? darkLogo : lightLogo;
 
     useEffect(() => {
         const handleOutsideClick = (event) => {
-            if (!openSessionMenuId) {
+            if (!openSessionMenuId && !isProfileMenuOpen) {
                 return;
             }
 
             const target = event.target;
             if (
                 target instanceof Element &&
-                target.closest('[data-session-menu-root="true"]')
+                (target.closest('[data-session-menu-root="true"]') ||
+                    target.closest('[data-profile-menu-root="true"]'))
             ) {
                 return;
             }
 
             setOpenSessionMenuId(null);
+            setIsProfileMenuOpen(false);
         };
 
         document.addEventListener("mousedown", handleOutsideClick);
         return () =>
             document.removeEventListener("mousedown", handleOutsideClick);
-    }, [openSessionMenuId]);
+    }, [isProfileMenuOpen, openSessionMenuId]);
 
     const renderSessionRow = (session) => {
         const isActive = session.id === activeSessionId;
@@ -105,11 +112,6 @@ function Navation({
                     }}
                     type="button"
                 >
-                    <div
-                        className={`h-1.75 w-1.75 shrink-0 rounded-full ${
-                            isActive ? "bg-(--success)" : "bg-(--text-faint)"
-                        }`}
-                    />
                     <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                         {session.name}
                     </span>
@@ -163,11 +165,11 @@ function Navation({
     return (
         <aside className="sidebar-shell">
             <div className="flex items-center justify-center gap-2.5 px-2 py-5 lg:justify-start lg:px-4.5 lg:pb-4 lg:pt-5">
-                <img alt="StudyAI" className="brand-logo" src={logo} />
+                <img alt="StudyAI" className="brand-logo" src={activeLogo} />
             </div>
 
             <div className="section-label px-2.5 pb-1.5 pt-3.5 sidebar-mobile-hide">
-                Navigation
+                Tools
             </div>
 
             <nav>
@@ -263,23 +265,56 @@ function Navation({
             </button>
 
             <div className="sidebar-mobile-hide border-t border-(--border) p-2.5">
-                <div className="profile-pill">
-                    <div className="avatar-pill">U</div>
-                    <div className="min-w-0 flex-1">
-                        <div className="text-[12.5px] font-medium text-(--text)">
-                            User 101
+                <div
+                    className="profile-menu-shell"
+                    data-profile-menu-root="true"
+                >
+                    <div className="profile-pill">
+                        <div className="avatar-pill">U</div>
+                        <div className="min-w-0 flex-1">
+                            <div className="text-[12.5px] font-medium text-(--text)">
+                                User 101
+                            </div>
                         </div>
+                        <button
+                            aria-expanded={isProfileMenuOpen}
+                            aria-haspopup="menu"
+                            aria-label="Open profile menu"
+                            className="profile-menu-button"
+                            onClick={() =>
+                                setIsProfileMenuOpen((current) => !current)
+                            }
+                            type="button"
+                        >
+                            <svg
+                                aria-hidden="true"
+                                className="h-3.5 w-3.5 shrink-0 text-(--text-faint)"
+                                viewBox="0 0 14 14"
+                                fill="currentColor"
+                            >
+                                <circle cx="7" cy="4" r="1.2" />
+                                <circle cx="7" cy="7" r="1.2" />
+                                <circle cx="7" cy="10" r="1.2" />
+                            </svg>
+                        </button>
                     </div>
-                    <svg
-                        aria-hidden="true"
-                        className="h-3.5 w-3.5 shrink-0 text-(--text-faint)"
-                        viewBox="0 0 14 14"
-                        fill="currentColor"
-                    >
-                        <circle cx="7" cy="4" r="1.2" />
-                        <circle cx="7" cy="7" r="1.2" />
-                        <circle cx="7" cy="10" r="1.2" />
-                    </svg>
+                    {isProfileMenuOpen ? (
+                        <div className="profile-menu-panel" role="menu">
+                            <button
+                                className="profile-menu-item"
+                                onClick={() => {
+                                    onToggleTheme();
+                                    setIsProfileMenuOpen(false);
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                {theme === "light"
+                                    ? "Switch to Dark Mode"
+                                    : "Switch to Light Mode"}
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </aside>

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Chart from "./Chart";
 import CreateSessionModal from "./CreateSessionModal";
 import Dashboard from "./Dashboard";
@@ -25,6 +25,7 @@ const sessionTypeOptions = [
 ];
 
 const normalizeSessionName = (value) => value.trim().toLowerCase();
+const THEME_STORAGE_KEY = "study-ai-theme";
 
 function createSessionId() {
     if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -36,6 +37,13 @@ function createSessionId() {
 
 function App() {
     const notesSectionRef = useRef(null);
+    const [theme, setTheme] = useState(() => {
+        if (typeof window === "undefined") {
+            return "light";
+        }
+
+        return window.localStorage.getItem(THEME_STORAGE_KEY) ?? "light";
+    });
     const [activePanel, setActivePanel] = useState("dashboard");
     const [activeTab, setActiveTab] = useState("Overview");
     const [sessions, setSessions] = useState([]);
@@ -128,7 +136,6 @@ function App() {
             id: createSessionId(),
             name: pendingSessionName,
             type: sessionType.label,
-            time: "Just now",
         };
 
         setSessions((current) => [newSession, ...current]);
@@ -172,11 +179,15 @@ function App() {
     const headerTitle =
         activePanel === "session" && activeSession
             ? activeSession.name
-            : navigationItems.find((item) => item.id === activePanel)?.label ??
-              "Dashboard";
+            : (navigationItems.find((item) => item.id === activePanel)?.label ??
+              "Dashboard");
+
+    useEffect(() => {
+        window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }, [theme]);
 
     return (
-        <div className="app-shell">
+        <div className={`app-shell ${theme === "dark" ? "theme-dark" : ""}`}>
             <div className="app-grid">
                 <Navation
                     activePanel={activePanel}
@@ -191,6 +202,12 @@ function App() {
                     }}
                     setActivePanel={setActivePanel}
                     sessions={sessions}
+                    theme={theme}
+                    onToggleTheme={() =>
+                        setTheme((current) =>
+                            current === "light" ? "dark" : "light",
+                        )
+                    }
                 />
 
                 <main className="app-main">
