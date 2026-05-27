@@ -1,4 +1,4 @@
-package org.tresor.backend.Notes;
+package org.tresor.backend.notes;
 
 public class Note {
 

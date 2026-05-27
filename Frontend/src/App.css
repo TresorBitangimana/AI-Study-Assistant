@@ -583,6 +583,18 @@
         background: var(--panel);
     }
 
+    .notes-list-shell-placeholder {
+        background: color-mix(in srgb, var(--panel) 84%, transparent);
+    }
+
+    .notes-empty-list-body {
+        @apply min-h-0 flex-1;
+    }
+
+    .note-row-placeholder {
+        opacity: 0.72;
+    }
+
     .notes-list-header,
     .editor-toolbar {
         @apply flex items-center border-b;

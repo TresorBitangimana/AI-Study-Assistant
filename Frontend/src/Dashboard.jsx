@@ -82,9 +82,8 @@ function Dashboard({
                                                 Upload text or PDF files
                                             </div>
                                             <div className="document-upload-copy">
-                                                Drag and drop is optional.
-                                                Click here to choose study
-                                                documents.
+                                                Drag and drop is optional. Click
+                                                here to choose study documents.
                                             </div>
                                         </label>
 
@@ -197,25 +196,20 @@ function Dashboard({
                 ) : null}
 
                 {activeTab === "Progress" ? (
-                    <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.4fr_1fr]">
+                    <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.4fr_1fr] mt-5">
                         <div className="panel-card">
-                            <div className="dashboard-card-label">
-                                Progress Snapshot
-                            </div>
                             <div className="dashboard-card-value">
                                 <h1>Hello World!!!</h1>
                             </div>
                         </div>
                         <div className="panel-card">
-                            <div className="dashboard-card-label">
-                                Current Status
-                            </div>
+                            <div className="dashboard-card-label">Test101</div>
                         </div>
                     </div>
                 ) : null}
 
                 {activeTab === "Resources" ? (
-                    <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 mt-5">
                         <div className="panel-card lg:col-span-3 py-15"></div>
                     </div>
                 ) : null}

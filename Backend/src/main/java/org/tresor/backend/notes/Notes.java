@@ -1,9 +1,10 @@
-package org.tresor.backend.Notes;
+package org.tresor.backend.notes;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.tresor.backend.MongoDBClient;
+import org.tresor.backend.User;
 
 import javax.swing.text.Document;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
 
 public class Notes {
 
-    static List<Note> notesCollection = new ArrayList<>();
+    static List<Note> notesArray = new ArrayList<>();
     static MongoDBClient mongoDBClient = new MongoDBClient();
     static private MongoClient client;
     static private MongoDatabase database;
@@ -26,12 +27,16 @@ public class Notes {
         database.createCollection("notes");
     }
 
-    public void createNote(String title){
+    /**
+     * Creates a Documents linked to the user by id, that
+     * contains an array of all the notes that the user will create.
+     *
+     * @param user  the current user creating the note
+     * @param title title of the first note.
+     */
+    public void createNotes(User user, String title){
         Note note = new Note(title);
     }
 
-    public void editNote(String title){
-
-
-    }
+    public void editNote(String title){}
 }

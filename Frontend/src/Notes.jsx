@@ -189,179 +189,197 @@ function Notes({ active }, ref) {
         "❝": () => prefixSelectedLines("> "),
     };
 
+    const noteWorkspace = hasNotes ? (
+        <div className="notes-shell">
+            <div className="notes-list-shell">
+                <div className="notes-list-header">
+                    <span>NOTES</span>
+                    <button
+                        className="btn-compact"
+                        onClick={createNote}
+                        type="button"
+                    >
+                        +
+                    </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                    {notes.map((note) => {
+                        const isSelected = note.id === activeNoteId;
+                        const isMenuOpen = openNoteMenuId === note.id;
+
+                        return (
+                            <div
+                                className={`note-row ${isSelected ? "note-row-active" : ""}`}
+                                key={note.id}
+                                data-note-menu-root="true"
+                            >
+                                <button
+                                    className="note-row-body"
+                                    onClick={() => {
+                                        setActiveNoteId(note.id);
+                                        setOpenNoteMenuId(null);
+                                    }}
+                                    type="button"
+                                >
+                                    <div
+                                        className={`note-title ${isSelected ? "note-title-active" : ""}`}
+                                    >
+                                        {note.title || "Untitled Note"}
+                                    </div>
+                                </button>
+                                <div className="note-row-actions">
+                                    <button
+                                        aria-label={`Note options for ${note.title || "Untitled Note"}`}
+                                        className="note-row-menu"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            setOpenNoteMenuId((current) =>
+                                                current === note.id
+                                                    ? null
+                                                    : note.id,
+                                            );
+                                        }}
+                                        type="button"
+                                    >
+                                        ⋯
+                                    </button>
+                                    {isMenuOpen ? (
+                                        <div className="note-row-menu-panel">
+                                            <button
+                                                className="note-row-menu-item note-row-menu-item-danger"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    deleteNote(note.id);
+                                                }}
+                                                type="button"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="editor-shell">
+                <div className="editor-toolbar">
+                    {toolbarTools.map((tool) => (
+                        <button
+                            className="btn-toolbar"
+                            key={tool}
+                            onClick={() => toolbarActions[tool]()}
+                            type="button"
+                        >
+                            {tool}
+                        </button>
+                    ))}
+                </div>
+                <div className="editor-content">
+                    <input
+                        className="note-title-input"
+                        onChange={(event) =>
+                            updateActiveNote("title", event.target.value)
+                        }
+                        placeholder="Untitled Note"
+                        type="text"
+                        value={activeNote?.title ?? ""}
+                    />
+                    <textarea
+                        className="note-textarea"
+                        onChange={(event) =>
+                            updateActiveNote("content", event.target.value)
+                        }
+                        placeholder="Start writing your notes here..."
+                        ref={noteTextareaRef}
+                        value={activeNote?.content ?? ""}
+                    />
+                </div>
+            </div>
+        </div>
+    ) : (
+        <div className="notes-shell">
+            <div className="notes-list-shell notes-list-shell-placeholder">
+                <div className="notes-list-header">
+                    <span>NOTES</span>
+                    <button
+                        className="btn-compact"
+                        onClick={createNote}
+                        type="button"
+                    >
+                        +
+                    </button>
+                </div>
+                <div className="notes-empty-list-body">
+                    <div className="note-row note-row-placeholder">
+                        <div className="note-row-body">
+                            <div className="note-title">Your first note</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="editor-shell">
+                <div className="editor-toolbar">
+                    {toolbarTools.map((tool) => (
+                        <button
+                            className="btn-toolbar"
+                            key={tool}
+                            type="button"
+                        >
+                            {tool}
+                        </button>
+                    ))}
+                </div>
+                <div className="editor-content">
+                    <input
+                        className="note-title-input"
+                        placeholder="Untitled Note"
+                        readOnly
+                        type="text"
+                        value=""
+                    />
+                    <textarea
+                        className="note-textarea"
+                        placeholder="Start writing your notes here..."
+                        readOnly
+                        value=""
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <section className={active ? "block" : "hidden"}>
             <div className="notes-stage">
                 <div
                     className={`notes-stage-content ${
-                        isCreatingNote ? "notes-stage-content-blurred" : ""
+                        isCreatingNote || !hasNotes
+                            ? "notes-stage-content-blurred"
+                            : ""
                     }`}
                 >
-                    {hasNotes ? (
-                        <div className="notes-shell">
-                            <div className="notes-list-shell">
-                                <div className="notes-list-header">
-                                    <span>NOTES</span>
-                                    <button
-                                        className="btn-compact"
-                                        onClick={createNote}
-                                        type="button"
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                                <div className="min-h-0 flex-1 overflow-y-auto">
-                                    {notes.map((note) => {
-                                        const isSelected =
-                                            note.id === activeNoteId;
-                                        const isMenuOpen =
-                                            openNoteMenuId === note.id;
-
-                                        return (
-                                            <div
-                                                className={`note-row ${isSelected ? "note-row-active" : ""}`}
-                                                key={note.id}
-                                                data-note-menu-root="true"
-                                            >
-                                                <button
-                                                    className="note-row-body"
-                                                    onClick={() => {
-                                                        setActiveNoteId(
-                                                            note.id,
-                                                        );
-                                                        setOpenNoteMenuId(
-                                                            null,
-                                                        );
-                                                    }}
-                                                    type="button"
-                                                >
-                                                    <div
-                                                        className={`note-title ${isSelected ? "note-title-active" : ""}`}
-                                                    >
-                                                        {note.title ||
-                                                            "Untitled Note"}
-                                                    </div>
-                                                </button>
-                                                <div className="note-row-actions">
-                                                    <button
-                                                        aria-label={`Note options for ${note.title || "Untitled Note"}`}
-                                                        className="note-row-menu"
-                                                        onClick={(event) => {
-                                                            event.stopPropagation();
-                                                            setOpenNoteMenuId(
-                                                                (current) =>
-                                                                    current ===
-                                                                    note.id
-                                                                        ? null
-                                                                        : note.id,
-                                                            );
-                                                        }}
-                                                        type="button"
-                                                    >
-                                                        ⋯
-                                                    </button>
-                                                    {isMenuOpen ? (
-                                                        <div className="note-row-menu-panel">
-                                                            <button
-                                                                className="note-row-menu-item note-row-menu-item-danger"
-                                                                onClick={(
-                                                                    event,
-                                                                ) => {
-                                                                    event.stopPropagation();
-                                                                    deleteNote(
-                                                                        note.id,
-                                                                    );
-                                                                }}
-                                                                type="button"
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </div>
-                                                    ) : null}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="editor-shell">
-                                <div className="editor-toolbar">
-                                    {toolbarTools.map((tool) => (
-                                        <button
-                                            className="btn-toolbar"
-                                            key={tool}
-                                            onClick={() =>
-                                                toolbarActions[tool]()
-                                            }
-                                            type="button"
-                                        >
-                                            {tool}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="editor-content">
-                                    <input
-                                        className="note-title-input"
-                                        onChange={(event) =>
-                                            updateActiveNote(
-                                                "title",
-                                                event.target.value,
-                                            )
-                                        }
-                                        placeholder="Untitled Note"
-                                        type="text"
-                                        value={activeNote?.title ?? ""}
-                                    />
-                                    <textarea
-                                        className="note-textarea"
-                                        onChange={(event) =>
-                                            updateActiveNote(
-                                                "content",
-                                                event.target.value,
-                                            )
-                                        }
-                                        placeholder="Start writing your notes here..."
-                                        ref={noteTextareaRef}
-                                        value={activeNote?.content ?? ""}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="notes-empty-shell">
-                            <div className="notes-empty-card">
-                                <div className="section-label">Notes</div>
-                                <h2 className="notes-empty-title">
-                                    Create your first note
-                                </h2>
-                                <p className="notes-empty-copy">
-                                    Start a note for summaries, questions, or
-                                    study ideas. You will title it first, then
-                                    the editor will open.
-                                </p>
-                                <button
-                                    className="btn-primary"
-                                    onClick={createNote}
-                                    type="button"
-                                >
-                                    Create Note
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    {noteWorkspace}
                 </div>
 
-                {isCreatingNote ? (
+                {isCreatingNote || !hasNotes ? (
                     <div className="notes-create-overlay">
                         <div className="notes-create-card">
-                            <div className="section-label">New Note</div>
+                            <div className="section-label">
+                                {hasNotes ? "New Note" : "Notes"}
+                            </div>
                             <h2 className="notes-empty-title">
-                                Title your note
+                                {hasNotes
+                                    ? "Title your note"
+                                    : "Create your first note"}
                             </h2>
                             <p className="notes-empty-copy">
-                                Give this note a clear name before opening the
-                                editor.
+                                {hasNotes
+                                    ? "Give this note a clear name before opening the editor."
+                                    : "Start a new note by giving it a title."}
                             </p>
                             <form
                                 className="notes-create-form"
