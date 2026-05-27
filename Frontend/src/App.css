@@ -526,6 +526,56 @@
         @apply grid h-auto grid-cols-1 gap-4 xl:h-[calc(100vh-160px)] xl:grid-cols-[220px_minmax(0,1fr)];
     }
 
+    .notes-stage {
+        @apply relative;
+    }
+
+    .notes-stage-content {
+        @apply transition duration-200;
+    }
+
+    .notes-stage-content-blurred {
+        filter: blur(4px);
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .notes-empty-shell,
+    .notes-create-shell {
+        @apply flex min-h-[calc(100vh-220px)] items-center justify-center;
+    }
+
+    .notes-empty-card,
+    .notes-create-card {
+        @apply w-full max-w-[560px] rounded-2xl border px-8 py-9 text-center;
+        border-color: var(--border);
+        background: var(--panel);
+    }
+
+    .notes-empty-title {
+        @apply mt-3 font-['Syne'] text-[28px] font-bold leading-tight;
+        color: var(--text);
+    }
+
+    .notes-empty-copy {
+        @apply mx-auto mt-3 max-w-[420px] text-sm leading-7;
+        color: var(--text-dim);
+    }
+
+    .notes-create-form {
+        @apply mt-6 flex flex-col gap-4 text-left;
+    }
+
+    .notes-create-actions {
+        @apply flex justify-end gap-3;
+    }
+
+    .notes-create-overlay {
+        @apply absolute inset-0 z-20 flex items-center justify-center px-4;
+        background: rgba(17, 17, 17, 0.16);
+        backdrop-filter: blur(1px);
+    }
+
     .notes-list-shell,
     .editor-shell {
         @apply flex min-h-0 flex-col overflow-hidden rounded-xl border;
