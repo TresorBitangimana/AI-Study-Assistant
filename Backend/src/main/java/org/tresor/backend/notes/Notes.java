@@ -4,7 +4,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.tresor.backend.MongoDBClient;
-import org.tresor.backend.User;
+import org.tresor.backend.account.User;
 
 import javax.swing.text.Document;
 import java.util.ArrayList;

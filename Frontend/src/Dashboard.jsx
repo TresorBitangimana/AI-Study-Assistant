@@ -6,6 +6,7 @@ function Dashboard({
     handleDocumentUpload,
     onCancelPendingSession,
     onCreateSession,
+    onOpenUserModal,
     onSelectSessionType,
     pendingSessionName,
     removeUploadedDocument,
@@ -183,6 +184,13 @@ function Dashboard({
                                 instructions.
                             </div>
                             <div className="dashboard-instructions-actions">
+                                <button
+                                    className="btn-ghost"
+                                    onClick={onOpenUserModal}
+                                    type="button"
+                                >
+                                    Log In / Sign Up
+                                </button>
                                 <button
                                     className="btn-primary"
                                     onClick={onCreateSession}

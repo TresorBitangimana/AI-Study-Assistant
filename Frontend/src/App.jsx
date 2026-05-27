@@ -7,6 +7,7 @@ import FocusTimer from "./FocusTimer";
 import Notes from "./Notes";
 import Navation from "./Navation";
 import Sessions from "./Sessions";
+import User from "./User";
 import "./App.css";
 
 const navigationItems = [
@@ -26,6 +27,7 @@ const sessionTypeOptions = [
 
 const normalizeSessionName = (value) => value.trim().toLowerCase();
 const THEME_STORAGE_KEY = "study-ai-theme";
+const CURRENT_USER_STORAGE_KEY = "study-ai-current-user";
 
 function createSessionId() {
     if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -53,6 +55,19 @@ function App() {
     const [sessionModalMode, setSessionModalMode] = useState(null);
     const [editingSessionId, setEditingSessionId] = useState(null);
     const [sessionDraftName, setSessionDraftName] = useState("");
+    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState(() => {
+        if (typeof window === "undefined") {
+            return null;
+        }
+
+        try {
+            const value = window.localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+            return value ? JSON.parse(value) : null;
+        } catch {
+            return null;
+        }
+    });
 
     const nextSessionNumber = sessions.length + 1;
     const fallbackSessionName = `New Session ${nextSessionNumber}`;
@@ -216,6 +231,13 @@ function App() {
                         <div className="flex flex-wrap items-center gap-2.5">
                             <button
                                 className="btn-ghost"
+                                onClick={() => setIsUserModalOpen(true)}
+                                type="button"
+                            >
+                                Log In / Sign Up
+                            </button>
+                            <button
+                                className="btn-ghost"
                                 onClick={openSessionModal}
                                 type="button"
                             >
@@ -247,6 +269,7 @@ function App() {
                             }}
                             dashboardTabs={dashboardTabs}
                             handleDocumentUpload={handleDocumentUpload}
+                            onOpenUserModal={() => setIsUserModalOpen(true)}
                             onCreateSession={openSessionModal}
                             onSelectSessionType={createSessionFromType}
                             pendingSessionName={pendingSessionName}
@@ -308,6 +331,14 @@ function App() {
                                         : "New Session"
                                 }
                                 value={sessionDraftName}
+                            />
+                        ) : null}
+
+                        {isUserModalOpen ? (
+                            <User
+                                currentUser={currentUser}
+                                onAuthChange={setCurrentUser}
+                                onClose={() => setIsUserModalOpen(false)}
                             />
                         ) : null}
                     </div>

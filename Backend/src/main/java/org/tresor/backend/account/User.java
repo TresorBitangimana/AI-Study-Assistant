@@ -1,15 +1,14 @@
-package org.tresor.backend;
+package org.tresor.backend.account;
 
 public class User {
 
     private String username;
     private String password;
-    private final String id;
+    private String id;
 
-    public User(String username, String password, String id){
+    public User(String username, String password){
         this.username = username;
         this.password = password;
-        this.id = id;
     }
 
     public String getUsername() {

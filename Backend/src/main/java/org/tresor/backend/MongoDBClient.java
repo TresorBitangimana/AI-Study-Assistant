@@ -37,7 +37,6 @@ public class MongoDBClient {
      */
     public MongoClient get(){
 
-
         //checks if a mongoDB instance already exists, if not creates a new instance.
         if(client == null){
             try{

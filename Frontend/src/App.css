@@ -366,6 +366,42 @@
         @apply min-w-[132px];
     }
 
+    .user-auth-mode-row {
+        @apply grid grid-cols-2 gap-2 rounded-[10px] p-1;
+        background: var(--panel-soft);
+    }
+
+    .user-auth-mode-button {
+        @apply rounded-[8px] px-3 py-2 text-[12.5px] font-medium transition;
+        color: var(--text-faint);
+    }
+
+    .user-auth-mode-button-active {
+        background: var(--panel-solid);
+        color: var(--text);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .user-account-shell {
+        @apply mt-5 space-y-4;
+    }
+
+    .user-account-card {
+        @apply rounded-xl border px-4 py-4;
+        border-color: var(--border);
+        background: var(--panel-soft);
+    }
+
+    .user-account-name {
+        @apply font-['Syne'] text-[22px] font-semibold;
+        color: var(--text);
+    }
+
+    .user-account-email {
+        @apply mt-1 text-[13px];
+        color: var(--text-dim);
+    }
+
     .panel-card-file-upload {
         @apply relative rounded-xl border px-5 py-[18px] py-5;
         border-color: var(--border);
@@ -415,7 +451,7 @@
         color: var(--text-dim);
     }
     .dashboard-instructions-actions {
-        @apply mt-5;
+        @apply mt-5 flex flex-wrap gap-3;
     }
 
     .dashboard-session-grid {
