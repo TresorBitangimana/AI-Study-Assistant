@@ -63,13 +63,13 @@ public class MongoDBClient {
         clientInstance.getDatabase(databaseName).createCollection(collectionName);
     }
 
-    /**
-     * database getter method, gets and returns a database form client provided a name;
-     * @param name name of the client to get
-     * @return a MongoDb database
-     */
-    public MongoDatabase getDatabase(String name){
-        return client.getDatabase(name);
-    }
+//    /**
+//     * database getter method, gets and returns a database form client provided a name;
+//     * @param name name of the client to get
+//     * @return a MongoDb database
+//     */
+//    public MongoDatabase getDatabase(String name){
+//        return client.getDatabase(name);
+//    }
 
 }
