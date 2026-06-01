@@ -86,6 +86,7 @@ function User({ currentUser, onAuthChange, onClose }) {
             };
 
             onAuthChange(sessionUser);
+            handleUserLoggedIn();
             resetForm();
             onClose();
         } catch {
@@ -93,6 +94,10 @@ function User({ currentUser, onAuthChange, onClose }) {
                 "Could not create your account. Please try again.",
             );
         }
+    };
+
+    const handleUserLoggedIn = () => {
+        // Placeholder for any post-login setup after a successful account creation.
     };
 
     const handleLogin = () => {

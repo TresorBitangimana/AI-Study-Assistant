@@ -9,6 +9,7 @@ import org.bson.Document;
 
 public class Account {
 
+    //mongoDB client and db set up
     MongoDBClient mongoDBClient = new MongoDBClient();
     MongoClient client = mongoDBClient.get();
     MongoDatabase db = client.getDatabase("AiStudyApp");
