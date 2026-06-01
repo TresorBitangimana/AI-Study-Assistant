@@ -1,37 +1,5 @@
 import { useMemo, useState } from "react";
 
-const USERS_STORAGE_KEY = "study-ai-users";
-const CURRENT_USER_STORAGE_KEY = "study-ai-current-user";
-
-function readStoredUsers() {
-    if (typeof window === "undefined") {
-        return [];
-    }
-
-    try {
-        const value = window.localStorage.getItem(USERS_STORAGE_KEY);
-        return value ? JSON.parse(value) : [];
-    } catch {
-        return [];
-    }
-}
-
-function persistUsers(users) {
-    window.localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-}
-
-function persistCurrentUser(user) {
-    if (user) {
-        window.localStorage.setItem(
-            CURRENT_USER_STORAGE_KEY,
-            JSON.stringify(user),
-        );
-        return;
-    }
-
-    window.localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
-}
-
 function User({ currentUser, onAuthChange, onClose }) {
     const [mode, setMode] = useState(currentUser ? "account" : "login");
     const [fullName, setFullName] = useState("");
@@ -75,80 +43,63 @@ function User({ currentUser, onAuthChange, onClose }) {
         resetForm();
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-
+    const handleCreateAccount = async () => {
         const normalizedUsername = username.trim().toLowerCase();
         const trimmedName = fullName.trim();
 
-        if (!normalizedUsername || !password.trim()) {
-            setErrorMessage("Username and password are required.");
+        if (!trimmedName || !normalizedUsername || !password.trim()) {
+            setErrorMessage("Full name, username, and password are required.");
             return;
         }
 
-        const users = readStoredUsers();
-
-        if (mode === "signup") {
-            if (!trimmedName) {
-                setErrorMessage("Full name is required.");
-                return;
-            }
-
-            const userExists = users.some(
-                (user) => user.username === normalizedUsername,
+        try {
+            const response = await fetch(
+                "http://localhost:8080/api/study_assistant/signup",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        fullName: trimmedName,
+                        username: normalizedUsername,
+                        password,
+                    }),
+                },
             );
 
-            if (userExists) {
-                setErrorMessage("That username is already taken.");
+            if (!response.ok) {
+                throw new Error("Request failed");
+            }
+
+            const responseText = (await response.text()).trim();
+            const isSuccessful = responseText === "true";
+
+            if (!isSuccessful) {
+                setErrorMessage(
+                    "That username already exists. Please try again.",
+                );
                 return;
             }
 
-            const nextUser = {
-                id: `user-${Date.now()}`,
+            const sessionUser = {
                 name: trimmedName,
                 username: normalizedUsername,
-                password,
             };
 
-            const nextUsers = [...users, nextUser];
-            persistUsers(nextUsers);
-
-            const sessionUser = {
-                id: nextUser.id,
-                name: nextUser.name,
-                username: nextUser.username,
-            };
-
-            persistCurrentUser(sessionUser);
             onAuthChange(sessionUser);
+            resetForm();
             onClose();
-            return;
+        } catch {
+            setErrorMessage(
+                "Could not create your account. Please try again.",
+            );
         }
+    };
 
-        const matchedUser = users.find(
-            (user) =>
-                user.username === normalizedUsername &&
-                user.password === password,
-        );
-
-        if (!matchedUser) {
-            setErrorMessage("Incorrect username or password.");
-            return;
-        }
-
-        const sessionUser = {
-            id: matchedUser.id,
-            name: matchedUser.name,
-            username: matchedUser.username,
-        };
-
-        persistCurrentUser(sessionUser);
-        onAuthChange(sessionUser);
-        onClose();
+    const handleLogin = () => {
+        // Placeholder for the login flow. Backend login integration can be wired here later.
     };
 
     const handleSignOut = () => {
-        persistCurrentUser(null);
         onAuthChange(null);
         onClose();
     };
@@ -195,10 +146,7 @@ function User({ currentUser, onAuthChange, onClose }) {
                         </div>
                     </div>
                 ) : (
-                    <form
-                        className="session-modal-form"
-                        onSubmit={handleSubmit}
-                    >
+                    <div className="session-modal-form">
                         <div className="user-auth-mode-row">
                             <button
                                 className={`user-auth-mode-button ${
@@ -240,7 +188,6 @@ function User({ currentUser, onAuthChange, onClose }) {
                         ) : null}
 
                         <input
-                            autoFocus={mode === "login"}
                             className={`field-input ${
                                 errorMessage ? "field-input-error" : ""
                             }`}
@@ -278,16 +225,25 @@ function User({ currentUser, onAuthChange, onClose }) {
                             >
                                 Cancel
                             </button>
-                            <button
-                                className="btn-primary session-modal-button"
-                                type="submit"
-                            >
-                                {mode === "signup"
-                                    ? "Create Account"
-                                    : "Log In"}
-                            </button>
+                            {mode === "signup" ? (
+                                <button
+                                    className="btn-primary session-modal-button"
+                                    onClick={handleCreateAccount}
+                                    type="button"
+                                >
+                                    Create Account
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn-primary session-modal-button"
+                                    onClick={handleLogin}
+                                    type="button"
+                                >
+                                    Log In
+                                </button>
+                            )}
                         </div>
-                    </form>
+                    </div>
                 )}
             </div>
         </div>

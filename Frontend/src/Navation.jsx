@@ -51,6 +51,7 @@ function NavIcon({ id }) {
 }
 
 function Navation({
+    currentUser,
     navigationItems,
     activePanel,
     setActivePanel,
@@ -60,6 +61,7 @@ function Navation({
     onDeleteSession,
     onRenameSession,
     onSelectSession,
+    onLogout,
     theme,
     onToggleTheme,
 }) {
@@ -270,11 +272,18 @@ function Navation({
                     data-profile-menu-root="true"
                 >
                     <div className="profile-pill">
-                        <div className="avatar-pill">U</div>
+                        <div className="avatar-pill">
+                            {currentUser?.name?.[0]?.toUpperCase() ?? "U"}
+                        </div>
                         <div className="min-w-0 flex-1">
                             <div className="text-[12.5px] font-medium text-(--text)">
-                                User 101
+                                {currentUser?.name ?? "User 101"}
                             </div>
+                            {currentUser ? (
+                                <div className="text-[10px] text-(--text-faint)">
+                                    @{currentUser.username}
+                                </div>
+                            ) : null}
                         </div>
                         <button
                             aria-expanded={isProfileMenuOpen}
@@ -313,6 +322,19 @@ function Navation({
                                     ? "Switch to Dark Mode"
                                     : "Switch to Light Mode"}
                             </button>
+                            {currentUser ? (
+                                <button
+                                    className="profile-menu-item"
+                                    onClick={() => {
+                                        onLogout();
+                                        setIsProfileMenuOpen(false);
+                                    }}
+                                    role="menuitem"
+                                    type="button"
+                                >
+                                    Log Out
+                                </button>
+                            ) : null}
                         </div>
                     ) : null}
                 </div>

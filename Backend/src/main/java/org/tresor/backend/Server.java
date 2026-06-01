@@ -1,7 +1,5 @@
 package org.tresor.backend;
 
-import com.mongodb.client.MongoClient;
-import jakarta.annotation.PostConstruct;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +10,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/study_assistant")
-@CrossOrigin("*")
-
+//@CrossOrigin("*")
 public class Server {
 
     ChatBot chatBot = new ChatBot();
@@ -31,14 +28,16 @@ public class Server {
      */
     @PostMapping("/signup")
     public ResponseEntity<?> createAccount(@RequestBody User inComingUser){
-        User user = new User(inComingUser.getUsername(), inComingUser.getPassword());
+        User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
+
         //checks if user already exist
-        boolean signUpStatus = account.doesUserExists(user);
-        if(signUpStatus){
-            return ResponseEntity.ok("Unsuccessful, User already exist");
-        }else{
+        boolean doesUserExistCheck = account.doesUserExists(user);
+        if(doesUserExistCheck){
+            //user already exist
+            return ResponseEntity.ok(false);
+        }else {
             account.createAccount(user);
-            return ResponseEntity.ok("successful");
+            return ResponseEntity.ok(true);
         }
     }
 
@@ -48,11 +47,11 @@ public class Server {
      */
     @PostMapping("/login")
     public ResponseEntity<?> logIn(@RequestBody User inComingUser){
-        User user = new User(inComingUser.getUsername(), inComingUser.getPassword());
+        User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
         //checks if user already exist
-        boolean logInStatus = account.doesUserExists(user);
-        if(!logInStatus){
+        boolean doesUserExistCheck = account.doesUserExists(user);
+        if(!doesUserExistCheck){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
         }
         else{

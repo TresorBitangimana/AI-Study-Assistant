@@ -28,7 +28,9 @@ public class Account {
 
         // Build and insert the user document
         Document newUser = new Document("username", user.getUsername())
-                .append("password", hashedPassword);
+                .append("password", hashedPassword)
+                .append("full_name", user.getFullName());
+
         usersCollection.insertOne(newUser);
     }
 

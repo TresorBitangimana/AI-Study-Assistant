@@ -2,6 +2,7 @@ function Dashboard({
     active,
     activeSession,
     activeTab,
+    currentUser,
     dashboardTabs,
     handleDocumentUpload,
     onCancelPendingSession,
@@ -184,13 +185,15 @@ function Dashboard({
                                 instructions.
                             </div>
                             <div className="dashboard-instructions-actions">
-                                <button
-                                    className="btn-ghost"
-                                    onClick={onOpenUserModal}
-                                    type="button"
-                                >
-                                    Log In / Sign Up
-                                </button>
+                                {!currentUser ? (
+                                    <button
+                                        className="btn-ghost"
+                                        onClick={onOpenUserModal}
+                                        type="button"
+                                    >
+                                        Log In / Sign Up
+                                    </button>
+                                ) : null}
                                 <button
                                     className="btn-primary"
                                     onClick={onCreateSession}

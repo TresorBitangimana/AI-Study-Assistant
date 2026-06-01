@@ -201,10 +201,23 @@ function App() {
         window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     }, [theme]);
 
+    useEffect(() => {
+        if (currentUser) {
+            window.localStorage.setItem(
+                CURRENT_USER_STORAGE_KEY,
+                JSON.stringify(currentUser),
+            );
+            return;
+        }
+
+        window.localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+    }, [currentUser]);
+
     return (
         <div className={`app-shell ${theme === "dark" ? "theme-dark" : ""}`}>
             <div className="app-grid">
                 <Navation
+                    currentUser={currentUser}
                     activePanel={activePanel}
                     activeSessionId={activeSessionId}
                     navigationItems={navigationItems}
@@ -215,6 +228,7 @@ function App() {
                         setActiveSessionId(sessionId);
                         setActivePanel("session");
                     }}
+                    onLogout={() => setCurrentUser(null)}
                     setActivePanel={setActivePanel}
                     sessions={sessions}
                     theme={theme}
@@ -229,13 +243,15 @@ function App() {
                     <div className="app-header">
                         <div className="app-title">{headerTitle}</div>
                         <div className="flex flex-wrap items-center gap-2.5">
-                            <button
-                                className="btn-ghost"
-                                onClick={() => setIsUserModalOpen(true)}
-                                type="button"
-                            >
-                                Log In / Sign Up
-                            </button>
+                            {!currentUser ? (
+                                <button
+                                    className="btn-ghost"
+                                    onClick={() => setIsUserModalOpen(true)}
+                                    type="button"
+                                >
+                                    Log In / Sign Up
+                                </button>
+                            ) : null}
                             <button
                                 className="btn-ghost"
                                 onClick={openSessionModal}
@@ -261,6 +277,7 @@ function App() {
                             active={activePanel === "dashboard"}
                             activeSession={activeSession}
                             activeTab={activeTab}
+                            currentUser={currentUser}
                             onCancelPendingSession={() => {
                                 setPendingSessionName("");
                                 setUploadedDocuments([]);
