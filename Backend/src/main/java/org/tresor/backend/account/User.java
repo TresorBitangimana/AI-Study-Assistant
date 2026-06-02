@@ -1,13 +1,10 @@
 package org.tresor.backend.account;
 
-import java.util.Map;
-
 public class User {
 
     private String username;
     private String password;
     private String fullName;
-
 
     public User(String fullName, String username, String password) {
         this.username = username;

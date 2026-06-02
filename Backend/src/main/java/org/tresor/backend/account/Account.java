@@ -10,10 +10,10 @@ import org.bson.Document;
 public class Account {
 
     //mongoDB client and db set up
-    MongoDBClient mongoDBClient = new MongoDBClient();
-    MongoClient client = mongoDBClient.get();
-    MongoDatabase db = client.getDatabase("AiStudyApp");
-    MongoCollection<Document> usersCollection = db.getCollection("Users");
+    private final MongoDBClient mongoDBClient = new MongoDBClient();
+    private final MongoClient client = mongoDBClient.get();
+    private final MongoDatabase db = client.getDatabase("AiStudyApp");
+    private final MongoCollection<Document> usersCollection = db.getCollection("Users");
 
     public Account(){}
 

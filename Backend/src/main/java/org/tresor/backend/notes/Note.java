@@ -6,7 +6,7 @@ public class Note {
     private String content;
 
     /**
-     * Constuctor
+     * Constructor
      * @param title notes title
      */
     public Note(String title){

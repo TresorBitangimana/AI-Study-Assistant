@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tresor.backend.account.Account;
 import org.tresor.backend.account.User;
+import org.tresor.backend.notes.Notes;
 
 import java.io.IOException;
 
@@ -13,10 +14,23 @@ import java.io.IOException;
 //@CrossOrigin("*")
 public class Server {
 
-    ChatBot chatBot = new ChatBot();
-    Account account = new Account();
+    private final ChatBot chatBot = new ChatBot();
+    private final Account account = new Account();
+    private final Notes notes = new Notes();
+    private User user;
 
     public Server() throws IOException {
+    }
+
+    /**
+     * chatbot api
+     * @param input user input from the frontend
+     * @return Answer to the users input question
+     */
+    @PostMapping("/chat")
+    public ResponseEntity<?> chatBotApi(@RequestBody String input){
+        String botResponse = chatBot.chatToBot(input);
+        return ResponseEntity.ok(botResponse);
     }
 
     /**
@@ -28,7 +42,7 @@ public class Server {
      */
     @PostMapping("/signup")
     public ResponseEntity<?> createAccount(@RequestBody User inComingUser){
-        User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
+        user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
         //checks if user already exist
         boolean doesUserExistCheck = account.doesUserExists(user);
@@ -47,7 +61,7 @@ public class Server {
      */
     @PostMapping("/login")
     public ResponseEntity<?> logIn(@RequestBody User inComingUser){
-        User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
+        user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
         //checks if user already exist
         boolean doesUserExistCheck = account.doesUserExists(user);
@@ -60,15 +74,17 @@ public class Server {
         }
     }
 
-
     /**
-     * chatbot api
-     * @param input user input from the frontend
-     * @return Answer to the users input question
+     * api call that creates the users first note
+     * @param title title of the first note
      */
-    @PostMapping("/chat")
-    public ResponseEntity<?> chatBotApi(@RequestBody String input){
-        String botResponse = chatBot.chatToBot(input);
-        return ResponseEntity.ok(botResponse);
+    @PostMapping("/create_notes")
+    public void createNotes(@RequestBody String title){
+        notes.createNotes(user, title);
+    }
+
+    @PostMapping("/create_note")
+    public void createNote(@RequestBody String title){
+        notes.createNote(user, title);
     }
 }

@@ -9,6 +9,7 @@ import {
 const createNoteRecord = (title) => ({
     id: `note-${Date.now()}`,
     title,
+    // This field stores the note body text for the active editor.
     content: "",
 });
 
@@ -51,11 +52,58 @@ function Notes({ active }, ref) {
             return;
         }
 
+        if (hasNotes) {
+            handleCreateNote(title);
+            return;
+        }
+
+        handleCreateNotes(title);
+    };
+
+    const createNoteAndOpenEditor = (title) => {
         const newNote = createNoteRecord(title);
         setNotes((current) => [newNote, ...current]);
         setActiveNoteId(newNote.id);
         setNoteTitleDraft("");
         setIsCreatingNote(false);
+    };
+
+    const handleCreateNotes = async (titleInput = noteTitleDraft) => {
+        const title = titleInput.trim();
+        if (!title) {
+            return;
+        }
+
+        await fetch("http://localhost:8080/api/study_assistant/create_notes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title }),
+        });
+
+        createNoteAndOpenEditor(title);
+    };
+
+    const handleCreateNote = async (titleInput = noteTitleDraft) => {
+        const title = titleInput.trim();
+        if (!title) {
+            return;
+        }
+
+        await fetch("http://localhost:8080/api/study_assistant/create_note", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title }),
+        });
+
+        createNoteAndOpenEditor(title);
+    };
+
+    const handleTitleChange = () => {
+        // Placeholder for title change handling. State sync can be wired here later.
+    };
+
+    const handleContentChange = () => {
+        // Placeholder for content change handling. State sync can be wired here later.
     };
 
     useEffect(() => {
@@ -280,18 +328,14 @@ function Notes({ active }, ref) {
                 <div className="editor-content">
                     <input
                         className="note-title-input"
-                        onChange={(event) =>
-                            updateActiveNote("title", event.target.value)
-                        }
+                        onChange={handleTitleChange}
                         placeholder="Untitled Note"
                         type="text"
                         value={activeNote?.title ?? ""}
                     />
                     <textarea
                         className="note-textarea"
-                        onChange={(event) =>
-                            updateActiveNote("content", event.target.value)
-                        }
+                        onChange={handleContentChange}
                         placeholder="Start writing your notes here..."
                         ref={noteTextareaRef}
                         value={activeNote?.content ?? ""}
