@@ -39,6 +39,7 @@ function createSessionId() {
 
 function App() {
     const notesSectionRef = useRef(null);
+    const [notesResetKey, setNotesResetKey] = useState(0);
     const [theme, setTheme] = useState(() => {
         if (typeof window === "undefined") {
             return "light";
@@ -191,6 +192,21 @@ function App() {
         );
     };
 
+    const handleLogout = () => {
+        setCurrentUser(null);
+        setSessions([]);
+        setActiveSessionId(null);
+        setUploadedDocuments([]);
+        setPendingSessionName("");
+        setSessionModalMode(null);
+        setEditingSessionId(null);
+        setSessionDraftName("");
+        setIsUserModalOpen(false);
+        setActivePanel("dashboard");
+        setActiveTab("Overview");
+        setNotesResetKey((current) => current + 1);
+    };
+
     const headerTitle =
         activePanel === "session" && activeSession
             ? activeSession.name
@@ -228,7 +244,6 @@ function App() {
                         setActiveSessionId(sessionId);
                         setActivePanel("session");
                     }}
-                    onLogout={() => setCurrentUser(null)}
                     setActivePanel={setActivePanel}
                     sessions={sessions}
                     theme={theme}
@@ -237,6 +252,7 @@ function App() {
                             current === "light" ? "dark" : "light",
                         )
                     }
+                    onLogout={handleLogout}
                 />
 
                 <main className="app-main">
@@ -297,6 +313,7 @@ function App() {
                         />
 
                         <Notes
+                            key={notesResetKey}
                             active={activePanel === "notes"}
                             ref={notesSectionRef}
                         />
@@ -356,6 +373,7 @@ function App() {
                                 currentUser={currentUser}
                                 onAuthChange={setCurrentUser}
                                 onClose={() => setIsUserModalOpen(false)}
+                                onLogout={handleLogout}
                             />
                         ) : null}
                     </div>

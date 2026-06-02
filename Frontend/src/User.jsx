@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-function User({ currentUser, onAuthChange, onClose }) {
+function User({ currentUser, onAuthChange, onClose, onLogout }) {
     const [mode, setMode] = useState(currentUser ? "account" : "login");
     const [fullName, setFullName] = useState("");
     const [username, setUsername] = useState("");
@@ -105,8 +105,7 @@ function User({ currentUser, onAuthChange, onClose }) {
     };
 
     const handleSignOut = () => {
-        onAuthChange(null);
-        onClose();
+        onLogout();
     };
 
     return (
