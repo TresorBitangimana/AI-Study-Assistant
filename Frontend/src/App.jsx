@@ -28,6 +28,10 @@ const sessionTypeOptions = [
 const normalizeSessionName = (value) => value.trim().toLowerCase();
 const THEME_STORAGE_KEY = "study-ai-theme";
 const CURRENT_USER_STORAGE_KEY = "study-ai-current-user";
+const GUEST_NOTES_STORAGE_KEY = "study-ai-guest-notes";
+const GUEST_SESSIONS_STORAGE_KEY = "study-ai-guest-sessions";
+const GUEST_ACTIVE_SESSION_ID_STORAGE_KEY =
+    "study-ai-guest-active-session-id";
 
 function createSessionId() {
     if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -35,6 +39,44 @@ function createSessionId() {
     }
 
     return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function readStoredGuestSessions() {
+    if (typeof window === "undefined") {
+        return [];
+    }
+
+    try {
+        const value = window.localStorage.getItem(GUEST_SESSIONS_STORAGE_KEY);
+        return value ? JSON.parse(value) : [];
+    } catch {
+        return [];
+    }
+}
+
+function readStoredGuestActiveSessionId() {
+    if (typeof window === "undefined") {
+        return null;
+    }
+
+    try {
+        return (
+            window.localStorage.getItem(
+                GUEST_ACTIVE_SESSION_ID_STORAGE_KEY,
+            ) ?? null
+        );
+    } catch {
+        return null;
+    }
+}
+
+function clearGuestSessionStorage() {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    window.localStorage.removeItem(GUEST_SESSIONS_STORAGE_KEY);
+    window.localStorage.removeItem(GUEST_ACTIVE_SESSION_ID_STORAGE_KEY);
 }
 
 function App() {
@@ -49,8 +91,10 @@ function App() {
     });
     const [activePanel, setActivePanel] = useState("dashboard");
     const [activeTab, setActiveTab] = useState("Overview");
-    const [sessions, setSessions] = useState([]);
-    const [activeSessionId, setActiveSessionId] = useState(null);
+    const [sessions, setSessions] = useState(() => readStoredGuestSessions());
+    const [activeSessionId, setActiveSessionId] = useState(() =>
+        readStoredGuestActiveSessionId(),
+    );
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
     const [pendingSessionName, setPendingSessionName] = useState("");
     const [sessionModalMode, setSessionModalMode] = useState(null);
@@ -205,6 +249,8 @@ function App() {
         setActivePanel("dashboard");
         setActiveTab("Overview");
         setNotesResetKey((current) => current + 1);
+        window.localStorage.removeItem(GUEST_NOTES_STORAGE_KEY);
+        clearGuestSessionStorage();
     };
 
     const headerTitle =
@@ -216,6 +262,28 @@ function App() {
     useEffect(() => {
         window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     }, [theme]);
+
+    useEffect(() => {
+        if (currentUser) {
+            clearGuestSessionStorage();
+            return;
+        }
+
+        window.localStorage.setItem(
+            GUEST_SESSIONS_STORAGE_KEY,
+            JSON.stringify(sessions),
+        );
+        if (activeSessionId) {
+            window.localStorage.setItem(
+                GUEST_ACTIVE_SESSION_ID_STORAGE_KEY,
+                activeSessionId,
+            );
+        } else {
+            window.localStorage.removeItem(
+                GUEST_ACTIVE_SESSION_ID_STORAGE_KEY,
+            );
+        }
+    }, [activeSessionId, currentUser, sessions]);
 
     useEffect(() => {
         if (currentUser) {
@@ -315,6 +383,7 @@ function App() {
                         <Notes
                             key={notesResetKey}
                             active={activePanel === "notes"}
+                            currentUser={currentUser}
                             ref={notesSectionRef}
                         />
 

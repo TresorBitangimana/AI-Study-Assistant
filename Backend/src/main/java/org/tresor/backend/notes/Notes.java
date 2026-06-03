@@ -83,16 +83,15 @@ public class Notes {
         // creates a new note
         Document note = new Document("title", title)
                 .append("content", "");
-
         // adds it to the note collection
         notesCollection.insertOne(note);
 
-        // gets the object id
-        ObjectId objectId = note.getObjectId("_id");
-        String id = objectId.toHexString();
+        // get the new note's id
+        String id = note.getObjectId("_id").toHexString();
 
-        // adds the note id to the list of notesArray in the stored in the user document
+        // adds the note id to the list of notesArray stored in the user document
         userNotesIds.add(id);
+
 
         // Fetch the user by username and Update the user's NotesArray in MongoDB
         usersCollection.updateOne(
@@ -101,10 +100,15 @@ public class Notes {
         );
     }
 
-    public void editNote(User user, String noteId) {
+    public void editNoteTitle(User user, String newTitle) {
+
+//        notesCollection.updateOne(
+//
+//        )
 
     }
 
-    public void editNote(String title) {
+    public void editNoteContent(User user, String newContent) {
+
     }
 }

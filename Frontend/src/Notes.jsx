@@ -13,6 +13,29 @@ const createNoteRecord = (title) => ({
     content: "",
 });
 
+const GUEST_NOTES_STORAGE_KEY = "study-ai-guest-notes";
+
+function readStoredGuestNotes() {
+    if (typeof window === "undefined") {
+        return [];
+    }
+
+    try {
+        const value = window.localStorage.getItem(GUEST_NOTES_STORAGE_KEY);
+        return value ? JSON.parse(value) : [];
+    } catch {
+        return [];
+    }
+}
+
+function clearStoredGuestNotes() {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    window.localStorage.removeItem(GUEST_NOTES_STORAGE_KEY);
+}
+
 const toolbarTools = [
     "B",
     "I",
@@ -25,8 +48,8 @@ const toolbarTools = [
     "❝",
 ];
 
-function Notes({ active }, ref) {
-    const [notes, setNotes] = useState([]);
+function Notes({ active, currentUser }, ref) {
+    const [notes, setNotes] = useState(() => readStoredGuestNotes());
     const [activeNoteId, setActiveNoteId] = useState(null);
     const [openNoteMenuId, setOpenNoteMenuId] = useState(null);
     const [isCreatingNote, setIsCreatingNote] = useState(false);
@@ -74,6 +97,11 @@ function Notes({ active }, ref) {
             return;
         }
 
+        if (!currentUser) {
+            createNoteAndOpenEditor(title);
+            return;
+        }
+
         await fetch("http://localhost:8080/api/study_assistant/create_notes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -89,6 +117,11 @@ function Notes({ active }, ref) {
             return;
         }
 
+        if (!currentUser) {
+            createNoteAndOpenEditor(title);
+            return;
+        }
+
         await fetch("http://localhost:8080/api/study_assistant/create_note", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -98,12 +131,14 @@ function Notes({ active }, ref) {
         createNoteAndOpenEditor(title);
     };
 
-    const handleTitleChange = () => {
-        // Placeholder for title change handling. State sync can be wired here later.
+    const handleTitleChange = (event) => {
+        // Keep the active note title in sync with the editor input.
+        updateActiveNote("title", event.target.value);
     };
 
-    const handleContentChange = () => {
-        // Placeholder for content change handling. State sync can be wired here later.
+    const handleContentChange = (event) => {
+        // Keep the active note body in sync with the editor textarea.
+        updateActiveNote("content", event.target.value);
     };
 
     useEffect(() => {
@@ -164,6 +199,27 @@ function Notes({ active }, ref) {
         });
         setOpenNoteMenuId(null);
     };
+
+    useEffect(() => {
+        if (currentUser) {
+            return;
+        }
+
+        window.localStorage.setItem(
+            GUEST_NOTES_STORAGE_KEY,
+            JSON.stringify(notes),
+        );
+    }, [currentUser, notes]);
+
+    useEffect(() => {
+        if (currentUser) {
+            return;
+        }
+
+        if (notes.length === 0) {
+            clearStoredGuestNotes();
+        }
+    }, [currentUser, notes.length]);
 
     const applyNoteTransform = (transform) => {
         if (!activeNoteId || !noteTextareaRef.current || !activeNote) {
