@@ -63,7 +63,8 @@ public class Notes {
      */
     public Document createFirstNote(String title) {
         // creates a new note
-        Document note = new Document("title", title)
+        Document note = new Document()
+                .append("title", title)
                 .append("content", "");
         // adds it to the note collection
         notesCollection.insertOne(note);
@@ -81,7 +82,8 @@ public class Notes {
     public void createNote(User user, String title) {
 
         // creates a new note
-        Document note = new Document("title", title)
+        Document note = new Document()
+                .append("title", title)
                 .append("content", "");
         // adds it to the note collection
         notesCollection.insertOne(note);

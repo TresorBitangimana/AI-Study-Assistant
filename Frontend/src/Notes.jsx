@@ -105,7 +105,7 @@ function Notes({ active, currentUser }, ref) {
         await fetch("http://localhost:8080/api/study_assistant/create_notes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title }),
+            body: title,
         });
 
         createNoteAndOpenEditor(title);
@@ -125,7 +125,7 @@ function Notes({ active, currentUser }, ref) {
         await fetch("http://localhost:8080/api/study_assistant/create_note", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title }),
+            body: title,
         });
 
         createNoteAndOpenEditor(title);
