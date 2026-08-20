@@ -117,7 +117,7 @@ function Navation({
                     <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                         {session.name}
                     </span>
-                    <span className="font-['IBM_Plex_Mono'] text-[10px] text-(--text-faint)">
+                    <span className="text-[10px] text-(--text-faint)">
                         {session.time}
                     </span>
                 </button>
@@ -168,10 +168,6 @@ function Navation({
         <aside className="sidebar-shell">
             <div className="flex items-center justify-center gap-2.5 px-2 py-5 lg:justify-start lg:px-4.5 lg:pb-4 lg:pt-5">
                 <img alt="StudyAI" className="brand-logo" src={activeLogo} />
-            </div>
-
-            <div className="section-label px-2.5 pb-1.5 pt-3.5 sidebar-mobile-hide">
-                Tools
             </div>
 
             <nav>

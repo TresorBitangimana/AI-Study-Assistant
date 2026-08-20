@@ -99,7 +99,7 @@ function Chart() {
                     <div className="chat-header">
                         <div className="chat-chip">✦</div>
                         <div className="flex-1">
-                            <div className="font-['Syne'] text-[13.5px] font-semibold text-(--text)">
+                            <div className="text-[13.5px] font-semibold text-(--text)">
                                 StudyAI Assistant
                             </div>
                         </div>
@@ -153,7 +153,7 @@ function Chart() {
                                         >
                                             {message.text}
                                         </div>
-                                        <div className="mt-1 font-['IBM_Plex_Mono'] text-[10px] text-(--text-faint)">
+                                        <div className="mt-1 text-[10px] text-(--text-faint)">
                                             {message.time}
                                         </div>
                                     </div>

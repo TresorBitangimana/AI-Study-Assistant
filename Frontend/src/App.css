@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -52,10 +51,19 @@
 }
 
 @layer base {
+    html,
     body {
         background: var(--bg);
         color: var(--text);
-        font-family: "DM Sans", sans-serif;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    textarea,
+    select,
+    option {
+        font-family: inherit;
     }
 
     button {
@@ -113,7 +121,7 @@
     }
 
     .section-label {
-        @apply font-['Times_New_Roman'] text-[10px] uppercase tracking-[1.4px];
+        @apply text-[10px] uppercase tracking-[1.4px];
         color: var(--text-faint);
     }
 
@@ -275,7 +283,7 @@
     }
 
     .avatar-pill {
-        @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-['Syne'] text-[11px] font-semibold text-white;
+        @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white;
         background: var(--purple);
     }
 
@@ -289,7 +297,7 @@
     }
 
     .app-title {
-        @apply font-['time-new-roman'] text-xl font-bold tracking-[-0.4px];
+        @apply text-xl font-bold tracking-[-0.4px];
         color: var(--text);
     }
 
@@ -345,7 +353,7 @@
     }
 
     .session-modal-title {
-        @apply mt-2 font-['Syne'] text-[26px] font-bold tracking-[-0.6px];
+        @apply mt-2 text-[26px] font-bold tracking-[-0.6px];
         color: var(--text);
     }
 
@@ -393,7 +401,7 @@
     }
 
     .user-account-name {
-        @apply font-['Syne'] text-[22px] font-semibold;
+        @apply text-[22px] font-semibold;
         color: var(--text);
     }
 
@@ -441,13 +449,11 @@
 
     .dashboard-instructions-title {
         @apply mt-3 text-[28px] font-bold tracking-[-0.7px];
-        font-family: sans-serif;
         color: var(--text);
     }
 
     .dashboard-instructions-copy {
         @apply mt-3 max-w-3xl text-sm leading-[1.8];
-        font-family: sans-serif;
         color: var(--text-dim);
     }
     .dashboard-instructions-actions {
@@ -488,7 +494,7 @@
     }
 
     .session-type-card-title {
-        @apply mt-2 font-['Syne'] text-[18px] font-semibold tracking-[-0.3px];
+        @apply mt-2 text-[18px] font-semibold tracking-[-0.3px];
         color: var(--text);
     }
 
@@ -539,7 +545,7 @@
     }
 
     .btn-toolbar {
-        @apply rounded-[5px] px-[9px] py-[5px] font-['IBM_Plex_Mono'] text-xs transition;
+        @apply rounded-[5px] px-[9px] py-[5px] text-xs transition;
         color: var(--text-faint);
     }
 
@@ -549,7 +555,7 @@
     }
 
     .btn-toolbar-accent {
-        @apply ml-auto rounded-[5px] border px-[10px] py-1 font-['IBM_Plex_Mono'] text-[11px] transition;
+        @apply ml-auto rounded-[5px] border px-[10px] py-1 text-[11px] transition;
         border-color: var(--success-border);
         color: var(--accent);
     }
@@ -589,7 +595,7 @@
     }
 
     .notes-empty-title {
-        @apply mt-3 font-['Syne'] text-[28px] font-bold leading-tight;
+        @apply mt-3 text-[28px] font-bold leading-tight;
         color: var(--text);
     }
 
@@ -638,7 +644,7 @@
     }
 
     .notes-list-header {
-        @apply justify-between px-[14px] py-3 font-['IBM_Plex_Mono'] text-xs tracking-[0.5px];
+        @apply justify-between px-[14px] py-3 text-xs tracking-[0.5px];
         color: var(--text-faint);
     }
 
@@ -667,7 +673,7 @@
     }
 
     .note-meta {
-        @apply font-['IBM_Plex_Mono'] text-[10px];
+        @apply text-[10px];
         color: var(--text-faint);
     }
 
@@ -723,7 +729,7 @@
     }
 
     .note-title-input {
-        @apply mb-4 w-full border-0 bg-transparent p-0 font-['Syne'] text-[22px] font-bold leading-[1.3] outline-none;
+        @apply mb-4 w-full border-0 bg-transparent p-0 text-[22px] font-bold leading-[1.3] outline-none;
         color: var(--text);
     }
 
@@ -785,7 +791,7 @@
     }
 
     .flashcard-label {
-        @apply mb-5 font-['IBM_Plex_Mono'] text-[10px] uppercase tracking-[2.3px];
+        @apply mb-5 text-[10px] uppercase tracking-[2.3px];
         color: var(--text-faint);
     }
 
@@ -795,7 +801,6 @@
 
     .flashcard-text {
         @apply text-[24px] leading-[1.35] sm:text-[29px];
-        font-family: "Times New Roman", Times, serif;
         font-weight: 700;
         color: var(--text);
     }
@@ -805,7 +810,7 @@
     }
 
     .flashcard-hint {
-        @apply mt-5 font-['IBM_Plex_Mono'] text-[13px];
+        @apply mt-5 text-[13px];
         color: var(--text-faint);
     }
 
@@ -826,7 +831,7 @@
     }
 
     .flashcard-progress {
-        @apply min-w-[78px] text-center font-['IBM_Plex_Mono'] text-[15px];
+        @apply min-w-[78px] text-center text-[15px];
         color: var(--text-faint);
     }
 
@@ -857,7 +862,7 @@
     }
 
     .timer-display {
-        @apply font-['IBM_Plex_Mono'] text-[56px] leading-none tracking-[-2px] sm:text-[72px];
+        @apply text-[56px] leading-none tracking-[-2px] sm:text-[72px];
     }
 
     .timer-display-focus {
@@ -932,12 +937,12 @@
     }
 
     .dashboard-card-label {
-        @apply font-['IBM_Plex_Mono'] text-[10px] uppercase tracking-[1.4px];
+        @apply text-[10px] uppercase tracking-[1.4px];
         color: var(--text-faint);
     }
 
     .dashboard-card-value {
-        @apply mt-3 font-['Syne'] text-[24px] font-semibold leading-[1.25];
+        @apply mt-3 text-[24px] font-semibold leading-[1.25];
         color: var(--text);
     }
 
@@ -982,7 +987,7 @@
     }
 
     .document-upload-title {
-        @apply font-['Syne'] text-[22px] font-semibold;
+        @apply text-[22px] font-semibold;
         color: var(--text);
     }
 
@@ -1023,7 +1028,7 @@
     }
 
     .document-upload-meta {
-        @apply mt-1 font-['IBM_Plex_Mono'] text-[10px];
+        @apply mt-1 text-[10px];
         color: var(--text-faint);
     }
 
@@ -1050,7 +1055,7 @@
     }
 
     .chat-chip {
-        @apply flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] font-['Syne'] text-sm text-white shadow-[0_12px_24px_rgba(0,0,0,0.1)];
+        @apply flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] text-sm text-white shadow-[0_12px_24px_rgba(0,0,0,0.1)];
         background: var(--accent);
     }
 
@@ -1148,7 +1153,7 @@
     }
 
     .session-content-type {
-        @apply inline-flex rounded-full border px-4 py-2 font-['IBM_Plex_Mono'] text-xs uppercase tracking-[1.5px];
+        @apply inline-flex rounded-full border px-4 py-2 text-xs uppercase tracking-[1.5px];
         border-color: var(--accent-border);
         color: var(--accent);
         background: var(--accent-glow);
