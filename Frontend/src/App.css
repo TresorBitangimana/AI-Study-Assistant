@@ -542,7 +542,7 @@
     }
 
     .notes-shell {
-        @apply grid h-auto grid-cols-1 gap-4 xl:h-[calc(100vh-160px)] xl:grid-cols-[220px_minmax(0,1fr)];
+        @apply grid min-h-[calc(100vh-160px)] grid-cols-1 gap-0 xl:grid-cols-[220px_minmax(0,1fr)];
     }
 
     .notes-stage {
@@ -566,9 +566,8 @@
 
     .notes-empty-card,
     .notes-create-card {
-        @apply w-full max-w-[560px] rounded-2xl border px-8 py-9 text-center;
-        border-color: var(--border);
-        background: var(--panel);
+        @apply w-full max-w-[560px] rounded-none border-0 px-8 py-9 text-center;
+        background: transparent;
     }
 
     .notes-empty-title {
@@ -591,19 +590,50 @@
 
     .notes-create-overlay {
         @apply absolute inset-0 z-20 flex items-center justify-center px-4;
-        background: rgba(17, 17, 17, 0.16);
+        background: rgba(17, 17, 17, 0.12);
         backdrop-filter: blur(1px);
     }
 
     .notes-list-shell,
     .editor-shell {
-        @apply flex min-h-0 flex-col overflow-hidden rounded-xl border;
+        @apply flex min-h-0 flex-col overflow-hidden rounded-none border-0 px-4 py-3;
+        background: transparent;
+    }
+
+    .notes-list-shell {
+        @apply xl:border-r;
         border-color: var(--border);
-        background: var(--panel);
+    }
+
+    .editor-shell {
+        @apply border-t pt-4 xl:border-t-0 xl:pt-0;
+        border-color: var(--border);
     }
 
     .notes-list-shell-placeholder {
-        background: color-mix(in srgb, var(--panel) 84%, transparent);
+        background: transparent;
+    }
+
+    .notes-list-actions {
+        @apply flex items-center justify-between px-0 py-0 pb-3;
+    }
+
+    .notes-create-note-button {
+        @apply inline-flex items-center gap-2 rounded-[8px] border px-3 py-1.5 text-[12px] font-medium transition;
+        border-color: var(--border);
+        color: var(--text-dim);
+        background: transparent;
+    }
+
+    .notes-create-note-button:hover {
+        background: var(--hover);
+        color: var(--text);
+    }
+
+    .notes-create-note-icon {
+        @apply inline-flex h-4 w-4 items-center justify-center rounded-full text-[12px] leading-none;
+        color: var(--text-faint);
+        background: color-mix(in srgb, var(--panel-soft) 65%, transparent);
     }
 
     .notes-empty-list-body {
@@ -614,30 +644,21 @@
         opacity: 0.72;
     }
 
-    .notes-list-header,
     .editor-toolbar {
-        @apply flex items-center border-b;
-        border-color: var(--border);
-    }
-
-    .notes-list-header {
-        @apply justify-between px-[14px] py-3 text-xs tracking-[0.5px];
-        color: var(--text-faint);
+        @apply flex items-center;
     }
 
     .note-row {
-        @apply relative border-b px-[14px] py-2.5 transition last:border-b-0;
-        border-color: var(--border);
+        @apply relative border-b px-3 py-2.5 transition last:border-b-0;
+        border-color: color-mix(in srgb, var(--border) 70%, transparent);
     }
 
     .note-row:hover {
-        background: var(--hover);
+        background: color-mix(in srgb, var(--hover) 45%, transparent);
     }
 
     .note-row-active {
-        @apply border-l-2;
-        border-left-color: var(--accent);
-        background: var(--panel-soft);
+        background: color-mix(in srgb, var(--panel-soft) 65%, transparent);
     }
 
     .note-title {
@@ -698,11 +719,12 @@
     }
 
     .editor-toolbar {
-        @apply flex-wrap gap-1 px-4 py-2.5;
+        @apply flex-wrap gap-1 border-b px-0 py-2.5;
+        border-color: var(--border);
     }
 
     .editor-content {
-        @apply min-h-0 flex-1 overflow-y-auto px-6 py-5;
+        @apply min-h-0 flex-1 overflow-y-auto px-0 py-5;
     }
 
     .note-title-input {

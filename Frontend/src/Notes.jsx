@@ -296,14 +296,14 @@ function Notes({ active, currentUser }, ref) {
     const noteWorkspace = hasNotes ? (
         <div className="notes-shell">
             <div className="notes-list-shell">
-                <div className="notes-list-header">
-                    <span>NOTES</span>
+                <div className="notes-list-actions">
                     <button
-                        className="btn-compact"
+                        className="notes-create-note-button"
                         onClick={createNote}
                         type="button"
                     >
-                        +
+                        <span className="notes-create-note-icon">+</span>
+                        <span>New Note</span>
                     </button>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto">
@@ -402,14 +402,14 @@ function Notes({ active, currentUser }, ref) {
     ) : (
         <div className="notes-shell">
             <div className="notes-list-shell notes-list-shell-placeholder">
-                <div className="notes-list-header">
-                    <span>NOTES</span>
+                <div className="notes-list-actions">
                     <button
-                        className="btn-compact"
+                        className="notes-create-note-button"
                         onClick={createNote}
                         type="button"
                     >
-                        +
+                        <span className="notes-create-note-icon">+</span>
+                        <span>New Note</span>
                     </button>
                 </div>
                 <div className="notes-empty-list-body">
@@ -453,7 +453,7 @@ function Notes({ active, currentUser }, ref) {
     );
 
     return (
-        <section className={active ? "block" : "hidden"}>
+        <section className={active ? "block h-full" : "hidden"}>
             <div className="notes-stage">
                 <div
                     className={`notes-stage-content ${
