@@ -289,7 +289,7 @@
     }
 
     .app-title {
-        @apply font-['Syne'] text-xl font-bold tracking-[-0.4px];
+        @apply font-['time-new-roman'] text-xl font-bold tracking-[-0.4px];
         color: var(--text);
     }
 
