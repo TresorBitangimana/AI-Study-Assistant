@@ -43,12 +43,12 @@ function Dashboard({
                 </div>
             ) : null}
 
-            <section className={active ? "block" : "hidden"}>
+            <section className={active ? "block h-full" : "hidden"}>
                 {activeTab === "Overview" ? (
                     hasPendingSession ? (
-                        <div className="dashboard-setup-shell">
+                        <div className="dashboard-setup-shell dashboard-bleed">
                             <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 2xl:grid-cols-4 mt-5">
-                                <div className="panel-card-file-upload lg:col-span-2">
+                                <div className="dashboard-panel dashboard-panel-large lg:col-span-2">
                                     <div className="dashboard-setup-card-actions">
                                         <button
                                             className="btn-ghost"
@@ -138,7 +138,7 @@ function Dashboard({
                                     </div>
                                 </div>
 
-                                <div className="dashboard-session-setup lg:col-span-2">
+                                <div className="dashboard-panel dashboard-panel-large lg:col-span-2">
                                     <div className="dashboard-card-value">
                                         {pendingSessionName}
                                     </div>
@@ -168,7 +168,7 @@ function Dashboard({
                             </div>
                         </div>
                     ) : (
-                        <div className="dashboard-instructions">
+                        <div className="dashboard-panel dashboard-bleed dashboard-instructions">
                             <h2 className="dashboard-instructions-title">
                                 Start by creating a new study session
                             </h2>
@@ -207,21 +207,21 @@ function Dashboard({
                 ) : null}
 
                 {activeTab === "Progress" ? (
-                    <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.4fr_1fr] mt-5">
-                        <div className="panel-card">
+                    <div className="dashboard-bleed grid min-h-[calc(100vh-220px)] grid-cols-1 gap-3.5 lg:grid-cols-[1.4fr_1fr] mt-5">
+                        <div className="dashboard-panel">
                             <div className="dashboard-card-value">
                                 <h1>Hello World!!!</h1>
                             </div>
                         </div>
-                        <div className="panel-card">
+                        <div className="dashboard-panel">
                             <div className="dashboard-card-label">Test101</div>
                         </div>
                     </div>
                 ) : null}
 
                 {activeTab === "Resources" ? (
-                    <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 mt-5">
-                        <div className="panel-card lg:col-span-3 py-15"></div>
+                    <div className="dashboard-bleed grid min-h-[calc(100vh-220px)] grid-cols-1 gap-3.5 lg:grid-cols-3 mt-5">
+                        <div className="dashboard-panel lg:col-span-3 py-15"></div>
                     </div>
                 ) : null}
             </section>
