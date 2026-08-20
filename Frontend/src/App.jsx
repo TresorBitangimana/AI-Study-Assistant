@@ -17,7 +17,6 @@ const navigationItems = [
     { id: "timer", label: "Focus Timer" },
 ];
 
-const dashboardTabs = ["Overview", "Progress", "Resources"];
 const sessionTypeOptions = [
     { id: "flashcards", label: "Create Flashcards" },
     { id: "quiz", label: "Generate Quiz" },
@@ -90,7 +89,6 @@ function App() {
         return window.localStorage.getItem(THEME_STORAGE_KEY) ?? "light";
     });
     const [activePanel, setActivePanel] = useState("dashboard");
-    const [activeTab, setActiveTab] = useState("Overview");
     const [sessions, setSessions] = useState(() => readStoredGuestSessions());
     const [activeSessionId, setActiveSessionId] = useState(() =>
         readStoredGuestActiveSessionId(),
@@ -183,7 +181,6 @@ function App() {
 
         setPendingSessionName(sessionName);
         setActivePanel("dashboard");
-        setActiveTab("Overview");
         closeSessionModal();
     };
 
@@ -247,7 +244,6 @@ function App() {
         setSessionDraftName("");
         setIsUserModalOpen(false);
         setActivePanel("dashboard");
-        setActiveTab("Overview");
         setNotesResetKey((current) => current + 1);
         window.localStorage.removeItem(GUEST_NOTES_STORAGE_KEY);
         clearGuestSessionStorage();
@@ -359,16 +355,12 @@ function App() {
                     <div className="content-scroll">
                         <Dashboard
                             active={activePanel === "dashboard"}
-                            activeSession={activeSession}
-                            activeTab={activeTab}
                             currentUser={currentUser}
                             onCancelPendingSession={() => {
                                 setPendingSessionName("");
                                 setUploadedDocuments([]);
                                 setActivePanel("dashboard");
-                                setActiveTab("Overview");
                             }}
-                            dashboardTabs={dashboardTabs}
                             handleDocumentUpload={handleDocumentUpload}
                             onOpenUserModal={() => setIsUserModalOpen(true)}
                             onCreateSession={openSessionModal}
@@ -376,7 +368,6 @@ function App() {
                             pendingSessionName={pendingSessionName}
                             removeUploadedDocument={removeUploadedDocument}
                             sessionTypeOptions={sessionTypeOptions}
-                            setActiveTab={setActiveTab}
                             uploadedDocuments={uploadedDocuments}
                         />
 

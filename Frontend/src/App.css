@@ -301,35 +301,6 @@
         color: var(--text);
     }
 
-    .tabs-row {
-        @apply border-b px-[18px] py-3 sm:px-7;
-        border-color: var(--border);
-    }
-
-    .tabs-group {
-        @apply flex flex-wrap items-center gap-1;
-    }
-
-    .tab-button {
-        @apply border-b-2 px-4 py-2 text-[13px] transition;
-        border-color: transparent;
-        color: var(--text-faint);
-    }
-
-    .tab-button:hover {
-        color: var(--text-dim);
-    }
-
-    .tab-button-active {
-        border-color: var(--accent);
-        color: var(--accent);
-    }
-
-    .tab-session-indicator {
-        @apply max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap font-medium;
-        color: var(--text-dim);
-    }
-
     .content-scroll {
         @apply relative flex-1 overflow-y-auto px-[18px] py-6 sm:px-7;
     }
