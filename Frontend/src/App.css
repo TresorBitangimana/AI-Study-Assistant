@@ -55,7 +55,12 @@
     body {
         background: var(--bg);
         color: var(--text);
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family:
+            "Inter",
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
     }
 
     button,
@@ -412,7 +417,7 @@
     }
 
     .dashboard-panel-large {
-        @apply min-h-[calc(100vh-220px)];
+        @apply h-fit;
     }
 
     .dashboard-setup-card-actions {

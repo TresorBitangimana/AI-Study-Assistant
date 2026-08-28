@@ -468,9 +468,6 @@ function Notes({ active, currentUser }, ref) {
                 {isCreatingNote || !hasNotes ? (
                     <div className="notes-create-overlay">
                         <div className="notes-create-card">
-                            <div className="section-label">
-                                {hasNotes ? "New Note" : "Notes"}
-                            </div>
                             <h2 className="notes-empty-title">
                                 {hasNotes
                                     ? "Title your note"

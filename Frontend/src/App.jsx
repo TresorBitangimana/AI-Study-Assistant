@@ -17,13 +17,6 @@ const navigationItems = [
     { id: "timer", label: "Focus Timer" },
 ];
 
-const sessionTypeOptions = [
-    { id: "flashcards", label: "Create Flashcards" },
-    { id: "quiz", label: "Generate Quiz" },
-    { id: "chat", label: "Chat with AI" },
-    { id: "explain", label: "Explain like I'm 5" },
-];
-
 const normalizeSessionName = (value) => value.trim().toLowerCase();
 const THEME_STORAGE_KEY = "study-ai-theme";
 const CURRENT_USER_STORAGE_KEY = "study-ai-current-user";
@@ -361,15 +354,14 @@ function App() {
                                 setUploadedDocuments([]);
                                 setActivePanel("dashboard");
                             }}
-                            handleDocumentUpload={handleDocumentUpload}
-                            onOpenUserModal={() => setIsUserModalOpen(true)}
-                            onCreateSession={openSessionModal}
-                            onSelectSessionType={createSessionFromType}
-                            pendingSessionName={pendingSessionName}
-                            removeUploadedDocument={removeUploadedDocument}
-                            sessionTypeOptions={sessionTypeOptions}
-                            uploadedDocuments={uploadedDocuments}
-                        />
+                        handleDocumentUpload={handleDocumentUpload}
+                        onOpenUserModal={() => setIsUserModalOpen(true)}
+                        onCreateSession={openSessionModal}
+                        pendingSessionName={pendingSessionName}
+                        removeUploadedDocument={removeUploadedDocument}
+                        uploadedDocuments={uploadedDocuments}
+                        onSelectSessionType={createSessionFromType}
+                    />
 
                         <Notes
                             key={notesResetKey}
