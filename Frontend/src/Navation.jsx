@@ -186,7 +186,7 @@ function Navation({
                 ))}
             </nav>
 
-            <div className="section-label px-2.5 pb-1.5 pt-3.5 sidebar-mobile-hide">
+            <div className="px-2.5 pb-1.5 pt-3.5 text-[12.5px] font-medium text-(--text-dim) sidebar-mobile-hide">
                 Sessions
             </div>
 

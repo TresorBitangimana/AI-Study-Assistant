@@ -11,13 +11,12 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/study_assistant")
-@CrossOrigin("*")
+//@CrossOrigin("*")
 public class Server {
 
     private final ChatBot chatBot = new ChatBot();
     private final Account account = new Account();
     private final Notes notes = new Notes();
-    private User user;
 
     public Server() throws IOException {
     }
@@ -42,7 +41,7 @@ public class Server {
      */
     @PostMapping("/signup")
     public ResponseEntity<?> createAccount(@RequestBody User inComingUser){
-        user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
+        User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
         //checks if user already exist
         boolean doesUserExistCheck = account.doesUserNameExist(user.getUsername());
@@ -61,17 +60,19 @@ public class Server {
      */
     @PostMapping("/login")
     public ResponseEntity<?> logIn(@RequestBody User inComingUser){
-        user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
+        User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
         //checks if user already exist
-        boolean isAuthenticated = account.authenticate(user);
+        boolean isAuthenticated = account.doesUserExists(user);
         if(!isAuthenticated){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
         }
         else{
             //returns user data
             User authenticatedUser = account.findUserByUsername(user.getUsername());
-            this.user = authenticatedUser;
+
+            //calls functions and returns userdata
+
             return ResponseEntity.ok(authenticatedUser);
         }
     }

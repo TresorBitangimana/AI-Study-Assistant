@@ -32,6 +32,12 @@ public class Account {
         usersCollection.insertOne(newUser);
     }
 
+    /**
+     * Seachers the database to check if the user exists
+     * @param username Username to be searched
+     * @return True is the username exists
+     *          False if the username does not exist
+     */
     public boolean doesUserNameExist(String username) {
         MongoCollection<Document> usersCollection = getUsersCollection();
         Document result = usersCollection.find(new Document("username", username)).first();
@@ -44,25 +50,19 @@ public class Account {
      * @return true if a user already exists
      *         false if a user does not exist
      */
-    public boolean doesUserExists(User user){
-        return authenticate(user);
-    }
-
-    public boolean authenticate(User user) {
+    public boolean doesUserExists(User user) {
         MongoCollection<Document> usersCollection = getUsersCollection();
         Document result = usersCollection.find(new Document("username", user.getUsername())).first();
 
         if (result == null) {
             return false;
         }
-
         String storedHash = result.getString("password");
         String rawPassword = user.getPassword();
 
         if (storedHash == null || rawPassword == null) {
             return false;
         }
-
         return BCrypt.checkpw(rawPassword, storedHash);
     }
 

@@ -29,11 +29,20 @@ public class ChatBot {
             %s
             """;
 
+    /**
+     * ChatBot Constructor
+     * <p>boots the ai model before the first user prompt</p>
+     * @throws IOException
+     */
     public ChatBot() throws IOException {
 
+        //paths to bot frontend resources to use to answer user questions
         frontendMDPath = Files.readString(Path.of("src/main/resources/frontend.md"));
-        // Warm-up is best-effort so the backend can still boot when the local
-        // model server is unavailable during tests or development.
+
+
+        //boots the ai model by giving it a prompt with instructions and also the
+        //MD file containing all the frontend information to be used to answer
+        //user questions
         try {
             String systemMessage = systemPrompt.formatted(frontendMDPath);
             aiModelClient.chat(systemMessage);
