@@ -5,13 +5,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tresor.backend.account.Account;
 import org.tresor.backend.account.User;
+import org.tresor.backend.notes.NoteRequest;
 import org.tresor.backend.notes.Notes;
+import org.tresor.backend.sessions.CreateSessionRequest;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study_assistant")
-//@CrossOrigin("*")
 public class Server {
 
     private final ChatBot chatBot = new ChatBot();
@@ -73,8 +76,16 @@ public class Server {
 
             //calls functions and returns userdata
 
-            return ResponseEntity.ok(authenticatedUser);
+            return ResponseEntity.ok("Hello World!!");
         }
+    }
+
+    @PostMapping("/create_session")
+    public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request){
+
+//        System.out.println(Arrays.toString(request.getFiles().toArray()));
+
+        return ResponseEntity.ok(request);
     }
 
     /**
@@ -83,16 +94,14 @@ public class Server {
      */
     @PostMapping("/create_notes")
     public void createNotes(@RequestBody NoteRequest request){
-        User requestUser = new User(null, request.username(), null);
-        notes.createNotes(requestUser, request.title());
+        User requestUser = new User(null, request.getUsername(), null);
+        notes.initializeUserNotes(requestUser, request.getTitle());
     }
 
     @PostMapping("/create_note")
     public void createNote(@RequestBody NoteRequest request){
-        User requestUser = new User(null, request.username(), null);
-        notes.createNote(requestUser, request.title());
+        User requestUser = new User(null, request.getUsername(), null);
+        notes.createNote(requestUser, request.getTitle());
     }
 
-    private record NoteRequest(String username, String title) {
-    }
 }

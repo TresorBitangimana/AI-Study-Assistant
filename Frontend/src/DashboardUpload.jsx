@@ -6,12 +6,12 @@ const sessionTypeOptions = [
 ];
 
 function DashboardUpload({
+    handleDocumentUpload,
     onCancelPendingSession,
     onSelectSessionType,
     pendingSessionName,
     removeUploadedDocument,
     uploadedDocuments,
-    handleDocumentUpload,
 }) {
     return (
         <div className="dashboard-setup-shell dashboard-bleed">
@@ -94,7 +94,9 @@ function DashboardUpload({
                 </div>
 
                 <div className="dashboard-panel dashboard-panel-large lg:col-span-2">
-                    <div className="dashboard-card-value">{pendingSessionName}</div>
+                    <div className="dashboard-card-value">
+                        {pendingSessionName}
+                    </div>
                     <div className="dashboard-session-copy">
                         Select the study workflow for this session. The session
                         will be created as soon as you choose one option below.

@@ -53,9 +53,7 @@ function App() {
     });
     const [activePanel, setActivePanel] = useState("dashboard");
     const [sessions, setSessions] = useState(() =>
-        storedCurrentUser
-            ? readUserSessions(storedCurrentUser.username)
-            : [],
+        storedCurrentUser ? readUserSessions(storedCurrentUser.username) : [],
     );
     const [activeSessionId, setActiveSessionId] = useState(() =>
         storedCurrentUser
@@ -153,21 +151,44 @@ function App() {
         closeSessionModal();
     };
 
-    const createSessionFromType = (sessionType) => {
-        if (!pendingSessionName) {
+    const createSessionFromType = async (sessionType) => {
+        if (!pendingSessionName || !currentUser?.username) {
             return;
+        }
+
+        try {
+            const response = await fetch(
+                "http://localhost:8080/api/study_assistant/create_session",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        sessionTypeName: sessionType.label,
+                        files: uploadedDocuments,
+                    }),
+                },
+            );
+
+            if (!response.ok) {
+                throw new Error("Request failed");
+            }
+        } catch (error) {
+            console.error("Failed to create session on the backend", error);
         }
 
         const newSession = {
             id: createSessionId(),
             name: pendingSessionName,
             type: sessionType.label,
+            files: uploadedDocuments,
         };
 
         setSessions((current) => [newSession, ...current]);
         setActiveSessionId(newSession.id);
         setActivePanel("session");
         setPendingSessionName("");
+        setUploadedDocuments([]);
     };
 
     const deleteSession = (sessionId) => {
@@ -327,14 +348,14 @@ function App() {
                                 setUploadedDocuments([]);
                                 setActivePanel("dashboard");
                             }}
-                        handleDocumentUpload={handleDocumentUpload}
-                        onOpenUserModal={() => setIsUserModalOpen(true)}
-                        onCreateSession={openSessionModal}
-                        pendingSessionName={pendingSessionName}
-                        removeUploadedDocument={removeUploadedDocument}
-                        uploadedDocuments={uploadedDocuments}
-                        onSelectSessionType={createSessionFromType}
-                    />
+                            handleDocumentUpload={handleDocumentUpload}
+                            onOpenUserModal={() => setIsUserModalOpen(true)}
+                            onCreateSession={openSessionModal}
+                            pendingSessionName={pendingSessionName}
+                            removeUploadedDocument={removeUploadedDocument}
+                            uploadedDocuments={uploadedDocuments}
+                            onSelectSessionType={createSessionFromType}
+                        />
 
                         <Notes
                             key={`${currentUser?.username ?? "guest"}-${notesResetKey}`}

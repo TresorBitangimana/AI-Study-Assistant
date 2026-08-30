@@ -31,9 +31,8 @@ public class Notes {
      * @param title the title of the first note being created
      * @param user  the current user creating the note
      */
-    public void createNotes(User user, String title) {
+    public void initializeUserNotes(User user, String title) {
         MongoCollection<Document> usersCollection = getUsersCollection();
-        MongoCollection<Document> notesCollection = getNotesCollection();
 
         // creates the first note and adds it to the notesArray
         Document note = createFirstNote(title);
@@ -87,14 +86,11 @@ public class Notes {
                 .append("content", "");
         // adds it to the note collection
         notesCollection.insertOne(note);
-
         // get the new note's id
         String id = note.getObjectId("_id").toHexString();
 
         // adds the note id to the list of notesArray stored in the user document
         userNotesIds.add(id);
-
-
         // Fetch the user by username and Update the user's NotesArray in MongoDB
         usersCollection.updateOne(
                 new Document("username", user.getUsername()), // filter
@@ -102,17 +98,11 @@ public class Notes {
         );
     }
 
-    public void editNoteTitle(User user, String newTitle) {
-
-//        notesCollection.updateOne(
-//
-//        )
-
-    }
-
+    public void editNoteTitle(User user, String newTitle) {}
     public void editNoteContent(User user, String newContent) {
 
     }
+
 
     private MongoCollection<Document> getUsersCollection() {
         MongoClient client = mongoDBClient.get();
