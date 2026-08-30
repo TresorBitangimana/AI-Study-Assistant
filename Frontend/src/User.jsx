@@ -96,12 +96,59 @@ function User({ currentUser, onAuthChange, onClose, onLogout }) {
         }
     };
 
-    const handleUserLoggedIn = () => {
-        // Placeholder for any post-login setup after a successful account creation.
+    const handleLogin = async () => {
+        const normalizedUsername = username.trim().toLowerCase();
+
+        if (!normalizedUsername || !password.trim()) {
+            setErrorMessage("Username and password are required.");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "http://localhost:8080/api/study_assistant/login",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: normalizedUsername,
+                        password,
+                    }),
+                },
+            );
+
+            if (response.status === 404 || response.status === 401) {
+                setErrorMessage("Username or password is incorrect.");
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("Request failed");
+            }
+
+            const responseText = (await response.text()).trim();
+            const accountData = responseText ? JSON.parse(responseText) : null;
+
+            const sessionUser = {
+                name: accountData?.fullName ?? accountData?.full_name ?? "",
+                username:
+                    accountData?.username ?? normalizedUsername,
+            };
+
+            if (!sessionUser.name) {
+                sessionUser.name = sessionUser.username;
+            }
+
+            onAuthChange(sessionUser);
+            resetForm();
+            onClose();
+        } catch {
+            setErrorMessage("Could not log you in right now. Please try again.");
+        }
     };
 
-    const handleLogin = () => {
-        // Placeholder for the login flow. Backend login integration can be wired here later.
+    const handleUserLoggedIn = () => {
+        // Placeholder for any post-login setup after a successful account creation.
     };
 
     const handleSignOut = () => {

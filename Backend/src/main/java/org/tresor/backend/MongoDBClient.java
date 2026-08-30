@@ -8,7 +8,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class MongoDBClient {
 
     private static MongoClient client;
-    private final MongoClientSettings settings;
+    private final String connectionString;
 
     /**
      * Constructor
@@ -18,16 +18,7 @@ public class MongoDBClient {
                 .ignoreIfMissing()
                 .load();
 
-        String connectionString = dotenv.get("MONGODB_CONNECTION_STRING");
-
-        ServerApi serverApi = ServerApi.builder()
-                .version(ServerApiVersion.V1)
-                .build();
-
-        settings = MongoClientSettings.builder()
-                .applyConnectionString(new ConnectionString(connectionString))
-                .serverApi(serverApi)
-                .build();
+        connectionString = dotenv.get("MONGODB_CONNECTION_STRING");
     }
 
     /**
@@ -41,6 +32,14 @@ public class MongoDBClient {
         // checks if a mongoDB instance already exists, if not creates a new instance.
         if (client == null) {
             try {
+                ServerApi serverApi = ServerApi.builder()
+                        .version(ServerApiVersion.V1)
+                        .build();
+
+                MongoClientSettings settings = MongoClientSettings.builder()
+                        .applyConnectionString(new ConnectionString(connectionString))
+                        .serverApi(serverApi)
+                        .build();
                 client = MongoClients.create(settings);
             } catch (MongoException e) {
                 throw new RuntimeException("Failed to create a MongoDB client", e);

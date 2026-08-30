@@ -7,7 +7,6 @@ function Sessions({ active, session }) {
         <section className="block h-full">
             <div className="session-content-shell">
                 <div className="session-content-meta">
-                    <span className="section-label">Session Type</span>
                     <span className="session-content-type">{session.type}</span>
                 </div>
                 <div className="session-content-stage" />

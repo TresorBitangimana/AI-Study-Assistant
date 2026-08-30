@@ -5,6 +5,12 @@ import {
     useRef,
     useState,
 } from "react";
+import {
+    readGuestNotes,
+    readUserNotes,
+    writeGuestNotes,
+    writeUserNotes,
+} from "./storage";
 
 const createNoteRecord = (title) => ({
     id: `note-${Date.now()}`,
@@ -12,29 +18,6 @@ const createNoteRecord = (title) => ({
     // This field stores the note body text for the active editor.
     content: "",
 });
-
-const GUEST_NOTES_STORAGE_KEY = "study-ai-guest-notes";
-
-function readStoredGuestNotes() {
-    if (typeof window === "undefined") {
-        return [];
-    }
-
-    try {
-        const value = window.localStorage.getItem(GUEST_NOTES_STORAGE_KEY);
-        return value ? JSON.parse(value) : [];
-    } catch {
-        return [];
-    }
-}
-
-function clearStoredGuestNotes() {
-    if (typeof window === "undefined") {
-        return;
-    }
-
-    window.localStorage.removeItem(GUEST_NOTES_STORAGE_KEY);
-}
 
 const toolbarTools = [
     "B",
@@ -49,7 +32,9 @@ const toolbarTools = [
 ];
 
 function Notes({ active, currentUser }, ref) {
-    const [notes, setNotes] = useState(() => readStoredGuestNotes());
+    const [notes, setNotes] = useState(() =>
+        currentUser ? readUserNotes(currentUser.username) : readGuestNotes(),
+    );
     const [activeNoteId, setActiveNoteId] = useState(null);
     const [openNoteMenuId, setOpenNoteMenuId] = useState(null);
     const [isCreatingNote, setIsCreatingNote] = useState(false);
@@ -105,7 +90,10 @@ function Notes({ active, currentUser }, ref) {
         await fetch("http://localhost:8080/api/study_assistant/create_notes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: title,
+            body: JSON.stringify({
+                username: currentUser.username,
+                title,
+            }),
         });
 
         createNoteAndOpenEditor(title);
@@ -125,7 +113,10 @@ function Notes({ active, currentUser }, ref) {
         await fetch("http://localhost:8080/api/study_assistant/create_note", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: title,
+            body: JSON.stringify({
+                username: currentUser.username,
+                title,
+            }),
         });
 
         createNoteAndOpenEditor(title);
@@ -202,13 +193,11 @@ function Notes({ active, currentUser }, ref) {
 
     useEffect(() => {
         if (currentUser) {
+            writeUserNotes(currentUser.username, notes);
             return;
         }
 
-        window.localStorage.setItem(
-            GUEST_NOTES_STORAGE_KEY,
-            JSON.stringify(notes),
-        );
+        writeGuestNotes(notes);
     }, [currentUser, notes]);
 
     useEffect(() => {
@@ -217,7 +206,7 @@ function Notes({ active, currentUser }, ref) {
         }
 
         if (notes.length === 0) {
-            clearStoredGuestNotes();
+            writeGuestNotes([]);
         }
     }, [currentUser, notes.length]);
 

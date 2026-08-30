@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/study_assistant")
-//@CrossOrigin("*")
+@CrossOrigin("*")
 public class Server {
 
     private final ChatBot chatBot = new ChatBot();
@@ -45,7 +45,7 @@ public class Server {
         user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
         //checks if user already exist
-        boolean doesUserExistCheck = account.doesUserExists(user);
+        boolean doesUserExistCheck = account.doesUserNameExist(user.getUsername());
         if(doesUserExistCheck){
             //user already exist
             return ResponseEntity.ok(false);
@@ -64,27 +64,34 @@ public class Server {
         user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
         //checks if user already exist
-        boolean doesUserExistCheck = account.doesUserExists(user);
-        if(!doesUserExistCheck){
+        boolean isAuthenticated = account.authenticate(user);
+        if(!isAuthenticated){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
         }
         else{
             //returns user data
-            return ResponseEntity.ok("");
+            User authenticatedUser = account.findUserByUsername(user.getUsername());
+            this.user = authenticatedUser;
+            return ResponseEntity.ok(authenticatedUser);
         }
     }
 
     /**
      * api call that creates the users first note
-     * @param title title of the first note
+     * @param request received object from the frontend
      */
     @PostMapping("/create_notes")
-    public void createNotes(@RequestBody String title){
-        notes.createNotes(user, title);
+    public void createNotes(@RequestBody NoteRequest request){
+        User requestUser = new User(null, request.username(), null);
+        notes.createNotes(requestUser, request.title());
     }
 
     @PostMapping("/create_note")
-    public void createNote(@RequestBody String title){
-        notes.createNote(user, title);
+    public void createNote(@RequestBody NoteRequest request){
+        User requestUser = new User(null, request.username(), null);
+        notes.createNote(requestUser, request.title());
+    }
+
+    private record NoteRequest(String username, String title) {
     }
 }

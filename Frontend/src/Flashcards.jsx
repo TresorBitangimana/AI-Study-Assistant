@@ -16,8 +16,7 @@ function Flashcards({ active }) {
                             <div className="flashcard-face flashcard-front">
                                 <div className="flashcard-content">
                                     <div className="flashcard-text">
-                                        What is the formula for Integration by
-                                        Parts?
+                                        Question
                                     </div>
                                     <div className="flashcard-hint">
                                         Click to reveal answer
@@ -31,7 +30,7 @@ function Flashcards({ active }) {
                                         Answer
                                     </div>
                                     <div className="flashcard-text flashcard-text-answer">
-                                        ∫u dv = uv - ∫v du
+                                        Answer..................
                                     </div>
                                 </div>
                             </div>

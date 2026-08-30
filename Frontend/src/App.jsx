@@ -8,6 +8,17 @@ import Notes from "./Notes";
 import Navation from "./Navation";
 import Sessions from "./Sessions";
 import User from "./User";
+import {
+    clearGuestStorage,
+    migrateGuestStorageToUser,
+    readStoredCurrentUser,
+    readUserActiveSessionId,
+    readUserSessions,
+    writeGuestActiveSessionId,
+    writeGuestSessions,
+    writeUserActiveSessionId,
+    writeUserSessions,
+} from "./storage";
 import "./App.css";
 
 const navigationItems = [
@@ -20,10 +31,6 @@ const navigationItems = [
 const normalizeSessionName = (value) => value.trim().toLowerCase();
 const THEME_STORAGE_KEY = "study-ai-theme";
 const CURRENT_USER_STORAGE_KEY = "study-ai-current-user";
-const GUEST_NOTES_STORAGE_KEY = "study-ai-guest-notes";
-const GUEST_SESSIONS_STORAGE_KEY = "study-ai-guest-sessions";
-const GUEST_ACTIVE_SESSION_ID_STORAGE_KEY =
-    "study-ai-guest-active-session-id";
 
 function createSessionId() {
     if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -33,47 +40,10 @@ function createSessionId() {
     return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function readStoredGuestSessions() {
-    if (typeof window === "undefined") {
-        return [];
-    }
-
-    try {
-        const value = window.localStorage.getItem(GUEST_SESSIONS_STORAGE_KEY);
-        return value ? JSON.parse(value) : [];
-    } catch {
-        return [];
-    }
-}
-
-function readStoredGuestActiveSessionId() {
-    if (typeof window === "undefined") {
-        return null;
-    }
-
-    try {
-        return (
-            window.localStorage.getItem(
-                GUEST_ACTIVE_SESSION_ID_STORAGE_KEY,
-            ) ?? null
-        );
-    } catch {
-        return null;
-    }
-}
-
-function clearGuestSessionStorage() {
-    if (typeof window === "undefined") {
-        return;
-    }
-
-    window.localStorage.removeItem(GUEST_SESSIONS_STORAGE_KEY);
-    window.localStorage.removeItem(GUEST_ACTIVE_SESSION_ID_STORAGE_KEY);
-}
-
 function App() {
     const notesSectionRef = useRef(null);
     const [notesResetKey, setNotesResetKey] = useState(0);
+    const storedCurrentUser = readStoredCurrentUser();
     const [theme, setTheme] = useState(() => {
         if (typeof window === "undefined") {
             return "light";
@@ -82,9 +52,15 @@ function App() {
         return window.localStorage.getItem(THEME_STORAGE_KEY) ?? "light";
     });
     const [activePanel, setActivePanel] = useState("dashboard");
-    const [sessions, setSessions] = useState(() => readStoredGuestSessions());
+    const [sessions, setSessions] = useState(() =>
+        storedCurrentUser
+            ? readUserSessions(storedCurrentUser.username)
+            : [],
+    );
     const [activeSessionId, setActiveSessionId] = useState(() =>
-        readStoredGuestActiveSessionId(),
+        storedCurrentUser
+            ? readUserActiveSessionId(storedCurrentUser.username)
+            : null,
     );
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
     const [pendingSessionName, setPendingSessionName] = useState("");
@@ -238,8 +214,16 @@ function App() {
         setIsUserModalOpen(false);
         setActivePanel("dashboard");
         setNotesResetKey((current) => current + 1);
-        window.localStorage.removeItem(GUEST_NOTES_STORAGE_KEY);
-        clearGuestSessionStorage();
+        clearGuestStorage();
+    };
+
+    const handleAuthChange = (nextUser) => {
+        const migratedStorage = migrateGuestStorageToUser(nextUser.username);
+        setCurrentUser(nextUser);
+        setSessions(migratedStorage.sessions);
+        setActiveSessionId(migratedStorage.activeSessionId);
+        setIsUserModalOpen(false);
+        setActivePanel("dashboard");
     };
 
     const headerTitle =
@@ -254,24 +238,13 @@ function App() {
 
     useEffect(() => {
         if (currentUser) {
-            clearGuestSessionStorage();
+            writeUserSessions(currentUser.username, sessions);
+            writeUserActiveSessionId(currentUser.username, activeSessionId);
             return;
         }
 
-        window.localStorage.setItem(
-            GUEST_SESSIONS_STORAGE_KEY,
-            JSON.stringify(sessions),
-        );
-        if (activeSessionId) {
-            window.localStorage.setItem(
-                GUEST_ACTIVE_SESSION_ID_STORAGE_KEY,
-                activeSessionId,
-            );
-        } else {
-            window.localStorage.removeItem(
-                GUEST_ACTIVE_SESSION_ID_STORAGE_KEY,
-            );
-        }
+        writeGuestSessions(sessions);
+        writeGuestActiveSessionId(activeSessionId);
     }, [activeSessionId, currentUser, sessions]);
 
     useEffect(() => {
@@ -364,7 +337,7 @@ function App() {
                     />
 
                         <Notes
-                            key={notesResetKey}
+                            key={`${currentUser?.username ?? "guest"}-${notesResetKey}`}
                             active={activePanel === "notes"}
                             currentUser={currentUser}
                             ref={notesSectionRef}
@@ -423,7 +396,7 @@ function App() {
                         {isUserModalOpen ? (
                             <User
                                 currentUser={currentUser}
-                                onAuthChange={setCurrentUser}
+                                onAuthChange={handleAuthChange}
                                 onClose={() => setIsUserModalOpen(false)}
                                 onLogout={handleLogout}
                             />

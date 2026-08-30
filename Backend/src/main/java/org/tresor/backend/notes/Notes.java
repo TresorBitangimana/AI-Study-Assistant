@@ -15,12 +15,7 @@ public class Notes {
 
     private final List<String> userNotesIds = new ArrayList<>();
 
-    // mongoDB client and db set up
     private final MongoDBClient mongoDBClient = new MongoDBClient();
-    private final MongoClient client = mongoDBClient.get();
-    private final MongoDatabase db = client.getDatabase("AiStudyApp");
-    private final MongoCollection<Document> usersCollection = db.getCollection("Users");
-    private final MongoCollection<Document> notesCollection = db.getCollection("Notes");
 
     public Notes() {
     }
@@ -37,6 +32,8 @@ public class Notes {
      * @param user  the current user creating the note
      */
     public void createNotes(User user, String title) {
+        MongoCollection<Document> usersCollection = getUsersCollection();
+        MongoCollection<Document> notesCollection = getNotesCollection();
 
         // creates the first note and adds it to the notesArray
         Document note = createFirstNote(title);
@@ -62,6 +59,7 @@ public class Notes {
      * @return the note created
      */
     public Document createFirstNote(String title) {
+        MongoCollection<Document> notesCollection = getNotesCollection();
         // creates a new note
         Document note = new Document()
                 .append("title", title)
@@ -80,6 +78,8 @@ public class Notes {
      * @param title title of the note being created
      */
     public void createNote(User user, String title) {
+        MongoCollection<Document> usersCollection = getUsersCollection();
+        MongoCollection<Document> notesCollection = getNotesCollection();
 
         // creates a new note
         Document note = new Document()
@@ -112,5 +112,17 @@ public class Notes {
 
     public void editNoteContent(User user, String newContent) {
 
+    }
+
+    private MongoCollection<Document> getUsersCollection() {
+        MongoClient client = mongoDBClient.get();
+        MongoDatabase db = client.getDatabase("AiStudyApp");
+        return db.getCollection("Users");
+    }
+
+    private MongoCollection<Document> getNotesCollection() {
+        MongoClient client = mongoDBClient.get();
+        MongoDatabase db = client.getDatabase("AiStudyApp");
+        return db.getCollection("Notes");
     }
 }

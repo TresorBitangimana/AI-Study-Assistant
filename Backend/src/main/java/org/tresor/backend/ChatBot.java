@@ -32,16 +32,13 @@ public class ChatBot {
     public ChatBot() throws IOException {
 
         frontendMDPath = Files.readString(Path.of("src/main/resources/frontend.md"));
-        try{
-            // Send system prompt silently on init
+        // Warm-up is best-effort so the backend can still boot when the local
+        // model server is unavailable during tests or development.
+        try {
             String systemMessage = systemPrompt.formatted(frontendMDPath);
             aiModelClient.chat(systemMessage);
-
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
-        catch(Exception e){
-            throw new RuntimeException("Error while running Ai model", e);
+        } catch (Exception ignored) {
+            // Fall through and let the first real chat request try again.
         }
     }
 
@@ -49,7 +46,7 @@ public class ChatBot {
         try{
             return aiModelClient.chat(input);
         }catch(Exception e){
-            throw new RuntimeException(e);
+            return "Sorry, I can't help with that";
         }
     }
 }
