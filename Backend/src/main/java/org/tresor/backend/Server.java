@@ -83,9 +83,9 @@ public class Server {
     @PostMapping("/create_session")
     public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request){
 
-//        System.out.println(Arrays.toString(request.getFiles().toArray()));
+        System.out.println(request.getFiles().get(0).getContent());
 
-        return ResponseEntity.ok(request);
+        return ResponseEntity.ok(request.getFiles().toString());
     }
 
     /**

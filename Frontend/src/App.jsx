@@ -61,6 +61,7 @@ function App() {
             : null,
     );
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
+    const [uploadedFiles, setUploadedFiles] = useState([]);
     const [pendingSessionName, setPendingSessionName] = useState("");
     const [sessionModalMode, setSessionModalMode] = useState(null);
     const [editingSessionId, setEditingSessionId] = useState(null);
@@ -156,6 +157,16 @@ function App() {
             return;
         }
 
+        const filePayload = await Promise.all(
+            uploadedFiles.map(async (file) => ({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                lastModified: file.lastModified,
+                content: await file.text(),
+            })),
+        );
+
         try {
             const response = await fetch(
                 "http://localhost:8080/api/study_assistant/create_session",
@@ -165,7 +176,7 @@ function App() {
                     body: JSON.stringify({
                         username: currentUser.username,
                         sessionTypeName: sessionType.label,
-                        files: uploadedDocuments,
+                        files: filePayload,
                     }),
                 },
             );
@@ -181,7 +192,7 @@ function App() {
             id: createSessionId(),
             name: pendingSessionName,
             type: sessionType.label,
-            files: uploadedDocuments,
+            files: filePayload,
         };
 
         setSessions((current) => [newSession, ...current]);
@@ -189,6 +200,7 @@ function App() {
         setActivePanel("session");
         setPendingSessionName("");
         setUploadedDocuments([]);
+        setUploadedFiles([]);
     };
 
     const deleteSession = (sessionId) => {
@@ -205,6 +217,7 @@ function App() {
 
     const handleDocumentUpload = (event) => {
         const files = Array.from(event.target.files ?? []);
+        setUploadedFiles((current) => [...current, ...files]);
         setUploadedDocuments((current) => [
             ...current,
             ...files.map((file) => ({
@@ -218,6 +231,11 @@ function App() {
     };
 
     const removeUploadedDocument = (documentId) => {
+        setUploadedFiles((current) =>
+            current.filter(
+                (file) => `${file.name}-${file.lastModified}` !== documentId,
+            ),
+        );
         setUploadedDocuments((current) =>
             current.filter((document) => document.id !== documentId),
         );
@@ -228,6 +246,7 @@ function App() {
         setSessions([]);
         setActiveSessionId(null);
         setUploadedDocuments([]);
+        setUploadedFiles([]);
         setPendingSessionName("");
         setSessionModalMode(null);
         setEditingSessionId(null);
