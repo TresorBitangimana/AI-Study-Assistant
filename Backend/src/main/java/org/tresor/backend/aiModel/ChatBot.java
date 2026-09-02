@@ -1,4 +1,4 @@
-package org.tresor.backend;
+package org.tresor.backend.aiModel;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,8 +6,12 @@ import java.nio.file.Path;
 
 public class ChatBot {
 
+    //ai model client to access the ai
     static AiModelClient aiModelClient = new AiModelClient("llama3.2");
+
+    //path to the .md file with frontend details to assist uses with navigation questions
     private String frontendMDPath;
+    //system prompt to give the chatbot instructions
     private final String systemPrompt = """
             You are an AI Assistant that helps users navigate through the AI study app.
             Your job is to answer user questions and use the provided .md file to assist
@@ -23,7 +27,7 @@ public class ChatBot {
             - Do not make up answers
             - If a user greet you, replay with {greeting of your choice or 
                 that's appropriate to the users greeting} + "how may I assist you?"
-            -  
+            - when you respond to the users greeting do you surround the response with {}
             
             DOCUMENTATION:
             %s
@@ -38,8 +42,6 @@ public class ChatBot {
 
         //paths to bot frontend resources to use to answer user questions
         frontendMDPath = Files.readString(Path.of("src/main/resources/frontend.md"));
-
-
         //boots the ai model by giving it a prompt with instructions and also the
         //MD file containing all the frontend information to be used to answer
         //user questions

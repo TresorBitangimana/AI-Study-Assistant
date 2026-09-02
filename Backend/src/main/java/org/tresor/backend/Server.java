@@ -5,13 +5,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tresor.backend.account.Account;
 import org.tresor.backend.account.User;
+import org.tresor.backend.aiModel.ChatBot;
 import org.tresor.backend.notes.NoteRequest;
 import org.tresor.backend.notes.Notes;
 import org.tresor.backend.sessions.CreateSessionRequest;
+import org.tresor.backend.sessions.FileObject;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/study_assistant")
@@ -83,7 +83,12 @@ public class Server {
     @PostMapping("/create_session")
     public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request){
 
-        System.out.println(request.getFiles().get(0).getContent());
+        //checks and identify the resources
+        for(FileObject resource : request.getFiles()){
+
+            String resourceType = resource.resourceId(resource.getName());
+
+        }
 
         return ResponseEntity.ok(request.getFiles().toString());
     }

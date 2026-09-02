@@ -35,4 +35,8 @@ public class FileObject {
     public String getContent() {
         return content;
     }
+
+    public String resourceId(String name){
+        return name;
+    }
 }

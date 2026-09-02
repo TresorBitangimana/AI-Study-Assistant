@@ -1,4 +1,4 @@
-package org.tresor.backend;
+package org.tresor.backend.aiModel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +26,7 @@ public class AiModelClient {
      * Constructor
      * @param currentModel current ai model being used
      */
-    AiModelClient(String currentModel) {
+    public AiModelClient(String currentModel) {
         this.currentModel = currentModel;
 
         Dotenv dotenv = Dotenv.configure()
