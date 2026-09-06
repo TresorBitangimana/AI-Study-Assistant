@@ -9,7 +9,7 @@ import org.tresor.backend.aiModel.ChatBot;
 import org.tresor.backend.notes.NoteRequest;
 import org.tresor.backend.notes.Notes;
 import org.tresor.backend.sessions.CreateSessionRequest;
-import org.tresor.backend.sessions.FileObject;
+import org.tresor.backend.sessions.SessionFile;
 
 import java.io.IOException;
 
@@ -84,7 +84,7 @@ public class Server {
     public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request){
 
         //checks and identify the resources
-        for(FileObject resource : request.getFiles()){
+        for(SessionFile resource : request.getFiles()){
 
             String resourceType = resource.resourceId(resource.getName());
 

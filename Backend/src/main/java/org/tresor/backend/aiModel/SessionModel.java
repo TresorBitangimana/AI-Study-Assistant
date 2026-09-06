@@ -1,10 +1,12 @@
 package org.tresor.backend.aiModel;
 
-import org.tresor.backend.sessions.FileObject;
+import org.tresor.backend.sessions.SessionFile;
 
 public class SessionModel {
 
-    AiModelClient aimodelClient = new AiModelClient("llama3.2");
+    private AiModelClient aimodelClient = new AiModelClient("llama3.2");
+    private String sessionType;
+    private SessionFile resources;
 
     private final String sessionSystemPrompt = """
             
@@ -13,8 +15,9 @@ public class SessionModel {
             """;
     public SessionModel(){}
 
-    public SessionModel(String sessionType, FileObject resources){
-        
+    public SessionModel(String sessionType, SessionFile resources){
+        this.sessionType = sessionType;
+        this.resources = resources;
     }
 
 }

@@ -6,9 +6,9 @@ public class CreateSessionRequest {
 
     private final String username;
     private final String sessionType;
-    private ArrayList<FileObject> files = new ArrayList<>();
+    private ArrayList<SessionFile> files = new ArrayList<>();
 
-    public CreateSessionRequest( String username, String sessionTypeType, ArrayList<FileObject> files){
+    public CreateSessionRequest( String username, String sessionTypeType, ArrayList<SessionFile> files){
         this.username = username;
         this.sessionType = sessionTypeType;
         this.files = files;
@@ -21,7 +21,7 @@ public class CreateSessionRequest {
     public String getSessionType() {
         return sessionType;
     }
-    public ArrayList<FileObject> getFiles() {
+    public ArrayList<SessionFile> getFiles() {
         return files;
     }
 }

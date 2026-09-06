@@ -1,6 +1,6 @@
 package org.tresor.backend.sessions;
 
-public class FileObject {
+public class SessionFile {
 
     public String name;
     public String type;
@@ -8,9 +8,9 @@ public class FileObject {
     public String lastModified;
     public String content;
 
-    public FileObject(){}
+    public SessionFile(){}
 
-    public FileObject(String name, String type, String size, String lastModified, String content){
+    public SessionFile(String name, String type, String size, String lastModified, String content){
 
         this.name = name;
         this.type = type;

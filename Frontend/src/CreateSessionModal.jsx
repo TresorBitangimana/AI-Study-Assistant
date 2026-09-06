@@ -8,7 +8,6 @@ function CreateSessionModal({
     submitDisabled = false,
     subtitle = "Give this session a label so it is easier to organize your work later.",
     title = "Name your study session",
-    toneLabel = "New Session",
     value,
 }) {
     return (
@@ -19,7 +18,6 @@ function CreateSessionModal({
                 className="session-modal-card"
                 role="dialog"
             >
-                <div className="section-label">{toneLabel}</div>
                 <h2 className="session-modal-title" id="create-session-title">
                     {title}
                 </h2>
