@@ -1,6 +1,6 @@
 package org.tresor.backend.sessions;
 
-public class SessionFile {
+public class SessionFiles {
 
     public String name;
     public String type;
@@ -8,9 +8,9 @@ public class SessionFile {
     public String lastModified;
     public String content;
 
-    public SessionFile(){}
+    public SessionFiles(){}
 
-    public SessionFile(String name, String type, String size, String lastModified, String content){
+    public SessionFiles(String name, String type, String size, String lastModified, String content){
 
         this.name = name;
         this.type = type;
@@ -36,7 +36,12 @@ public class SessionFile {
         return content;
     }
 
-    public String resourceId(String name){
-        return name;
+    public void processPDF(SessionFiles file){
+
     }
+
+    public void processText(SessionFiles file){
+
+    }
+
 }

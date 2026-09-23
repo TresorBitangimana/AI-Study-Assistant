@@ -27,7 +27,7 @@ public class ChatBot {
             - Do not make up answers
             - If a user greet you, replay with {greeting of your choice or 
                 that's appropriate to the users greeting} + "how may I assist you?"
-            - when you respond to the users greeting do you surround the response with {}
+            - when you respond to the users do you surround the response with {text}
             
             DOCUMENTATION:
             %s

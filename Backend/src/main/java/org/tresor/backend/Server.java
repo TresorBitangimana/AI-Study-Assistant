@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import org.tresor.backend.account.Account;
 import org.tresor.backend.account.User;
 import org.tresor.backend.aiModel.ChatBot;
+import org.tresor.backend.aiModel.SessionModel;
 import org.tresor.backend.notes.NoteRequest;
 import org.tresor.backend.notes.Notes;
 import org.tresor.backend.sessions.CreateSessionRequest;
-import org.tresor.backend.sessions.SessionFile;
 
 import java.io.IOException;
 
@@ -20,6 +20,7 @@ public class Server {
     private final ChatBot chatBot = new ChatBot();
     private final Account account = new Account();
     private final Notes notes = new Notes();
+    private User current_loggedin_user;
 
     public Server() throws IOException {
     }
@@ -53,6 +54,7 @@ public class Server {
             return ResponseEntity.ok(false);
         }else {
             account.createAccount(user);
+            current_loggedin_user = user;
             return ResponseEntity.ok(true);
         }
     }
@@ -73,7 +75,7 @@ public class Server {
         else{
             //returns user data
             User authenticatedUser = account.findUserByUsername(user.getUsername());
-
+            current_loggedin_user = user;
             //calls functions and returns userdata
 
             return ResponseEntity.ok("Hello World!!");
@@ -83,12 +85,23 @@ public class Server {
     @PostMapping("/create_session")
     public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request){
 
+        //session model that handles the resources and outputs with AI
+        SessionModel sessionModel = new SessionModel();
+
         //checks and identify the resources
-        for(SessionFile resource : request.getFiles()){
+        for(int i = 0; i < request.getFiles().size()-1; i++){
 
-            String resourceType = resource.resourceId(resource.getName());
+            String resourceName = request.getFiles().get(i).name;
 
+            //processes the files depending on file types.
+            if(resourceName.toLowerCase().endsWith(".pdf")){ //PDFs
+                sessionModel.processPDF(request.getFiles().get(i));
+            }
+            else{ //All text files type
+                sessionModel.processText(request.getFiles().get(i));
+            }
         }
+
 
         return ResponseEntity.ok(request.getFiles().toString());
     }

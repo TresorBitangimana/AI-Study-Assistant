@@ -10,7 +10,6 @@ public class User {
     private String username;
     private String password;
     private String fullName;
-//    private List<ObjectId> notesIdList;
 
     public User() {
     }
@@ -19,7 +18,6 @@ public class User {
         this.username = username;
         this.password = password;
         this.fullName = fullName;
-//        notesIdList = new ArrayList<>();
     }
 
     public User(String fullName, String username) {
