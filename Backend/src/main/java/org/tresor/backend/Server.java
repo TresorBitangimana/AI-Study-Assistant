@@ -10,8 +10,10 @@ import org.tresor.backend.aiModel.SessionModel;
 import org.tresor.backend.notes.NoteRequest;
 import org.tresor.backend.notes.Notes;
 import org.tresor.backend.sessions.CreateSessionRequest;
+import org.tresor.backend.sessions.SessionFiles;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/study_assistant")
@@ -82,32 +84,23 @@ public class Server {
         }
     }
 
+    /**
+     * session model api call,receives user materials
+     * @param request a CreateSessionRequest object
+     * @return appropriate response based on user sessionType and materials provided.
+     */
     @PostMapping("/create_session")
     public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request){
 
         //session model that handles the resources and outputs with AI
         SessionModel sessionModel = new SessionModel();
+        String response = sessionModel.sessionChat(request);
 
-        //checks and identify the resources
-        for(int i = 0; i < request.getFiles().size()-1; i++){
-
-            String resourceName = request.getFiles().get(i).name;
-
-            //processes the files depending on file types.
-            if(resourceName.toLowerCase().endsWith(".pdf")){ //PDFs
-                sessionModel.processPDF(request.getFiles().get(i));
-            }
-            else{ //All text files type
-                sessionModel.processText(request.getFiles().get(i));
-            }
-        }
-
-
-        return ResponseEntity.ok(request.getFiles().toString());
+        return ResponseEntity.ok(response);
     }
 
     /**
-     * api call that creates the users first note
+     * api call that creates and initializes the users first note
      * @param request received object from the frontend
      */
     @PostMapping("/create_notes")
@@ -116,6 +109,10 @@ public class Server {
         notes.initializeUserNotes(requestUser, request.getTitle());
     }
 
+    /**
+     * creates a single note after the initial initialisation from createNotes call
+     * @param request NoteReqest object
+     */
     @PostMapping("/create_note")
     public void createNote(@RequestBody NoteRequest request){
         User requestUser = new User(null, request.getUsername(), null);

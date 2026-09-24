@@ -35,13 +35,4 @@ public class SessionFiles {
     public String getContent() {
         return content;
     }
-
-    public void processPDF(SessionFiles file){
-
-    }
-
-    public void processText(SessionFiles file){
-
-    }
-
 }
