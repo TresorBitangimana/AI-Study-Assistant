@@ -10,6 +10,7 @@ function Dashboard({
     onSelectSessionType,
     pendingSessionName,
     removeUploadedDocument,
+    sessionTypeError,
     uploadedDocuments,
 }) {
     const hasPendingSession = pendingSessionName.trim().length > 0;
@@ -24,6 +25,7 @@ function Dashboard({
                         onSelectSessionType={onSelectSessionType}
                         pendingSessionName={pendingSessionName}
                         removeUploadedDocument={removeUploadedDocument}
+                        sessionTypeError={sessionTypeError}
                         uploadedDocuments={uploadedDocuments}
                     />
                 ) : (

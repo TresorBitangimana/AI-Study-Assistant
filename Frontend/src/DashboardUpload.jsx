@@ -11,6 +11,7 @@ function DashboardUpload({
     onSelectSessionType,
     pendingSessionName,
     removeUploadedDocument,
+    sessionTypeError,
     uploadedDocuments,
 }) {
     return (
@@ -36,7 +37,7 @@ function DashboardUpload({
                             htmlFor="resource-upload"
                         >
                             <input
-                                accept=".txt,.md,.pdf,text/plain,application/pdf"
+                                accept="text/*,application/pdf,.md,.markdown,.json,.xml,.csv,.yaml,.yml,.log,.rtf,.tex,.sql,.js,.jsx,.ts,.tsx,.py,.java,.c,.h,.cpp,.sh,.toml,.ini,.conf,.properties,.svg"
                                 className="document-upload-input"
                                 id="resource-upload"
                                 multiple
@@ -116,6 +117,11 @@ function DashboardUpload({
                             </button>
                         ))}
                     </div>
+                    {sessionTypeError ? (
+                        <p className="mt-3 text-sm text-red-600" role="alert">
+                            {sessionTypeError}
+                        </p>
+                    ) : null}
                 </div>
             </div>
         </div>

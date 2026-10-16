@@ -139,7 +139,7 @@ public class SessionModel {
     }
 
     /**
-     * receives user resources and makes a call to the ai model to create flashcards
+     * receives user resources and makes a call to the AI model to create flashcards
      * @param userResources user files
      * @return a formated string of question and answers to be used for flashcards
      */
@@ -179,6 +179,11 @@ public class SessionModel {
 
     }
 
+    /**
+     * takes in an array list of text files and combine their content into a single string output
+     * @param files An arraylist of user files
+     * @return a string containing the content of all text files provided
+     */
     public String processText(ArrayList<SessionFiles> files){
         StringBuilder sb = new StringBuilder();
         for (SessionFiles file : files) {
@@ -202,20 +207,23 @@ public class SessionModel {
         ArrayList<SessionFiles> nonTextUserFiles = new ArrayList<>();
 
         //checks and identify the resources
-        for(int i = 0; i < userResources.getFiles().size()-1; i++){
+        for(int i = 0; i < userResources.getFiles().size(); i++){
             String resourceName = userResources.getFiles().get(i).name;
             //processes the files depending on file types.
             //if file is text based it is put into the textUserFiles arrayList
             //otherwise nonTextUserFiles
             if(resourceName.toLowerCase().endsWith(".pdf")){ //PDFs
-                textUserFiles.add(userResources.getFiles().get(i));
+                nonTextUserFiles.add(userResources.getFiles().get(i));
             }
             else{ //All text files type
-                nonTextUserFiles.add(userResources.getFiles().get(i));
+                textUserFiles.add(userResources.getFiles().get(i));
             }
         }
 
         HashMap<String, ArrayList<SessionFiles>> sortedFiles = new HashMap<>();
+
+        //checks if the ArrayLists, textUserFiles or nonTextUserFiles are empty or not and
+        //sort them accordingly
 
         if(!textUserFiles.isEmpty() && nonTextUserFiles.isEmpty()){
             sortedFiles.put("text", textUserFiles);

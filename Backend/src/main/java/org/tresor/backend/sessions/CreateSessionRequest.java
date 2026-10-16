@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 public class CreateSessionRequest {
 
-    private final String username;
-    private final String sessionType;
+    private String username;
+    private String sessionType;
     private ArrayList<SessionFiles> files = new ArrayList<>();
 
-    public CreateSessionRequest( String username, String sessionTypeType, ArrayList<SessionFiles> files){
+    public CreateSessionRequest( String username, String sessionType, ArrayList<SessionFiles> files){
         this.username = username;
-        this.sessionType = sessionTypeType;
+        this.sessionType = sessionType;
         this.files = files;
     }
 

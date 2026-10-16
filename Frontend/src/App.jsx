@@ -63,6 +63,7 @@ function App() {
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [pendingSessionName, setPendingSessionName] = useState("");
+    const [sessionTypeError, setSessionTypeError] = useState("");
     const [sessionModalMode, setSessionModalMode] = useState(null);
     const [editingSessionId, setEditingSessionId] = useState(null);
     const [sessionDraftName, setSessionDraftName] = useState("");
@@ -153,9 +154,18 @@ function App() {
     };
 
     const createSessionFromType = async (sessionType) => {
-        if (!pendingSessionName || !currentUser?.username) {
+        if (!pendingSessionName) {
             return;
         }
+
+        if (!currentUser?.username) {
+            setSessionTypeError(
+                "Please log in before choosing a session type.",
+            );
+            return;
+        }
+
+        setSessionTypeError("");
 
         const filePayload = await Promise.all(
             uploadedFiles.map(async (file) => ({
@@ -175,11 +185,14 @@ function App() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         username: currentUser.username,
-                        sessionTypeName: sessionType.label,
+                        sessionType: sessionType.label,
                         files: filePayload,
                     }),
                 },
             );
+
+            const content = await response.text();
+            console.log(content);
 
             if (!response.ok) {
                 throw new Error("Request failed");
@@ -260,6 +273,7 @@ function App() {
     const handleAuthChange = (nextUser) => {
         const migratedStorage = migrateGuestStorageToUser(nextUser.username);
         setCurrentUser(nextUser);
+        setSessionTypeError("");
         setSessions(migratedStorage.sessions);
         setActiveSessionId(migratedStorage.activeSessionId);
         setIsUserModalOpen(false);
@@ -364,6 +378,7 @@ function App() {
                             currentUser={currentUser}
                             onCancelPendingSession={() => {
                                 setPendingSessionName("");
+                                setSessionTypeError("");
                                 setUploadedDocuments([]);
                                 setActivePanel("dashboard");
                             }}
@@ -371,6 +386,7 @@ function App() {
                             onOpenUserModal={() => setIsUserModalOpen(true)}
                             onCreateSession={openSessionModal}
                             pendingSessionName={pendingSessionName}
+                            sessionTypeError={sessionTypeError}
                             removeUploadedDocument={removeUploadedDocument}
                             uploadedDocuments={uploadedDocuments}
                             onSelectSessionType={createSessionFromType}
