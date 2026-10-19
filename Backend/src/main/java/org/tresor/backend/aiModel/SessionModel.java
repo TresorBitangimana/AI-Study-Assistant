@@ -6,9 +6,8 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.tresor.backend.sessions.CreateSessionRequest;
 import org.tresor.backend.sessions.SessionFiles;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 
 import static org.tresor.backend.aiModel.ChatBot.aiModelClient;
@@ -151,25 +150,13 @@ public class SessionModel {
     public String sessionFlashCards(CreateSessionRequest userResources){
 
         String response = "";
-
         HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
-
-        //sortedResources contains only one type of files text Files or PDFs
-        if(sortedResources.size() == 1){
-            if(sortedResources.containsKey("text")){ //call the processText handler methods
-                String filesAsString = processText(sortedResources.get("text"));
-                String finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
-                response = sessionModelAi(finalPrompt);
-            }
-            else if(sortedResources.containsKey("nonText")){
-                //call the processPDF or other nontextFiles handler methods
-                String fileAsString = processPDF(sortedResources.get("nonText"));
-                System.out.println(fileAsString);
-            }
-        }else if(sortedResources.size() == 2){ //sorted Resources Contains both Text and PDF files
-            //call methods that processBoth nonText and Text
-        }
-        return response;
+        //calls a method to combine all the files with the system prompt to create to final prompt
+        //that include both the prompt and the files from the user as a string
+        String finalPrompt = combinePromptAndFiles(sortedResources);
+        //call the AI using the final prompt
+        response = sessionModelAi(finalPrompt); //calls the AI
+        return response; //returns the response form the Ai
     }
     public void sessionQuiz(CreateSessionRequest userResources){
         String finalPrompt = sessionQuizPrompt.formatted(userResources);
@@ -186,6 +173,37 @@ public class SessionModel {
         HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
 
     }
+
+    public String combinePromptAndFiles(HashMap<String, ArrayList<SessionFiles>> sortedResources){
+
+        String finalPrompt = "";
+
+        //sortedResources contains only one type of files text Files or PDFs
+        if(sortedResources.size() == 1){
+            if(sortedResources.containsKey("text")){ //call the processText handler methods
+                String filesAsString = processText(sortedResources.get("text"));
+                finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
+            }
+            else if(sortedResources.containsKey("nonText")){
+                //call the processPDF or other nontextFiles handler methods
+                String fileAsString = processPDF(sortedResources.get("nonText")); //creates a string containing
+                // all the PDF files uploaded.
+                finalPrompt = sessionFlashCardsPrompt.formatted(fileAsString); //adds the PDFs string to the prompt
+            }
+        }else if(sortedResources.size() == 2){ //sorted Resources Contains both Text and PDF files
+            //call methods that processBoth nonText and Text
+            String textFilesAsString = processText(sortedResources.get("text")); //call the processText handler methods
+            String nonTextFileAsString = processPDF(sortedResources.get("nonText")); //creates a string containing all the PDF files uploaded.
+            //combines all into one string
+            String combinedFilesString = textFilesAsString.concat(nonTextFileAsString);
+
+            finalPrompt = sessionFlashCardsPrompt.formatted(combinedFilesString); //adds the combinedFilesString to the system prompt
+        }
+
+        return finalPrompt;
+    }
+
+
 
     /**
      * takes in an array list of text files and combine their content into a single string output
@@ -210,21 +228,18 @@ public class SessionModel {
         StringBuilder sb = new StringBuilder();
 
         for (SessionFiles file : files){
-            //converts PDFs into text
-            try(PDDocument doc = Loader.loadPDF(new File(file.getContent()))){
+            // Decode the Base64 PDF content sent by the frontend and extract its text.
+            byte[] pdfBytes = Base64.getDecoder().decode(file.getContent());
+            try(PDDocument doc = Loader.loadPDF(pdfBytes)){
                 sb.append("--- ").append(file.getName()).append(" ---\n");
                 sb.append(new PDFTextStripper().getText(doc)).append("\n\n");
-            } catch (IOException e) {
+            } catch (java.io.IOException e) {
                 throw new RuntimeException(e);
             }
 
         }
-        ()
         return sb.toString();
     }
-
-
-    public void processAll(ArrayList<SessionFiles> files){}
 
     /**
      * Divides the Files from the user into two groups, text files and non text files
@@ -266,6 +281,4 @@ public class SessionModel {
         }
         return sortedFiles;
     }
-
-
 }

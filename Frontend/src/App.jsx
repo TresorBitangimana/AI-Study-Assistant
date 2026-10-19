@@ -40,6 +40,35 @@ function createSessionId() {
     return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function readFile(file) {
+    const metadata = {
+        name: file.name,
+        type: file.type,
+        size: String(file.size),
+        lastModified: String(file.lastModified),
+    };
+
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = String(reader.result ?? "");
+                const separatorIndex = dataUrl.indexOf(",");
+                if (separatorIndex === -1) {
+                    reject(new Error(`Could not read PDF file: ${file.name}`));
+                    return;
+                }
+
+                resolve({ ...metadata, content: dataUrl.slice(separatorIndex + 1) });
+            };
+            reader.onerror = () => reject(reader.error ?? new Error(`Could not read PDF file: ${file.name}`));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    return file.text().then((content) => ({ ...metadata, content }));
+}
+
 function App() {
     const notesSectionRef = useRef(null);
     const [notesResetKey, setNotesResetKey] = useState(0);
@@ -167,15 +196,14 @@ function App() {
 
         setSessionTypeError("");
 
-        const filePayload = await Promise.all(
-            uploadedFiles.map(async (file) => ({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                lastModified: file.lastModified,
-                content: await file.text(),
-            })),
-        );
+        let filePayload;
+        try {
+            filePayload = await Promise.all(uploadedFiles.map(readFile));
+        } catch (error) {
+            console.error("Failed to read uploaded study materials", error);
+            setSessionTypeError("One or more files could not be read. Please try uploading them again.");
+            return;
+        }
 
         try {
             const response = await fetch(
