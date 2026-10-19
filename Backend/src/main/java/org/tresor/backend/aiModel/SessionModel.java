@@ -1,8 +1,13 @@
 package org.tresor.backend.aiModel;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.tresor.backend.sessions.CreateSessionRequest;
 import org.tresor.backend.sessions.SessionFiles;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -149,16 +154,19 @@ public class SessionModel {
 
         HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
 
+        //sortedResources contains only one type of files text Files or PDFs
         if(sortedResources.size() == 1){
-            if(sortedResources.containsKey("text")){
+            if(sortedResources.containsKey("text")){ //call the processText handler methods
                 String filesAsString = processText(sortedResources.get("text"));
                 String finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
                 response = sessionModelAi(finalPrompt);
             }
             else if(sortedResources.containsKey("nonText")){
                 //call the processPDF or other nontextFiles handler methods
+                String fileAsString = processPDF(sortedResources.get("nonText"));
+                System.out.println(fileAsString);
             }
-        }else if(sortedResources.size() == 2){
+        }else if(sortedResources.size() == 2){ //sorted Resources Contains both Text and PDF files
             //call methods that processBoth nonText and Text
         }
         return response;
@@ -193,7 +201,29 @@ public class SessionModel {
         return sb.toString();
     }
 
-    public void processPDF(ArrayList<SessionFiles> file){}
+    /**
+     *  takes in an array of PDF files and turn them into text and combines them
+     * @param files An array of user files
+     * @return a string containing content of all PDF files provided
+     */
+    public String processPDF(ArrayList<SessionFiles> files){
+        StringBuilder sb = new StringBuilder();
+
+        for (SessionFiles file : files){
+            //converts PDFs into text
+            try(PDDocument doc = Loader.loadPDF(new File(file.getContent()))){
+                sb.append("--- ").append(file.getName()).append(" ---\n");
+                sb.append(new PDFTextStripper().getText(doc)).append("\n\n");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        ()
+        return sb.toString();
+    }
+
+
     public void processAll(ArrayList<SessionFiles> files){}
 
     /**
@@ -219,9 +249,7 @@ public class SessionModel {
                 textUserFiles.add(userResources.getFiles().get(i));
             }
         }
-
         HashMap<String, ArrayList<SessionFiles>> sortedFiles = new HashMap<>();
-
         //checks if the ArrayLists, textUserFiles or nonTextUserFiles are empty or not and
         //sort them accordingly
 
