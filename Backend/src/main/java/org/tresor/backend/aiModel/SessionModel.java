@@ -174,6 +174,12 @@ public class SessionModel {
         return response; //returns the response form the Ai
     }
 
+    /**
+     * combines all the user resources with the appropriate prompt based on session type.
+     * @param sortedResources sorted resources.
+     * @param sessionType session type
+     * @return final prompt containing the system prompt and user uploaded files as a string
+     */
     public String combinePromptAndFiles(HashMap<String, ArrayList<SessionFiles>> sortedResources, String sessionType){
 
         String finalPrompt = "";
@@ -305,14 +311,14 @@ public class SessionModel {
         //checks if the ArrayLists, textUserFiles or nonTextUserFiles are empty or not and
         //sort them accordingly
 
-        if(!textUserFiles.isEmpty() && nonTextUserFiles.isEmpty()){
+        if(!textUserFiles.isEmpty() && nonTextUserFiles.isEmpty()){ // if textUserFiles is not empty
             sortedFiles.put("text", textUserFiles);
-        }else if(textUserFiles.isEmpty() && !nonTextUserFiles.isEmpty()){
+        }else if(textUserFiles.isEmpty() && !nonTextUserFiles.isEmpty()){ // if nonTextUserFiles is not empty
             sortedFiles.put("nonText", nonTextUserFiles);
-        }else if(!textUserFiles.isEmpty() && !nonTextUserFiles.isEmpty()){
+        }else if(!textUserFiles.isEmpty() && !nonTextUserFiles.isEmpty()){ // if both textUserFiles and nonTextUserFiles are not empty
             sortedFiles.put("text", textUserFiles);
             sortedFiles.put("nonText", nonTextUserFiles);
-        }else{
+        }else{ // both textUserFiles and nonTextUserFiles are empty
             //user did not provide files, implement functions to handle that
             System.out.println("No resources provided");
         }
