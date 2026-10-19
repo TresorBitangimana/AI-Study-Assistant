@@ -104,35 +104,26 @@ public class SessionModel {
         %s
         """;
 
-
+    /**
+     * Empty Constructor
+     */
     public SessionModel(){}
 
+    /**
+     * Constructor
+     * @param sessionType Session Type
+     * @param resources User resources
+     */
     public SessionModel(String sessionType, SessionFiles resources){
         this.sessionType = sessionType;
         this.resources = resources;
     }
 
-    public String sessionChat(CreateSessionRequest userResources){
-
-        String sessionType = userResources.getSessionType();
-
-        if(sessionType.equals("Create Flashcards")){
-            return sessionFlashCards(userResources);
-        }
-        else if(sessionType.equals("Generate Quiz")){
-            sessionQuiz(userResources);
-        }
-        else if(sessionType.equals("Chat with AI")){
-            sessionChatWithAi(userResources);
-        }
-        else if(sessionType.equals("Explain like I'm 5")){
-            sessionExplain(userResources);
-        }
-        else{
-        }
-        return null;
-    }
-
+    /**
+     * Session Model AI, receives a prompt and responds
+     * @param prompt prompt
+     * @return a response from the current AI model
+     */
     public String sessionModelAi(String prompt){
         try {
             return aiModelClient.chat(prompt);
@@ -143,38 +134,47 @@ public class SessionModel {
     }
 
     /**
+     * Session Chats, creates a session chat based on the session type
+     * @param userResources user resources
+     * @return response from the AI model
+     */
+    public String sessionChat(CreateSessionRequest userResources){
+
+        String sessionType = userResources.getSessionType();
+
+        if(sessionType.equals("Create Flashcards")){
+            return createSession(userResources);
+        }
+        else if(sessionType.equals("Generate Quiz")){
+            return createSession(userResources);
+        }
+        else if(sessionType.equals("Chat with AI")){
+        return createSession(userResources);
+        }
+        else if(sessionType.equals("Explain like I'm 5")){
+            return createSession(userResources);
+        }
+        return null;
+    }
+
+    /**
      * receives user resources and makes a call to the AI model to create flashcards
      * @param userResources user files
      * @return a formated string of question and answers to be used for flashcards
      */
-    public String sessionFlashCards(CreateSessionRequest userResources){
+    public String createSession(CreateSessionRequest userResources){
 
         String response = "";
         HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
         //calls a method to combine all the files with the system prompt to create to final prompt
         //that include both the prompt and the files from the user as a string
-        String finalPrompt = combinePromptAndFiles(sortedResources);
+        String finalPrompt = combinePromptAndFiles(sortedResources, userResources.getSessionType());
         //call the AI using the final prompt
         response = sessionModelAi(finalPrompt); //calls the AI
         return response; //returns the response form the Ai
     }
-    public void sessionQuiz(CreateSessionRequest userResources){
-        String finalPrompt = sessionQuizPrompt.formatted(userResources);
-        HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
 
-    }
-    public void sessionChatWithAi(CreateSessionRequest userResources){
-        String finalPrompt = sessionChatPrompt.formatted(userResources);
-        HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
-
-    }
-    public void sessionExplain(CreateSessionRequest userResources){
-        String finalPrompt = sessionExplainPrompt.formatted(userResources);
-        HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
-
-    }
-
-    public String combinePromptAndFiles(HashMap<String, ArrayList<SessionFiles>> sortedResources){
+    public String combinePromptAndFiles(HashMap<String, ArrayList<SessionFiles>> sortedResources, String sessionType){
 
         String finalPrompt = "";
 
@@ -182,13 +182,38 @@ public class SessionModel {
         if(sortedResources.size() == 1){
             if(sortedResources.containsKey("text")){ //call the processText handler methods
                 String filesAsString = processText(sortedResources.get("text"));
-                finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
+
+                //adds the PDFs string to the prompt
+                if(sessionType.equals("Create Flashcards")){
+                    finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
+                }
+                else if(sessionType.equals("Generate Quiz")){
+                    finalPrompt = sessionQuizPrompt.formatted(filesAsString);
+                }
+                else if(sessionType.equals("Chat with AI")){
+                    finalPrompt = sessionChatPrompt.formatted(filesAsString);
+                }
+                else if(sessionType.equals("Explain like I'm 5")){
+                    finalPrompt = sessionExplainPrompt.formatted(filesAsString);
+                }
             }
             else if(sortedResources.containsKey("nonText")){
                 //call the processPDF or other nontextFiles handler methods
-                String fileAsString = processPDF(sortedResources.get("nonText")); //creates a string containing
-                // all the PDF files uploaded.
-                finalPrompt = sessionFlashCardsPrompt.formatted(fileAsString); //adds the PDFs string to the prompt
+                String filesAsString = processPDF(sortedResources.get("nonText")); //creates a string containing
+
+                //adds the PDFs string to the prompt
+                if(sessionType.equals("Create Flashcards")){
+                    finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
+                }
+                else if(sessionType.equals("Generate Quiz")){
+                    finalPrompt = sessionQuizPrompt.formatted(filesAsString);
+                }
+                else if(sessionType.equals("Chat with AI")){
+                    finalPrompt = sessionChatPrompt.formatted(filesAsString);
+                }
+                else if(sessionType.equals("Explain like I'm 5")){
+                    finalPrompt = sessionExplainPrompt.formatted(filesAsString);
+                }
             }
         }else if(sortedResources.size() == 2){ //sorted Resources Contains both Text and PDF files
             //call methods that processBoth nonText and Text
@@ -197,7 +222,19 @@ public class SessionModel {
             //combines all into one string
             String combinedFilesString = textFilesAsString.concat(nonTextFileAsString);
 
-            finalPrompt = sessionFlashCardsPrompt.formatted(combinedFilesString); //adds the combinedFilesString to the system prompt
+            //adds the PDFs string to the prompt
+            if(sessionType.equals("Create Flashcards")){
+                finalPrompt = sessionFlashCardsPrompt.formatted(combinedFilesString);
+            }
+            else if(sessionType.equals("Generate Quiz")){
+                finalPrompt = sessionQuizPrompt.formatted(combinedFilesString);
+            }
+            else if(sessionType.equals("Chat with AI")){
+                finalPrompt = sessionChatPrompt.formatted(combinedFilesString);
+            }
+            else if(sessionType.equals("Explain like I'm 5")){
+                finalPrompt = sessionExplainPrompt.formatted(combinedFilesString);
+            }
         }
 
         return finalPrompt;
