@@ -187,39 +187,16 @@ public class SessionModel {
         //sortedResources contains only one type of files text Files or PDFs
         if(sortedResources.size() == 1){
             if(sortedResources.containsKey("text")){ //call the processText handler methods
-                String filesAsString = processText(sortedResources.get("text"));
 
+                String filesAsString = processText(sortedResources.get("text"));
                 //adds the PDFs string to the prompt
-                if(sessionType.equals("Create Flashcards")){
-                    finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
-                }
-                else if(sessionType.equals("Generate Quiz")){
-                    finalPrompt = sessionQuizPrompt.formatted(filesAsString);
-                }
-                else if(sessionType.equals("Chat with AI")){
-                    finalPrompt = sessionChatPrompt.formatted(filesAsString);
-                }
-                else if(sessionType.equals("Explain like I'm 5")){
-                    finalPrompt = sessionExplainPrompt.formatted(filesAsString);
-                }
+                finalPrompt  = combineAppropriatePrompt(filesAsString, sessionType);
             }
             else if(sortedResources.containsKey("nonText")){
                 //call the processPDF or other nontextFiles handler methods
                 String filesAsString = processPDF(sortedResources.get("nonText")); //creates a string containing
-
                 //adds the PDFs string to the prompt
-                if(sessionType.equals("Create Flashcards")){
-                    finalPrompt = sessionFlashCardsPrompt.formatted(filesAsString);
-                }
-                else if(sessionType.equals("Generate Quiz")){
-                    finalPrompt = sessionQuizPrompt.formatted(filesAsString);
-                }
-                else if(sessionType.equals("Chat with AI")){
-                    finalPrompt = sessionChatPrompt.formatted(filesAsString);
-                }
-                else if(sessionType.equals("Explain like I'm 5")){
-                    finalPrompt = sessionExplainPrompt.formatted(filesAsString);
-                }
+                finalPrompt = combineAppropriatePrompt(filesAsString, sessionType);
             }
         }else if(sortedResources.size() == 2){ //sorted Resources Contains both Text and PDF files
             //call methods that processBoth nonText and Text
@@ -229,25 +206,20 @@ public class SessionModel {
             String combinedFilesString = textFilesAsString.concat(nonTextFileAsString);
 
             //adds the PDFs string to the prompt
-            if(sessionType.equals("Create Flashcards")){
-                finalPrompt = sessionFlashCardsPrompt.formatted(combinedFilesString);
-            }
-            else if(sessionType.equals("Generate Quiz")){
-                finalPrompt = sessionQuizPrompt.formatted(combinedFilesString);
-            }
-            else if(sessionType.equals("Chat with AI")){
-                finalPrompt = sessionChatPrompt.formatted(combinedFilesString);
-            }
-            else if(sessionType.equals("Explain like I'm 5")){
-                finalPrompt = sessionExplainPrompt.formatted(combinedFilesString);
-            }
+            finalPrompt = combineAppropriatePrompt(combinedFilesString, sessionType);
         }
-
         return finalPrompt;
     }
+    public String combineAppropriatePrompt(String filesAsString, String sessionType){
 
-
-
+        return switch (sessionType) {
+            case "Create Flashcards" -> sessionFlashCardsPrompt.formatted(filesAsString);
+            case "Generate Quiz" -> sessionQuizPrompt.formatted(filesAsString);
+            case "Chat with AI" -> sessionChatPrompt.formatted(filesAsString);
+            case "Explain like I'm 5" -> sessionExplainPrompt.formatted(filesAsString);
+            default -> null;
+        };
+    }
     /**
      * takes in an array list of text files and combine their content into a single string output
      * @param files An arraylist of user files
@@ -320,7 +292,7 @@ public class SessionModel {
             sortedFiles.put("nonText", nonTextUserFiles);
         }else{ // both textUserFiles and nonTextUserFiles are empty
             //user did not provide files, implement functions to handle that
-            System.out.println("No resources provided");
+            throw new IllegalArgumentException("No files were uploaded for this session");
         }
         return sortedFiles;
     }
