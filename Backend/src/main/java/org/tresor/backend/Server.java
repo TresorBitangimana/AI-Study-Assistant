@@ -21,8 +21,7 @@ public class Server {
 
     private final ChatBot chatBot = new ChatBot();
     private final Account account = new Account();
-    private final Notes notes = new Notes();
-    private User current_loggedin_user;
+    private User currentLoggedInUser;
 
     public Server() throws IOException {
     }
@@ -56,7 +55,7 @@ public class Server {
             return ResponseEntity.ok(false);
         }else {
             account.createAccount(user);
-            current_loggedin_user = user;
+            currentLoggedInUser = user;
             return ResponseEntity.ok(true);
         }
     }
@@ -75,9 +74,10 @@ public class Server {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
         }
         else{
-            //returns user data
+            //finds the user using their username
             User authenticatedUser = account.findUserByUsername(user.getUsername());
-            current_loggedin_user = user;
+            //user the current LoggedIn User to the user that just logged in
+            currentLoggedInUser = user;
             //calls functions and returns userdata
 
             return ResponseEntity.ok("Hello World!!");
@@ -92,21 +92,18 @@ public class Server {
     @PostMapping("/create_session")
     public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request){
 
-        //session model that handles the resources and outputs with AI
         SessionModel sessionModel = new SessionModel();
-        String response = sessionModel.sessionChat(request);
+        String response = "";
+
+        if(currentLoggedInUser != null){
+
+        }else{ //creates a session but contents and materials are not saved.
+
+            //session model that handles the resources and outputs with AI
+            response = sessionModel.createSession(request);
+        }
 
         return ResponseEntity.ok(response);
-    }
-
-    /**
-     * api call that creates and initializes the users first note
-     * @param request received object from the frontend
-     */
-    @PostMapping("/create_notes")
-    public void createNotes(@RequestBody NoteRequest request){
-        User requestUser = new User(null, request.getUsername(), null);
-        notes.initializeUserNotes(requestUser, request.getTitle());
     }
 
     /**
@@ -115,8 +112,8 @@ public class Server {
      */
     @PostMapping("/create_note")
     public void createNote(@RequestBody NoteRequest request){
-        User requestUser = new User(null, request.getUsername(), null);
-        notes.createNote(requestUser, request.getTitle());
+        User user = currentLoggedInUser;
+        Notes notes = new Notes(user);
+        notes.createNote(user, request.getTitle());
     }
-
 }

@@ -130,31 +130,6 @@ public class SessionModel {
         } catch (Exception ignored) {
             return "Sorry, I can't help with that";
         }
-
-    }
-
-    /**
-     * Session Chats, creates a session chat based on the session type
-     * @param userResources user resources
-     * @return response from the AI model
-     */
-    public String sessionChat(CreateSessionRequest userResources){
-
-        String sessionType = userResources.getSessionType();
-
-        if(sessionType.equals("Create Flashcards")){
-            return createSession(userResources);
-        }
-        else if(sessionType.equals("Generate Quiz")){
-            return createSession(userResources);
-        }
-        else if(sessionType.equals("Chat with AI")){
-        return createSession(userResources);
-        }
-        else if(sessionType.equals("Explain like I'm 5")){
-            return createSession(userResources);
-        }
-        return null;
     }
 
     /**
@@ -163,7 +138,6 @@ public class SessionModel {
      * @return a formated string of question and answers to be used for flashcards
      */
     public String createSession(CreateSessionRequest userResources){
-
         String response = "";
         HashMap<String, ArrayList<SessionFiles>> sortedResources = fileSort(userResources);
         //calls a method to combine all the files with the system prompt to create to final prompt
@@ -204,7 +178,6 @@ public class SessionModel {
             String nonTextFileAsString = processPDF(sortedResources.get("nonText")); //creates a string containing all the PDF files uploaded.
             //combines all into one string
             String combinedFilesString = textFilesAsString.concat(nonTextFileAsString);
-
             //adds the PDFs string to the prompt
             finalPrompt = combineAppropriatePrompt(combinedFilesString, sessionType);
         }

@@ -13,6 +13,10 @@ public class Account {
 
     public Account(){}
 
+    public boolean isUserLoggedIn(){
+        return false;
+    }
+
     public void logIn(){}
 
     /**
