@@ -32,25 +32,40 @@ public class Notes {
      * gets the note ID and adds it to the user Note ids stored in the user document
      * 
      * @param user  the user to update
-     * @param title title of the note being created
+     * @param newNoteTitle title of the note being created
      */
-    public void createNote(User user, String title) {
+    public boolean createNote(User user, String newNoteTitle) {
 
-        // creates a new note
-        Document note = new Document()
-                .append("title", title)
-                .append("content", "");
-        // adds it to the note collection
-        notesCollection.insertOne(note);
-        // get the new note's id
-        String id = note.getObjectId("_id").toHexString();
+        //checks if newNoteTitle already exists are a note title in the database
+        boolean doesTitleExist = false;
+        for (Document doc : notesCollection.find()) {
+            if (newNoteTitle.equals(doc.getString("title"))) {
+                doesTitleExist = true;
+                break;
+            }
+        }
+        //if the newNoteTitle does not exist then add the note to the database collection.
+        if(!doesTitleExist){
+            // creates a new note
+            Document note = new Document()
+                    .append("title", newNoteTitle)
+                    .append("content", "");
+            // adds it to the note collection
+            notesCollection.insertOne(note);
+            // get the new note's id
+            String id = note.getObjectId("_id").toHexString();
 
-        // adds the note id to the list of notesArray stored in the user document
-        // Fetch the user by username and Update the user's NotesArray in MongoDB
-        usersCollection.updateOne(
-                new Document("username", user.getUsername()), // filter
-                new Document("$addToSet", new Document("NotesArray", id)) // update
-        );
+            // adds the note id to the list of notesArray stored in the user document
+            // Fetch the user by username and Update the user's NotesArray in MongoDB
+            usersCollection.updateOne(
+                    new Document("username", user.getUsername()), // filter
+                    new Document("$addToSet", new Document("NotesArray", id)) // update
+            );
+            return true;
+        }else{
+            System.out.println("Title already exists");
+        }
+        return false;
     }
 
     public void editNoteTitle(User user, String newTitle) {}

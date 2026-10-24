@@ -47,7 +47,6 @@ public class Server {
     @PostMapping("/signup")
     public ResponseEntity<?> createAccount(@RequestBody User inComingUser){
         User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
-
         //checks if user already exist
         boolean doesUserExistCheck = account.doesUserNameExist(user.getUsername());
         if(doesUserExistCheck){
@@ -107,13 +106,22 @@ public class Server {
     }
 
     /**
-     * creates a single note after the initial initialisation from createNotes call
-     * @param request NoteReqest object
+     *  Creates a note and add it to the database
+     * @param request information from user: title;
+     * @return accepted status is successful
+     *          conflict status otherwise
      */
     @PostMapping("/create_note")
-    public void createNote(@RequestBody NoteRequest request){
+    public ResponseEntity<?> createNote(@RequestBody NoteRequest request){
         User user = currentLoggedInUser;
         Notes notes = new Notes(user);
-        notes.createNote(user, request.getTitle());
+        boolean isSuccessFull = notes.createNote(user, request.getTitle());
+
+        //if not was created successfully and not title was not taken then returns ACCEPTED status
+        if(isSuccessFull){
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");
+        }
+        //otherwise
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Title Already Exists");
     }
 }
