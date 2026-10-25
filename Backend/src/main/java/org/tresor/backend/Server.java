@@ -174,7 +174,7 @@ public class Server {
     public ResponseEntity<?> editNoteContent(@RequestBody NoteRequest request){
         User user = currentLoggedInUser;
         Notes notes = new Notes(user);
-        boolean isSuccessFull = notes.editNoteContent(request.getTitle(), request.getTitle());
+        boolean isSuccessFull = notes.editNoteContent(request.getTitle(), request.getContent());
 
         if(isSuccessFull){
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");

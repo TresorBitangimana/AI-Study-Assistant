@@ -150,22 +150,21 @@ public class Notes {
                     new Document("title", oldTitle),
                     new Document("$set", new Document("title", newTitle))
             );
+            return true;
         }
-
         return false;
     }
 
     public boolean editNoteContent(String title, String content) {
-
         //checks if noteTitle already exists, and a note title in the database
         boolean doesNoteTitleExist = doesNoteTitleExist(title);
-
         //if note title exists then
         if (doesNoteTitleExist) {
             notesCollection.updateOne(
                     new Document("title", title),
                     new Document("$set", new Document("content", content))
             );
+            return true;
         }
         return false;
     }
