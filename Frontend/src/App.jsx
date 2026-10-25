@@ -1,495 +1,616 @@
-import { useEffect, useRef, useState } from "react";
-import Chart from "./Chart";
-import CreateSessionModal from "./CreateSessionModal";
-import Dashboard from "./Dashboard";
-import Flashcards from "./Flashcards";
-import FocusTimer from "./FocusTimer";
-import Notes from "./Notes";
-import Navation from "./Navation";
-import Sessions from "./Sessions";
-import User from "./User";
-import {
-    clearGuestStorage,
-    migrateGuestStorageToUser,
-    readStoredCurrentUser,
-    readUserActiveSessionId,
-    readUserSessions,
-    writeGuestActiveSessionId,
-    writeGuestSessions,
-    writeUserActiveSessionId,
-    writeUserSessions,
-} from "./storage";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
+import AssistantChat from "./components/AssistantChat";
+import AuthModal from "./components/AuthModal";
+import CreateSessionPage from "./components/CreateSessionPage";
+import Dashboard from "./components/Dashboard";
+import FocusTimer from "./components/FocusTimer";
+import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
+import NotesView from "./views/NotesView";
+import SessionView from "./views/SessionView";
+import readFile from "./utils/readFile";
 
-const navigationItems = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "notes", label: "Notes" },
-    { id: "flashcards", label: "Flashcards" },
-    { id: "timer", label: "Focus Timer" },
-];
+const API =
+    import.meta.env.VITE_API_URL || "http://localhost:8080/api/study_assistant";
 
-const normalizeSessionName = (value) => value.trim().toLowerCase();
-const THEME_STORAGE_KEY = "study-ai-theme";
-const CURRENT_USER_STORAGE_KEY = "study-ai-current-user";
+const userCacheKey = (username, name) =>
+    `study.${encodeURIComponent(username)}.${name}`;
 
-function createSessionId() {
-    if (typeof crypto !== "undefined" && crypto.randomUUID) {
-        return crypto.randomUUID();
+const readUserCache = (username, name, fallback) => {
+    try {
+        const cached = localStorage.getItem(userCacheKey(username, name));
+        return cached ? JSON.parse(cached) : fallback;
+    } catch {
+        return fallback;
     }
+};
 
-    return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function readFile(file) {
-    const metadata = {
-        name: file.name,
-        type: file.type,
-        size: String(file.size),
-        lastModified: String(file.lastModified),
-    };
-
-    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const dataUrl = String(reader.result ?? "");
-                const separatorIndex = dataUrl.indexOf(",");
-                if (separatorIndex === -1) {
-                    reject(new Error(`Could not read PDF file: ${file.name}`));
-                    return;
-                }
-
-                resolve({ ...metadata, content: dataUrl.slice(separatorIndex + 1) });
-            };
-            reader.onerror = () => reject(reader.error ?? new Error(`Could not read PDF file: ${file.name}`));
-            reader.readAsDataURL(file);
-        });
+const writeUserCache = (username, name, value) => {
+    try {
+        localStorage.setItem(
+            userCacheKey(username, name),
+            JSON.stringify(value),
+        );
+    } catch {
+        // Keep the app usable if browser storage is unavailable or full.
     }
-
-    return file.text().then((content) => ({ ...metadata, content }));
-}
+};
 
 function App() {
-    const notesSectionRef = useRef(null);
-    const [notesResetKey, setNotesResetKey] = useState(0);
-    const storedCurrentUser = readStoredCurrentUser();
-    const [theme, setTheme] = useState(() => {
-        if (typeof window === "undefined") {
-            return "light";
-        }
+    const [page, setPage] = useState("Dashboard");
+    const [sessions, setSessions] = useState([]);
+    const [notes, setNotes] = useState([]);
+    const notesRef = useRef(notes);
+    const [user, setUser] = useState(null);
+    const [activeSession, setActiveSession] = useState(null);
+    const [activeNote, setActiveNote] = useState(null);
+    const [sessionFiles, setSessionFiles] = useState([]);
+    const [authOpen, setAuthOpen] = useState(false);
+    const [authMode, setAuthMode] = useState("login");
+    const [chatOpen, setChatOpen] = useState(false);
+    const [chatInput, setChatInput] = useState("");
+    const [chatMessages, setChatMessages] = useState([]);
+    const [sessionChatMessages, setSessionChatMessages] = useState({});
+    const [sessionChatInput, setSessionChatInput] = useState("");
+    const [sessionChatBusy, setSessionChatBusy] = useState({});
+    const [busy, setBusy] = useState(false);
+    const [toast, setToast] = useState("");
+    const [search, setSearch] = useState("");
+    const [dark, setDark] = useState(false);
+    const [error, setError] = useState("");
+    const [timerMode, setTimerMode] = useState("Focus");
+    const [seconds, setSeconds] = useState(25 * 60);
+    const [timerRunning, setTimerRunning] = useState(false);
+    const [customMinutes, setCustomMinutes] = useState(25);
+    const [customSeconds, setCustomSeconds] = useState(0);
+    const chatEnd = useRef(null);
+    const noteSaveWarningShown = useRef(false);
 
-        return window.localStorage.getItem(THEME_STORAGE_KEY) ?? "light";
-    });
-    const [activePanel, setActivePanel] = useState("dashboard");
-    const [sessions, setSessions] = useState(() =>
-        storedCurrentUser ? readUserSessions(storedCurrentUser.username) : [],
-    );
-    const [activeSessionId, setActiveSessionId] = useState(() =>
-        storedCurrentUser
-            ? readUserActiveSessionId(storedCurrentUser.username)
-            : null,
-    );
-    const [uploadedDocuments, setUploadedDocuments] = useState([]);
-    const [uploadedFiles, setUploadedFiles] = useState([]);
-    const [pendingSessionName, setPendingSessionName] = useState("");
-    const [sessionTypeError, setSessionTypeError] = useState("");
-    const [sessionModalMode, setSessionModalMode] = useState(null);
-    const [editingSessionId, setEditingSessionId] = useState(null);
-    const [sessionDraftName, setSessionDraftName] = useState("");
-    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState(() => {
-        if (typeof window === "undefined") {
-            return null;
-        }
+    const persistNotes = (nextOrUpdater) => {
+        const nextNotes =
+            typeof nextOrUpdater === "function"
+                ? nextOrUpdater(notesRef.current)
+                : nextOrUpdater;
+        notesRef.current = nextNotes;
+        setNotes(nextNotes);
+        if (user?.username) writeUserCache(user.username, "notes", nextNotes);
+    };
 
-        try {
-            const value = window.localStorage.getItem(CURRENT_USER_STORAGE_KEY);
-            return value ? JSON.parse(value) : null;
-        } catch {
-            return null;
-        }
-    });
-
-    const nextSessionNumber = sessions.length + 1;
-    const fallbackSessionName = `New Session ${nextSessionNumber}`;
-    const editingSession = sessions.find(
-        (session) => session.id === editingSessionId,
-    );
-    const isSessionModalOpen = sessionModalMode !== null;
-    const activeSession =
-        sessions.find((session) => session.id === activeSessionId) ?? null;
-    const proposedSessionName =
-        sessionDraftName.trim() ||
-        (sessionModalMode === "rename" && editingSession
-            ? editingSession.name
-            : fallbackSessionName);
-    const hasDuplicateSessionName = sessions.some((session) => {
-        if (session.id === editingSessionId) {
-            return false;
-        }
-
-        return (
-            normalizeSessionName(session.name) ===
-            normalizeSessionName(proposedSessionName)
+    useEffect(() => {
+        notesRef.current = notes;
+    }, [notes]);
+    useEffect(() => {
+        if (!user?.username) return;
+        writeUserCache(user.username, "sessions", sessions);
+    }, [sessions, user]);
+    useEffect(() => {
+        if (!user?.username) return;
+        writeUserCache(user.username, "notes", notes);
+    }, [notes, user]);
+    useEffect(() => {
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+    }, [dark]);
+    useEffect(() => {
+        if (!user?.username) return;
+        writeUserCache(user.username, "theme", dark ? "dark" : "light");
+    }, [dark, user]);
+    useEffect(() => {
+        if (!timerRunning) return undefined;
+        const interval = setInterval(
+            () =>
+                setSeconds((remaining) => {
+                    if (remaining <= 1) {
+                        setTimerRunning(false);
+                        return 0;
+                    }
+                    return remaining - 1;
+                }),
+            1000,
         );
-    });
+        return () => clearInterval(interval);
+    }, [timerRunning]);
+    useEffect(() => {
+        chatEnd.current?.scrollIntoView({ behavior: "smooth" });
+    }, [chatMessages, chatOpen]);
+    useEffect(() => {
+        const openChat = () => setChatOpen(true);
+        window.addEventListener("open-study-chat", openChat);
+        return () => window.removeEventListener("open-study-chat", openChat);
+    }, []);
 
-    const openSessionModal = () => {
-        setSessionDraftName("");
-        setEditingSessionId(null);
-        setSessionModalMode("create");
+    const greeting = user?.fullName?.trim()?.split(/\s+/)[0] || "there";
+    const active =
+        sessions.find((session) => session.id === activeSession?.id) ||
+        activeSession;
+    const filteredSessions = useMemo(
+        () =>
+            sessions.filter((session) =>
+                session.name.toLowerCase().includes(search.toLowerCase()),
+            ),
+        [sessions, search],
+    );
+    const showToast = (message) => {
+        setToast(message);
+        window.setTimeout(() => setToast(""), 3200);
     };
-
-    const openRenameSessionModal = (sessionId) => {
-        const session = sessions.find((item) => item.id === sessionId);
-        if (!session) {
-            return;
-        }
-
-        setSessionDraftName(session.name);
-        setEditingSessionId(sessionId);
-        setSessionModalMode("rename");
+    const go = (destination) => {
+        setPage(destination);
+        setActiveSession(null);
     };
-
-    const closeSessionModal = () => {
-        setSessionDraftName("");
-        setEditingSessionId(null);
-        setSessionModalMode(null);
+    const openSessionCreator = () => {
+        setError("");
+        setSessionFiles([]);
+        setPage("Create Session");
+        setActiveSession(null);
     };
-
-    const saveSession = (event) => {
-        event?.preventDefault();
-        const sessionName = proposedSessionName;
-
-        if (hasDuplicateSessionName) {
-            return;
-        }
-
-        if (sessionModalMode === "rename" && editingSessionId) {
-            setSessions((current) =>
-                current.map((session) =>
-                    session.id === editingSessionId
-                        ? { ...session, name: sessionName }
-                        : session,
-                ),
-            );
-            closeSessionModal();
-            return;
-        }
-
-        setPendingSessionName(sessionName);
-        setActivePanel("dashboard");
-        closeSessionModal();
+    const openSession = (session) => {
+        setSessionChatInput("");
+        setActiveSession(session);
+        setPage("Session");
     };
-
-    const createSessionFromType = async (sessionType) => {
-        if (!pendingSessionName) {
-            return;
+    const addNote = async (title) => {
+        const normalizedTitle = title.trim();
+        if (!normalizedTitle)
+            return { created: false, error: "Enter a title for this note." };
+        if (!user?.username) {
+            setAuthMode("login");
+            setError("");
+            setAuthOpen(true);
+            return {
+                created: false,
+                error: "Sign in before creating a note.",
+            };
         }
-
-        if (!currentUser?.username) {
-            setSessionTypeError(
-                "Please log in before choosing a session type.",
-            );
-            return;
+        if (notes.some((note) => note.title?.trim() === normalizedTitle)) {
+            return {
+                created: false,
+                error: "A note with that title already exists. Choose another title.",
+            };
         }
-
-        setSessionTypeError("");
-
-        let filePayload;
-        try {
-            filePayload = await Promise.all(uploadedFiles.map(readFile));
-        } catch (error) {
-            console.error("Failed to read uploaded study materials", error);
-            setSessionTypeError("One or more files could not be read. Please try uploading them again.");
-            return;
-        }
-
-        try {
-            const response = await fetch(
-                "http://localhost:8080/api/study_assistant/create_session",
-                {
+        if (user?.username) {
+            try {
+                const response = await fetch(`${API}/create_note`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        username: currentUser.username,
-                        sessionType: sessionType.label,
-                        files: filePayload,
+                        username: user.username,
+                        title: normalizedTitle,
                     }),
-                },
-            );
-
-            const content = await response.text();
-            console.log(content);
-
-            if (!response.ok) {
-                throw new Error("Request failed");
+                });
+                if (response.status === 409) {
+                    return {
+                        created: false,
+                        error: "A note with that title already exists. Choose another title.",
+                    };
+                }
+                if (!response.ok)
+                    throw new Error("The note could not be created.");
+            } catch {
+                return {
+                    created: false,
+                    error: "The note could not be created. Check that the backend is running and try again.",
+                };
             }
-        } catch (error) {
-            console.error("Failed to create session on the backend", error);
         }
-
-        const newSession = {
-            id: createSessionId(),
-            name: pendingSessionName,
-            type: sessionType.label,
-            files: filePayload,
+        const note = {
+            id: crypto.randomUUID(),
+            title: normalizedTitle,
+            content: "",
+            updatedAt: Date.now(),
         };
-
-        setSessions((current) => [newSession, ...current]);
-        setActiveSessionId(newSession.id);
-        setActivePanel("session");
-        setPendingSessionName("");
-        setUploadedDocuments([]);
-        setUploadedFiles([]);
+        setNotes((current) => [note, ...current]);
+        setActiveNote(note.id);
+        setPage("Notes");
+        return { created: true };
     };
-
-    const deleteSession = (sessionId) => {
-        setSessions((current) => {
-            const remaining = current.filter(
-                (session) => session.id !== sessionId,
-            );
-            if (activeSessionId === sessionId) {
-                setActiveSessionId(remaining[0]?.id ?? null);
+    const deleteNoteFromBackend = async (note) => {
+        if (!user?.username) return true;
+        try {
+            const response = await fetch(`${API}/delete_note`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: note.title }),
+            });
+            if (response.status === 404) {
+                showToast(
+                    "This note was not found on the server, so it was removed from this browser.",
+                );
+                return true;
             }
-            return remaining;
-        });
+            if (!response.ok) throw new Error("The note could not be deleted.");
+            return true;
+        } catch {
+            showToast(
+                "The note could not be deleted. Check that the backend is running and try again.",
+            );
+            return false;
+        }
     };
-
-    const handleDocumentUpload = (event) => {
-        const files = Array.from(event.target.files ?? []);
-        setUploadedFiles((current) => [...current, ...files]);
-        setUploadedDocuments((current) => [
-            ...current,
-            ...files.map((file) => ({
-                id: `${file.name}-${file.lastModified}`,
-                name: file.name,
-                size: `${(file.size / 1024).toFixed(1)} KB`,
-                type: file.type === "application/pdf" ? "PDF" : "Text Document",
-            })),
-        ]);
-        event.target.value = "";
+    const editNoteTitle = async (oldTitle, newTitle) => {
+        if (oldTitle === newTitle) return true;
+        try {
+            const response = await fetch(`${API}/edit_note_title`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: oldTitle, newTitle }),
+            });
+            if (!response.ok) {
+                showToast("The title could not be updated. It may already be in use.");
+                return false;
+            }
+            return true;
+        } catch {
+            showToast("The title could not be updated. Check that the backend is running.");
+            return false;
+        }
     };
-
-    const removeUploadedDocument = (documentId) => {
-        setUploadedFiles((current) =>
-            current.filter(
-                (file) => `${file.name}-${file.lastModified}` !== documentId,
-            ),
-        );
-        setUploadedDocuments((current) =>
-            current.filter((document) => document.id !== documentId),
-        );
+    const editNoteContent = async (title, content) => {
+        try {
+            const response = await fetch(`${API}/edit_note_content`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, content }),
+            });
+            if (!response.ok) throw new Error("The content was not saved.");
+            noteSaveWarningShown.current = false;
+            return true;
+        } catch {
+            if (!noteSaveWarningShown.current) {
+                showToast("Note content could not be saved. Check that the backend is running.");
+                noteSaveWarningShown.current = true;
+            }
+            return false;
+        }
     };
-
-    const handleLogout = () => {
-        setCurrentUser(null);
-        setSessions([]);
-        setActiveSessionId(null);
-        setUploadedDocuments([]);
-        setUploadedFiles([]);
-        setPendingSessionName("");
-        setSessionModalMode(null);
-        setEditingSessionId(null);
-        setSessionDraftName("");
-        setIsUserModalOpen(false);
-        setActivePanel("dashboard");
-        setNotesResetKey((current) => current + 1);
-        clearGuestStorage();
+    const authenticate = async (event) => {
+        event.preventDefault();
+        setBusy(true);
+        setError("");
+        const form = new FormData(event.currentTarget);
+        const mode = form.get("mode");
+        const payload = {
+            fullName: String(form.get("fullName") || ""),
+            username: String(form.get("username") || ""),
+            password: String(form.get("password") || ""),
+        };
+        try {
+            const response = await fetch(`${API}/${mode}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok)
+                throw new Error(
+                    mode === "login"
+                        ? "We couldn't find an account with those details."
+                        : "Could not create your account. Please try again.",
+                );
+            const result = await response.text();
+            if (mode === "signup" && result.trim() !== "true")
+                throw new Error("That username is already in use.");
+            const authenticatedUser = {
+                fullName: payload.fullName || payload.username,
+                username: payload.username,
+            };
+            setSessions(
+                readUserCache(payload.username, "sessions", []),
+            );
+            setNotes(readUserCache(payload.username, "notes", []));
+            setDark(readUserCache(payload.username, "theme", "light") === "dark");
+            setUser(authenticatedUser);
+            setAuthOpen(false);
+            showToast(
+                mode === "signup" ? "Your account is ready." : "Welcome back.",
+            );
+        } catch (requestError) {
+            setError(
+                requestError.message.includes("fetch")
+                    ? "Can't connect to the study server. Check that the backend is running."
+                    : requestError.message,
+            );
+        } finally {
+            setBusy(false);
+        }
     };
-
-    const handleAuthChange = (nextUser) => {
-        const migratedStorage = migrateGuestStorageToUser(nextUser.username);
-        setCurrentUser(nextUser);
-        setSessionTypeError("");
-        setSessions(migratedStorage.sessions);
-        setActiveSessionId(migratedStorage.activeSessionId);
-        setIsUserModalOpen(false);
-        setActivePanel("dashboard");
-    };
-
-    const headerTitle =
-        activePanel === "session" && activeSession
-            ? activeSession.name
-            : (navigationItems.find((item) => item.id === activePanel)?.label ??
-              "Dashboard");
-
-    useEffect(() => {
-        window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    }, [theme]);
-
-    useEffect(() => {
-        if (currentUser) {
-            writeUserSessions(currentUser.username, sessions);
-            writeUserActiveSessionId(currentUser.username, activeSessionId);
+    const createSession = async (event) => {
+        event.preventDefault();
+        setError("");
+        if (!user) {
+            setAuthOpen(true);
+            setAuthMode("login");
             return;
         }
-
-        writeGuestSessions(sessions);
-        writeGuestActiveSessionId(activeSessionId);
-    }, [activeSessionId, currentUser, sessions]);
-
-    useEffect(() => {
-        if (currentUser) {
-            window.localStorage.setItem(
-                CURRENT_USER_STORAGE_KEY,
-                JSON.stringify(currentUser),
+        const form = new FormData(event.currentTarget);
+        const name = String(form.get("name") || "").trim();
+        const type = String(form.get("type") || "");
+        const files = sessionFiles.filter(
+            (file) => file instanceof File && file.size > 0,
+        );
+        if (!name || !type || files.length === 0) {
+            setError(
+                "Add a name, choose a study format, and upload at least one file.",
             );
             return;
         }
-
-        window.localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
-    }, [currentUser]);
+        setBusy(true);
+        try {
+            const payloadFiles = await Promise.all(files.map(readFile));
+            const response = await fetch(`${API}/create_session`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: user.username,
+                    sessionType: type,
+                    files: payloadFiles,
+                }),
+            });
+            if (!response.ok)
+                throw new Error(
+                    "The study session couldn't be generated. Please try again.",
+                );
+            const result = await response.text();
+            const session = {
+                id: crypto.randomUUID(),
+                name,
+                type,
+                result,
+                files: payloadFiles.map(({ name: fileName, size }) => ({
+                    name: fileName,
+                    size,
+                })),
+                createdAt: Date.now(),
+            };
+            setSessions((current) => [session, ...current]);
+            setActiveSession(session);
+            setPage("Session");
+            showToast("Your study session is ready.");
+        } catch (requestError) {
+            setError(
+                requestError.message.includes("fetch")
+                    ? "Can't connect to the study server. Check that the backend is running."
+                    : requestError.message,
+            );
+        } finally {
+            setBusy(false);
+        }
+    };
+    const sendChat = async (event, prompt = chatInput) => {
+        event?.preventDefault();
+        if (!prompt.trim()) return;
+        const question = prompt.trim();
+        setChatInput("");
+        setChatMessages((current) => [
+            ...current,
+            { role: "user", text: question },
+        ]);
+        setBusy(true);
+        try {
+            const response = await fetch(`${API}/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: question,
+            });
+            if (!response.ok)
+                throw new Error("The assistant couldn't respond.");
+            const answer = await response.text();
+            setChatMessages((current) => [
+                ...current,
+                { role: "assistant", text: answer.replace(/^\{|\}$/g, "") },
+            ]);
+        } catch {
+            setChatMessages((current) => [
+                ...current,
+                {
+                    role: "assistant",
+                    text: "I can't reach the study assistant right now. Please check that the backend is running.",
+                },
+            ]);
+        } finally {
+            setBusy(false);
+        }
+    };
+    const sendSessionChat = async (event) => {
+        event?.preventDefault();
+        const question = sessionChatInput.trim();
+        if (!question || !active || sessionChatBusy[active.id]) return;
+        const sessionId = active.id;
+        setSessionChatInput("");
+        setSessionChatMessages((current) => ({
+            ...current,
+            [sessionId]: [
+                ...(current[sessionId] || []),
+                { role: "user", text: question },
+            ],
+        }));
+        setSessionChatBusy((current) => ({ ...current, [sessionId]: true }));
+        try {
+            const response = await fetch(`${API}/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: question,
+            });
+            if (!response.ok)
+                throw new Error("The assistant couldn't respond.");
+            const answer = await response.text();
+            setSessionChatMessages((current) => ({
+                ...current,
+                [sessionId]: [
+                    ...(current[sessionId] || []),
+                    {
+                        role: "assistant",
+                        text: answer.replace(/^\\{|\\}$/g, ""),
+                    },
+                ],
+            }));
+        } catch {
+            setSessionChatMessages((current) => ({
+                ...current,
+                [sessionId]: [
+                    ...(current[sessionId] || []),
+                    {
+                        role: "assistant",
+                        text: "I can't reach the study assistant right now. Please check that the backend is running.",
+                    },
+                ],
+            }));
+        } finally {
+            setSessionChatBusy((current) => ({
+                ...current,
+                [sessionId]: false,
+            }));
+        }
+    };
+    const chooseTimer = (mode) => {
+        setTimerMode(mode);
+        setTimerRunning(false);
+        setSeconds(
+            mode === "Custom"
+                ? customMinutes * 60 + customSeconds
+                : (mode === "Short break"
+                      ? 5
+                      : mode === "Long break"
+                        ? 15
+                        : 25) * 60,
+        );
+    };
+    const setCustomTimer = (minutes, remainingSeconds) => {
+        const duration = minutes * 60 + remainingSeconds;
+        if (duration <= 0) return;
+        setCustomMinutes(minutes);
+        setCustomSeconds(remainingSeconds);
+        setTimerMode("Custom");
+        setTimerRunning(false);
+        setSeconds(duration);
+    };
+    const openLogin = () => {
+        setAuthMode("login");
+        setError("");
+        setAuthOpen(true);
+    };
+    const title = page === "Session" ? active?.name || "Study session" : page;
 
     return (
-        <div className={`app-shell ${theme === "dark" ? "theme-dark" : ""}`}>
-            <div className="app-grid">
-                <Navation
-                    currentUser={currentUser}
-                    activePanel={activePanel}
-                    activeSessionId={activeSessionId}
-                    navigationItems={navigationItems}
-                    onCreateSession={openSessionModal}
-                    onDeleteSession={deleteSession}
-                    onRenameSession={openRenameSessionModal}
-                    onSelectSession={(sessionId) => {
-                        setActiveSessionId(sessionId);
-                        setActivePanel("session");
-                    }}
-                    setActivePanel={setActivePanel}
-                    sessions={sessions}
-                    theme={theme}
-                    onToggleTheme={() =>
-                        setTheme((current) =>
-                            current === "light" ? "dark" : "light",
-                        )
+        <div className="app-shell" data-theme={dark ? "dark" : "light"}>
+            <Sidebar
+                page={page}
+                go={go}
+                sessions={filteredSessions}
+                active={active}
+                onOpenSession={openSession}
+                onNewSession={openSessionCreator}
+                dark={dark}
+                setDark={setDark}
+                user={user}
+                greeting={greeting}
+                onSignOut={() => {
+                    setUser(null);
+                    setSessions([]);
+                    setNotes([]);
+                    setActiveSession(null);
+                    setActiveNote(null);
+                    showToast("Signed out.");
+                }}
+                onLogin={openLogin}
+            />
+            <main className="main-area">
+                <Topbar
+                    title={title}
+                    search={search}
+                    setSearch={setSearch}
+                    onToggleMobileNav={() =>
+                        document
+                            .querySelector(".sidebar")
+                            ?.classList.toggle("mobile-open")
                     }
-                    onLogout={handleLogout}
                 />
-
-                <main className="app-main">
-                    <div className="app-header">
-                        <div className="app-title">{headerTitle}</div>
-                        <div className="flex flex-wrap items-center gap-2.5">
-                            {!currentUser ? (
-                                <button
-                                    className="btn-ghost"
-                                    onClick={() => setIsUserModalOpen(true)}
-                                    type="button"
-                                >
-                                    Log In / Sign Up
-                                </button>
-                            ) : null}
-                            <button
-                                className="btn-ghost"
-                                onClick={openSessionModal}
-                                type="button"
-                            >
-                                New Session
-                            </button>
-                            <button
-                                className="btn-primary"
-                                onClick={() => {
-                                    setActivePanel("notes");
-                                    notesSectionRef.current?.createNote();
-                                }}
-                                type="button"
-                            >
-                                Add Note
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="content-scroll">
+                <section
+                    className={`content-area ${page === "Dashboard" ? "dashboard-content" : page === "Notes" ? "notes-content" : ""}`}
+                >
+                    {page === "Dashboard" && (
                         <Dashboard
-                            active={activePanel === "dashboard"}
-                            currentUser={currentUser}
-                            onCancelPendingSession={() => {
-                                setPendingSessionName("");
-                                setSessionTypeError("");
-                                setUploadedDocuments([]);
-                                setActivePanel("dashboard");
+                            greeting={greeting}
+                            onNewSession={openSessionCreator}
+                        />
+                    )}
+                    {page === "Create Session" && (
+                        <CreateSessionPage
+                            onSubmit={createSession}
+                            files={sessionFiles}
+                            setFiles={setSessionFiles}
+                            error={error}
+                            busy={busy}
+                            onCancel={() => go("Dashboard")}
+                        />
+                    )}
+                    {page === "Session" && (
+                        <SessionView
+                            session={active}
+                            onBack={() => go("Dashboard")}
+                            chatMessages={sessionChatMessages[active?.id] || []}
+                            chatBusy={!!sessionChatBusy[active?.id]}
+                            chatInput={sessionChatInput}
+                            setChatInput={setSessionChatInput}
+                            onSendChat={sendSessionChat}
+                        />
+                    )}
+                    {page === "Notes" && (
+                        <NotesView
+                            notes={notes}
+                            activeNote={activeNote}
+                            setActiveNote={setActiveNote}
+                            setNotes={persistNotes}
+                            addNote={addNote}
+                            onDeleteNote={deleteNoteFromBackend}
+                            onEditNoteTitle={editNoteTitle}
+                            onEditNoteContent={editNoteContent}
+                        />
+                    )}
+                    {page === "Focus Timer" && (
+                        <FocusTimer
+                            mode={timerMode}
+                            seconds={seconds}
+                            running={timerRunning}
+                            onChooseMode={chooseTimer}
+                            customMinutes={customMinutes}
+                            customSeconds={customSeconds}
+                            onSetCustom={setCustomTimer}
+                            onToggle={() => setTimerRunning(!timerRunning)}
+                            onReset={() => {
+                                setTimerRunning(false);
+                                chooseTimer(timerMode);
                             }}
-                            handleDocumentUpload={handleDocumentUpload}
-                            onOpenUserModal={() => setIsUserModalOpen(true)}
-                            onCreateSession={openSessionModal}
-                            pendingSessionName={pendingSessionName}
-                            sessionTypeError={sessionTypeError}
-                            removeUploadedDocument={removeUploadedDocument}
-                            uploadedDocuments={uploadedDocuments}
-                            onSelectSessionType={createSessionFromType}
                         />
-
-                        <Notes
-                            key={`${currentUser?.username ?? "guest"}-${notesResetKey}`}
-                            active={activePanel === "notes"}
-                            currentUser={currentUser}
-                            ref={notesSectionRef}
-                        />
-
-                        <Flashcards active={activePanel === "flashcards"} />
-
-                        <FocusTimer active={activePanel === "timer"} />
-
-                        <Sessions
-                            active={activePanel === "session"}
-                            session={activeSession}
-                        />
-
-                        {isSessionModalOpen ? (
-                            <CreateSessionModal
-                                errorMessage={
-                                    hasDuplicateSessionName
-                                        ? "A session with this name already exists."
-                                        : ""
-                                }
-                                fallbackName={
-                                    sessionModalMode === "rename" &&
-                                    editingSession
-                                        ? editingSession.name
-                                        : fallbackSessionName
-                                }
-                                onCancel={closeSessionModal}
-                                onChange={setSessionDraftName}
-                                onSubmit={saveSession}
-                                submitDisabled={hasDuplicateSessionName}
-                                submitLabel={
-                                    sessionModalMode === "rename"
-                                        ? "Save Changes"
-                                        : "Continue"
-                                }
-                                subtitle={
-                                    sessionModalMode === "rename"
-                                        ? "Update the session name without changing the rest of your study setup."
-                                        : "Name the session first, then choose the study workflow from the dashboard."
-                                }
-                                title={
-                                    sessionModalMode === "rename"
-                                        ? "Rename this study session"
-                                        : "Name your study session"
-                                }
-                                toneLabel={
-                                    sessionModalMode === "rename"
-                                        ? "Rename Session"
-                                        : "New Session"
-                                }
-                                value={sessionDraftName}
-                            />
-                        ) : null}
-
-                        {isUserModalOpen ? (
-                            <User
-                                currentUser={currentUser}
-                                onAuthChange={handleAuthChange}
-                                onClose={() => setIsUserModalOpen(false)}
-                                onLogout={handleLogout}
-                            />
-                        ) : null}
-                    </div>
-                </main>
-
-                <Chart />
-            </div>
+                    )}
+                </section>
+            </main>
+            <AssistantChat
+                open={chatOpen}
+                onToggle={() => setChatOpen(!chatOpen)}
+                messages={chatMessages}
+                busy={busy}
+                input={chatInput}
+                setInput={setChatInput}
+                onSend={sendChat}
+                endRef={chatEnd}
+            />
+            {authOpen && (
+                <AuthModal
+                    mode={authMode}
+                    setMode={setAuthMode}
+                    onSubmit={authenticate}
+                    onClose={() => setAuthOpen(false)}
+                    error={error}
+                    busy={busy}
+                    setError={setError}
+                />
+            )}
+            {toast && (
+                <div className="toast">
+                    <span>✓</span>
+                    {toast}
+                </div>
+            )}
         </div>
     );
 }

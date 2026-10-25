@@ -1,16 +1,20 @@
-# React + Vite
+# StudyAI frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+StudyAI is a React and Vite study workspace. It connects to the Spring backend in `../AIStudyAssistant/Backend` for account access, AI chat, AI study-session generation, and note creation.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Start the Spring backend on `http://localhost:8080` and make sure its MongoDB and model configuration is available.
+2. From this directory, run `npm install` if needed, then `npm run dev`.
+3. Open the local URL printed by Vite.
 
-## React Compiler
+The frontend uses `http://localhost:8080/api/study_assistant` by default. Set `VITE_API_URL` to another API base URL when needed, for example `VITE_API_URL=https://your-host/api/study_assistant`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Backend connections
 
-## Expanding the ESLint configuration
+- `POST /login` and `POST /signup` provide account access.
+- `POST /create_session` receives the username, selected study format, and uploaded TXT, Markdown, or PDF materials. The returned AI output is shown in the new session.
+- `POST /chat` sends a text prompt to the assistant.
+- `POST /create_note` records note creation for the signed-in user.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The current backend does not expose endpoints for reading or updating saved sessions and notes. Session results and note text therefore remain in this browser's local storage; note creation is also sent to the backend when signed in. Flashcards are parsed from generated session output for review.
