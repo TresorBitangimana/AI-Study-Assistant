@@ -108,7 +108,7 @@ public class Server {
 
     /**
      *  Creates a note and add it to the database
-     * @param request information from user: title;
+     * @param request information from user: title, content;
      * @return accepted status is successful
      *          conflict status otherwise
      */
@@ -128,7 +128,7 @@ public class Server {
 
     /**
      *  Deletes a from a backend with the matching information
-     * @param request information from user: title;
+     * @param request information from user: title, content;
      * @return accepted status is successful
      *          conflict status otherwise
      */
@@ -143,5 +143,43 @@ public class Server {
         }
         //otherwise
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("A note with that title does not exists");
+    }
+
+    /**
+     * edits the note title when called
+     * @param request information from user: title, content;
+     * @return accepted status is successful
+     *          conflict status otherwise
+     */
+    @PostMapping("/edit_note_title")
+    public ResponseEntity<?> editNoteTitle(@RequestBody NoteRequest request){
+        User user = currentLoggedInUser;
+        Notes notes = new Notes(user);
+        boolean isSuccessFull = notes.editNoteTitle(request.getTitle(), request.getNewTitle());
+
+        if(isSuccessFull){
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");
+        }
+        //otherwise
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Successful");
+    }
+
+    /**
+     * edits the notes content when called
+     * @param request information from user: title, content;
+     * @return accepted status is successful
+     *          conflict status otherwise
+     */
+    @PostMapping("/edit_note_content")
+    public ResponseEntity<?> editNoteContent(@RequestBody NoteRequest request){
+        User user = currentLoggedInUser;
+        Notes notes = new Notes(user);
+        boolean isSuccessFull = notes.editNoteContent(request.getTitle(), request.getTitle());
+
+        if(isSuccessFull){
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");
+        }
+        //otherwise
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Successful");
     }
 }

@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
-import static org.springframework.data.mongodb.core.aggregation.SelectionOperators.First.first;
 
 public class Notes {
 
@@ -31,27 +30,41 @@ public class Notes {
     }
 
     /**
-     * creates a new note and adds it to the notesCollection
-     * gets the note ID and adds it to the user Note ids stored in the user document
-     * 
-     * @param user  the user to update
-     * @param newNoteTitle title of the note being created
+     * checks if a Note already exist by checking if there is a note
+     * with the same title as the perimeter in the database.
+     * @param noteTitle note title to check
+     * @return true if it exists
+     *          false, otherwise.
      */
-    public boolean createNote(User user, String newNoteTitle) {
-
+    public boolean doesNoteTitleExist(String noteTitle){
         //checks if newNoteTitle already exists, and a note title in the database
         boolean doesTitleExist = false;
         for (Document doc : notesCollection.find()) {
-            if (newNoteTitle.equals(doc.getString("title"))) {
+            if (noteTitle.equals(doc.getString("title"))) {
                 doesTitleExist = true;
                 break;
             }
         }
+        return doesTitleExist;
+    }
+
+    /**
+     * creates a new note and adds it to the notesCollection
+     * gets the note ID and adds it to the user Note ids stored in the user document
+     * 
+     * @param user  the user to update
+     * @param noteTitle title of the note being created
+     */
+    public boolean createNote(User user, String noteTitle) {
+
+        //checks if noteTitle already exists, and a note title in the database
+        boolean doesTitleExist = doesNoteTitleExist(noteTitle);
+
         //if the newNoteTitle does not exist then add the note to the database collection.
         if(!doesTitleExist){
             // creates a new note
             Document note = new Document()
-                    .append("title", newNoteTitle)
+                    .append("title", noteTitle)
                     .append("content", "");
             // adds it to the note collection
             notesCollection.insertOne(note);
@@ -125,9 +138,36 @@ public class Notes {
         return false;
     }
 
-    public void editNoteTitle(User user, String newTitle) {}
-    public void editNoteContent(User user, String newContent) {
+    public boolean editNoteTitle(String oldTitle, String newTitle) {
 
+        //checks if the both the old title and new title already exists.
+        boolean doesOldTitleExist = doesNoteTitleExist(oldTitle);
+        boolean doesNewTitleExist = doesNoteTitleExist(newTitle);
+
+        //if the old title exists and the new title does not exist then
+        if(doesOldTitleExist && !doesNewTitleExist){
+            notesCollection.updateOne(
+                    new Document("title", oldTitle),
+                    new Document("$set", new Document("title", newTitle))
+            );
+        }
+
+        return false;
+    }
+
+    public boolean editNoteContent(String title, String content) {
+
+        //checks if noteTitle already exists, and a note title in the database
+        boolean doesNoteTitleExist = doesNoteTitleExist(title);
+
+        //if note title exists then
+        if (doesNoteTitleExist) {
+            notesCollection.updateOne(
+                    new Document("title", title),
+                    new Document("$set", new Document("content", content))
+            );
+        }
+        return false;
     }
 
     /**
