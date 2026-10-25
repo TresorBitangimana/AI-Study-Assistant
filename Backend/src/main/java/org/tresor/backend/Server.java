@@ -3,6 +3,7 @@ package org.tresor.backend;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResponseExtractor;
 import org.tresor.backend.account.Account;
 import org.tresor.backend.account.User;
 import org.tresor.backend.aiModel.ChatBot;
@@ -79,7 +80,7 @@ public class Server {
             currentLoggedInUser = user;
             //calls functions and returns userdata
 
-            return ResponseEntity.ok("Hello World!!");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("");
         }
     }
 
@@ -102,7 +103,7 @@ public class Server {
             response = sessionModel.createSession(request);
         }
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Successful");
     }
 
     /**
@@ -123,5 +124,24 @@ public class Server {
         }
         //otherwise
         return ResponseEntity.status(HttpStatus.CONFLICT).body("Title Already Exists");
+    }
+
+    /**
+     *  Deletes a from a backend with the matching information
+     * @param request information from user: title;
+     * @return accepted status is successful
+     *          conflict status otherwise
+     */
+    @PostMapping("/delete_note")
+    public ResponseEntity<?> deleteNote(@RequestBody NoteRequest request){
+        User user = currentLoggedInUser;
+        Notes notes = new Notes(user);
+        boolean isSuccessFull = notes.deleteNote(user, request.getTitle());
+
+        if(isSuccessFull){
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");
+        }
+        //otherwise
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("A note with that title does not exists");
     }
 }
