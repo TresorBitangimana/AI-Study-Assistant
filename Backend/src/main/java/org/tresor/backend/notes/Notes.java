@@ -20,14 +20,23 @@ public class Notes {
     MongoCollection<Document> usersCollection = getUsersCollection();
     MongoCollection<Document> notesCollection = getNotesCollection();
 
+    /**
+     * Constructor, initializes the users notes id array
+     * @param user currently loggedIn user
+     */
     public Notes(User user) {
-        //instantiates the user arraylist in the backend that stoles all the users notes ids
+        //instantiates the user list in the database that stoles all the users notes ids
         List<String> userNotesIds = new ArrayList<>();
         usersCollection.updateOne(
-                new Document("username", user.getFullName()),
+                new Document("username", user.getUsername()),
                 new Document("$set", new Document("NotesIdArray", userNotesIds))
         );
     }
+
+    /**
+     * Empty array
+     */
+    public Notes(){}
 
     /**
      * checks if a Note already exist by checking if there is a note

@@ -6,6 +6,8 @@ import com.mongodb.client.MongoDatabase;
 import org.mindrot.jbcrypt.BCrypt;
 import org.tresor.backend.MongoDBClient;
 import org.bson.Document;
+import org.tresor.backend.aiModel.Sessions;
+import org.tresor.backend.notes.Notes;
 
 public class Account {
 
@@ -34,6 +36,14 @@ public class Account {
                 .append("full_name", user.getFullName());
 
         usersCollection.insertOne(newUser);
+
+        //initializes the user id arrays for notes and sessions
+        Notes notes = new Notes(user);
+        Sessions sessions = new Sessions(user);
+    }
+
+    public void initializeUserIdCollection(User user){
+
     }
 
     /**

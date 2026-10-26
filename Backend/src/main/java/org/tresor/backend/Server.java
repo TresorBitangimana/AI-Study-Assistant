@@ -7,6 +7,7 @@ import org.tresor.backend.account.Account;
 import org.tresor.backend.account.User;
 import org.tresor.backend.aiModel.ChatBot;
 import org.tresor.backend.aiModel.SessionModel;
+import org.tresor.backend.aiModel.Sessions;
 import org.tresor.backend.notes.NoteRequest;
 import org.tresor.backend.notes.Notes;
 import org.tresor.backend.sessions.CreateSessionRequest;
@@ -94,17 +95,29 @@ public class Server {
     public ResponseEntity<?> createSession(@RequestBody CreateSessionRequest request) {
 
         SessionModel sessionModel = new SessionModel();
-        String response = "";
+        String response;
 
+        //if a user is loggedIn then save the response to the user in the  database
         if (currentLoggedInUser != null) {
 
-        } else { // creates a session but contents and materials are not saved.
+            // session model that handles the resources and outputs with AI
+            response = sessionModel.createSession(request);
 
+            Sessions sessions = new Sessions();
+            String sessionType = request.getSessionType();
+
+            switch(sessionType){
+                case "Create Flashcards" -> sessions.createFlashcardSession(currentLoggedInUser, response);
+                case "Generate Quiz" -> sessions.createQuizSession(currentLoggedInUser, response);
+                case "Chat with AI" -> sessions.createChatSession(currentLoggedInUser, response);
+                case "Explain like I'm 5" -> sessions.createExplainSession(currentLoggedInUser, response);
+            }
+        } else { // creates a session but contents and materials are not saved.
             // session model that handles the resources and outputs with AI
             response = sessionModel.createSession(request);
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Successful");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
@@ -116,9 +129,8 @@ public class Server {
      */
     @PostMapping("/create_note")
     public ResponseEntity<?> createNote(@RequestBody NoteRequest request) {
-        User user = currentLoggedInUser;
-        Notes notes = new Notes(user);
-        boolean isSuccessFull = notes.createNote(user, request.getTitle());
+        Notes notes = new Notes();
+        boolean isSuccessFull = notes.createNote(currentLoggedInUser, request.getTitle());
 
         // if not was created successfully and not title was not taken then returns
         // ACCEPTED status
@@ -138,9 +150,8 @@ public class Server {
      */
     @PostMapping("/delete_note")
     public ResponseEntity<?> deleteNote(@RequestBody NoteRequest request) {
-        User user = currentLoggedInUser;
-        Notes notes = new Notes(user);
-        boolean isSuccessFull = notes.deleteNote(user, request.getTitle());
+        Notes notes = new Notes();
+        boolean isSuccessFull = notes.deleteNote(currentLoggedInUser, request.getTitle());
 
         if (isSuccessFull) {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");
@@ -158,8 +169,7 @@ public class Server {
      */
     @PostMapping("/edit_note_title")
     public ResponseEntity<?> editNoteTitle(@RequestBody NoteRequest request) {
-        User user = currentLoggedInUser;
-        Notes notes = new Notes(user);
+        Notes notes = new Notes();
         boolean isSuccessFull = notes.editNoteTitle(request.getTitle(), request.getNewTitle());
 
         if (isSuccessFull) {
@@ -178,8 +188,7 @@ public class Server {
      */
     @PostMapping("/edit_note_content")
     public ResponseEntity<?> editNoteContent(@RequestBody NoteRequest request) {
-        User user = currentLoggedInUser;
-        Notes notes = new Notes(user);
+        Notes notes = new Notes();
         boolean isSuccessFull = notes.editNoteContent(request.getTitle(), request.getContent());
 
         if (isSuccessFull) {

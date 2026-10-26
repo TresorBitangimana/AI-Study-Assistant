@@ -8,55 +8,55 @@ import org.tresor.backend.MongoDBClient;
 import org.tresor.backend.account.User;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Sessions {
 
-    private final List<String> userSessionsIds = new ArrayList<>();
     private final MongoDBClient mongoDBClient = new MongoDBClient();
 
-    public Sessions() {
-    }
+    MongoCollection<Document> usersCollection = getUsersCollection();
+    MongoCollection<Document> notesCollection = getSessionsCollection();
 
     /**
-     * creates a new note and adds it to the notesCollection
-     * gets the note ID and adds it to the user Note ids stored in the user document
-     *
-     * @param user  the user to update
-     * @param title title of the note being created
+     * Constructor, initializes the users sessions id array
+     * @param user currently loggedIn user
      */
-    public void createNote(User user, String title, String sessionType) {
-        MongoCollection<Document> usersCollection = getUsersCollection();
-        MongoCollection<Document> sessionsCollection = getSessionsCollection();
-
-        // creates a new session
-        Document session = new Document()
-                .append("title", title)
-                .append("content", "");
-        // adds it to the sessions collection
-        sessionsCollection.insertOne(session);
-        // get the new note's id
-        String id = session.getObjectId("_id").toHexString();
-
-        // adds the note id to the list of notesArray stored in the user document
-        userSessionsIds.add(id);
-        // Fetch the user by username and Update the user's NotesArray in MongoDB
+    public Sessions(User user) {
+        //Instantiates the user list in the database that stoles all the users sessions ids.
+        List<String> userSessionsIds = new ArrayList<>();
         usersCollection.updateOne(
-                new Document("username", user.getUsername()), // filter
-                new Document("$set", new Document("NotesArray", userSessionsIds)) // update
+                new Document("username", user.getUsername()),
+                new Document("$set", new Document("SessionsIdArray", userSessionsIds))
+
         );
     }
 
-    public void editSessionTitle(User user, String newTitle) {}
+    /**
+     * Empty constructor
+     */
+    public Sessions(){}
 
+    public void createFlashcardSession(User user, String content){}
+    public void createQuizSession(User user, String content){}
+    public void createChatSession(User user, String content){}
+    public void createExplainSession(User user, String content){}
+
+
+
+    /**
+     *  getUsersCollection
+     * @return the mongoDb Collection with all the users
+     */
     private MongoCollection<Document> getUsersCollection() {
         MongoClient client = mongoDBClient.get();
         MongoDatabase db = client.getDatabase("AiStudyApp");
         return db.getCollection("Users");
     }
 
+    /**
+     * getSessionsCollection
+     * @return the mongoDb Collection with all the users sessions data
+     */
     private MongoCollection<Document> getSessionsCollection() {
         MongoClient client = mongoDBClient.get();
         MongoDatabase db = client.getDatabase("AiStudyApp");
@@ -64,31 +64,3 @@ public class Sessions {
     }
 }
 
-/**
- * flashcards object class
- */
-class Flashcards{
-    Map<String, String> flashcards = new HashMap<>();
-    public Flashcards(){}
-    public void addCard(String question, String answer){
-        flashcards.put(question, answer);
-    }
-    public Map<String, String> getFlashcards(){
-        return flashcards;
-    }
-}
-
-class Explain{
-    String explain = "";
-    public Explain(){}
-    public void addExplain(String ex){
-        explain = ex;
-    }
-    public String getExplain(){
-        return explain;
-    }
-}
-
-class Quiz{}
-
-class Test{}
