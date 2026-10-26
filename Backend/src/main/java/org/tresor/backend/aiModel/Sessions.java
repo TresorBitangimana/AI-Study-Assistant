@@ -30,16 +30,16 @@ public class Sessions {
 
         );
     }
-
     /**
      * Empty constructor
      */
     public Sessions(){}
 
-    public void createFlashcardSession(User user, String content){}
-    public void createQuizSession(User user, String content){}
-    public void createChatSession(User user, String content){}
-    public void createExplainSession(User user, String content){}
+
+    public void createFlashcardSession(User user, String title, String content){}
+    public void createQuizSession(User user, String title, String content){}
+    public void createChatSession(User user, String title, String content){}
+    public void createExplainSession(User user, String title, String content){}
 
 
 

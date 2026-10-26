@@ -103,14 +103,18 @@ public class Server {
             // session model that handles the resources and outputs with AI
             response = sessionModel.createSession(request);
 
+            //sessions class initialization to access the create methods.
             Sessions sessions = new Sessions();
+            //gets the session type from the incoming request object
             String sessionType = request.getSessionType();
+            //gets the session title from the incoming request object
+            String sessionTitle = request.getSessionTitle();
 
             switch(sessionType){
-                case "Create Flashcards" -> sessions.createFlashcardSession(currentLoggedInUser, response);
-                case "Generate Quiz" -> sessions.createQuizSession(currentLoggedInUser, response);
-                case "Chat with AI" -> sessions.createChatSession(currentLoggedInUser, response);
-                case "Explain like I'm 5" -> sessions.createExplainSession(currentLoggedInUser, response);
+                case "Create Flashcards" -> sessions.createFlashcardSession(currentLoggedInUser, sessionTitle, response);
+                case "Generate Quiz" -> sessions.createQuizSession(currentLoggedInUser, sessionTitle, response);
+                case "Chat with AI" -> sessions.createChatSession(currentLoggedInUser, sessionTitle, response);
+                case "Explain like I'm 5" -> sessions.createExplainSession(currentLoggedInUser, sessionTitle, response);
             }
         } else { // creates a session but contents and materials are not saved.
             // session model that handles the resources and outputs with AI
