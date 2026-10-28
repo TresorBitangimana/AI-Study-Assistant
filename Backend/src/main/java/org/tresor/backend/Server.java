@@ -6,13 +6,16 @@ import org.springframework.web.bind.annotation.*;
 import org.tresor.backend.account.Account;
 import org.tresor.backend.account.User;
 import org.tresor.backend.aiModel.ChatBot;
+import org.tresor.backend.aiModel.ObjectClasses.Session;
 import org.tresor.backend.aiModel.SessionModel;
 import org.tresor.backend.aiModel.Sessions;
+import org.tresor.backend.notes.Note;
 import org.tresor.backend.notes.NoteRequest;
 import org.tresor.backend.notes.Notes;
 import org.tresor.backend.sessions.CreateSessionRequest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/study_assistant")
@@ -78,9 +81,25 @@ public class Server {
             User authenticatedUser = account.findUserByUsername(user.getUsername());
             // user the current LoggedIn User to the user that just logged in
             currentLoggedInUser = user;
-            // calls functions and returns userdata
 
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("");
+            //initializes the list that will store the notes and sessions
+            ArrayList<Note> notesList = new ArrayList<>();
+            ArrayList<Session> sessionsList = new ArrayList<>();
+
+            //instantiates the Notes and Sessions class to use their methods that
+            Sessions sessions = new Sessions();
+            Notes notes = new Notes();
+            DataReturn dataReturn = new DataReturn();
+
+            // calls functions and returns userdata
+            sessionsList = sessions.getSessions(currentLoggedInUser);
+            notesList = notes.getNotes(currentLoggedInUser);
+
+            //adds the sessionsList and notesList into the one DataReturn Object.
+            dataReturn.setSessionsList(sessionsList);
+            dataReturn.setNotesList(notesList);
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(dataReturn);
         }
     }
 

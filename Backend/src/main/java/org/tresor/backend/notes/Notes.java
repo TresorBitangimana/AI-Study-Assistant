@@ -38,6 +38,44 @@ public class Notes {
      */
     public Notes(){}
 
+    public ArrayList<Note> getNotes(User user){
+        //gets the current user document
+        Document userDoc = usersCollection.find(
+                eq("username", user.getUsername())
+        ).first();
+
+        //initializes the list that will store the notes ids the user doc has
+        ArrayList<?> userNotesId;
+        if(userDoc != null){ //if the user doc is not null
+            //adds the list of user NotesIdArray to the userNotesId
+            userNotesId = (ArrayList<?>) userDoc.getList("NotesIdArray", ObjectId.class);
+
+            //initializes the list tha will store all the user notes
+            ArrayList<Note> userNotesList = new ArrayList<>();
+
+            //iterates through the list of user notes id and get the actual note and store it in the Note
+            //object, and finally add it to the userNotesList
+            for(int i = 0; i < userNotesId.size()-1; i++){
+                //initialize a new note object on each iteration
+                Note currNote = new Note();
+                //find the note object in the database with the current note id from userNotesId
+                Document noteDoc = notesCollection.find(
+                        eq("_id", userNotesId.get(i))
+                ).first();
+                //adds the userDoc information to the note object
+                if(noteDoc != null){
+                    currNote.setTitle(noteDoc.getString("title"));
+                    currNote.setContent(noteDoc.getString("content"));
+                }
+                //adds the note object to the userNotesList
+                userNotesList.add(currNote);
+            }
+            //returns the final userNotesList containing all the user notes.
+            return userNotesList;
+        }
+        return null;
+    }
+
     /**
      * checks if a Note already exist by checking if there is a note
      * with the same title as the perimeter in the database.
