@@ -79,7 +79,6 @@ public class Notes {
             notesCollection.insertOne(note);
             // get the new note's id
             String id = note.getObjectId("_id").toHexString();
-
             // adds the note id to the list of notesIdArray stored in the user document
             // Fetch the user by username and Update the user's NotesIdArray in MongoDB
             usersCollection.updateOne(

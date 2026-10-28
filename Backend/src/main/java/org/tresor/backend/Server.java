@@ -99,7 +99,6 @@ public class Server {
 
         //if a user is loggedIn then save the response to the user in the  database
         if (currentLoggedInUser != null) {
-
             // session model that handles the resources and outputs with AI
             response = sessionModel.createSession(request);
 
@@ -109,13 +108,7 @@ public class Server {
             String sessionType = request.getSessionType();
             //gets the session title from the incoming request object
             String sessionTitle = request.getSessionTitle();
-
-            switch(sessionType){
-                case "Create Flashcards" -> sessions.createFlashcardSession(currentLoggedInUser, sessionTitle, response);
-                case "Generate Quiz" -> sessions.createQuizSession(currentLoggedInUser, sessionTitle, response);
-                case "Chat with AI" -> sessions.createChatSession(currentLoggedInUser, sessionTitle, response);
-                case "Explain like I'm 5" -> sessions.createExplainSession(currentLoggedInUser, sessionTitle, response);
-            }
+            sessions.createSession(currentLoggedInUser, sessionTitle, sessionType, response);
         } else { // creates a session but contents and materials are not saved.
             // session model that handles the resources and outputs with AI
             response = sessionModel.createSession(request);

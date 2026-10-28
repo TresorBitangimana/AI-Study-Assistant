@@ -1,4 +1,4 @@
-package org.tresor.backend.aiModel;
+package org.tresor.backend.aiModel.ObjectClasses;
 
 public class Quiz{
 
