@@ -14,6 +14,34 @@ import readFile from "./utils/readFile";
 const API =
     import.meta.env.VITE_API_URL || "http://localhost:8080/api/study_assistant";
 
+const rememberedUserKey = "study.activeUser";
+
+const readRememberedUser = () => {
+    try {
+        const savedUser = sessionStorage.getItem(rememberedUserKey);
+        const user = savedUser ? JSON.parse(savedUser) : null;
+        return user?.username ? user : null;
+    } catch {
+        return null;
+    }
+};
+
+const rememberUser = (user) => {
+    try {
+        sessionStorage.setItem(rememberedUserKey, JSON.stringify(user));
+    } catch {
+        // Keep the current login usable if browser storage is unavailable.
+    }
+};
+
+const forgetUser = () => {
+    try {
+        sessionStorage.removeItem(rememberedUserKey);
+    } catch {
+        // The in-memory sign-out still proceeds if browser storage is unavailable.
+    }
+};
+
 const userCacheKey = (username, name) =>
     `study.${encodeURIComponent(username)}.${name}`;
 
@@ -39,10 +67,14 @@ const writeUserCache = (username, name, value) => {
 
 function App() {
     const [page, setPage] = useState("Dashboard");
-    const [sessions, setSessions] = useState([]);
-    const [notes, setNotes] = useState([]);
+    const [user, setUser] = useState(readRememberedUser);
+    const [sessions, setSessions] = useState(() =>
+        user?.username ? readUserCache(user.username, "sessions", []) : [],
+    );
+    const [notes, setNotes] = useState(() =>
+        user?.username ? readUserCache(user.username, "notes", []) : [],
+    );
     const notesRef = useRef(notes);
-    const [user, setUser] = useState(null);
     const [activeSession, setActiveSession] = useState(null);
     const [activeNote, setActiveNote] = useState(null);
     const [sessionFiles, setSessionFiles] = useState([]);
@@ -57,7 +89,11 @@ function App() {
     const [busy, setBusy] = useState(false);
     const [toast, setToast] = useState("");
     const [search, setSearch] = useState("");
-    const [dark, setDark] = useState(false);
+    const [dark, setDark] = useState(() =>
+        user?.username
+            ? readUserCache(user.username, "theme", "light") === "dark"
+            : false,
+    );
     const [error, setError] = useState("");
     const [timerMode, setTimerMode] = useState("Focus");
     const [seconds, setSeconds] = useState(25 * 60);
@@ -286,17 +322,53 @@ function App() {
                         ? "We couldn't find an account with those details."
                         : "Could not create your account. Please try again.",
                 );
-            const result = await response.text();
+            const result =
+                mode === "login"
+                    ? await response.json()
+                    : await response.text();
             if (mode === "signup" && result.trim() !== "true")
                 throw new Error("That username is already in use.");
             const authenticatedUser = {
                 fullName: payload.fullName || payload.username,
                 username: payload.username,
             };
-            setSessions(
-                readUserCache(payload.username, "sessions", []),
-            );
-            setNotes(readUserCache(payload.username, "notes", []));
+            rememberUser(authenticatedUser);
+            if (mode === "login") {
+                const serverSessions = Array.isArray(result.sessionsList)
+                    ? result.sessionsList
+                    : Array.isArray(result.sessions)
+                      ? result.sessions
+                      : [];
+                const serverNotes = Array.isArray(result.notesList)
+                    ? result.notesList
+                    : Array.isArray(result.notes)
+                      ? result.notes
+                      : [];
+
+                setSessions(
+                    serverSessions.map((session) => ({
+                        id: session.id || crypto.randomUUID(),
+                        name: session.title || session.name || "Study session",
+                        type: session.sessionType || session.type || "",
+                        result: session.content || session.result || "",
+                        files: Array.isArray(session.files)
+                            ? session.files
+                            : [],
+                        createdAt: session.createdAt || Date.now(),
+                    })),
+                );
+                setNotes(
+                    serverNotes.map((note) => ({
+                        id: note.id || crypto.randomUUID(),
+                        title: note.title || "Untitled note",
+                        content: note.content || "",
+                        updatedAt: note.updatedAt || Date.now(),
+                    })),
+                );
+            } else {
+                setSessions([]);
+                setNotes([]);
+            }
             setDark(readUserCache(payload.username, "theme", "light") === "dark");
             setUser(authenticatedUser);
             setAuthOpen(false);
@@ -322,8 +394,18 @@ function App() {
             return;
         }
         const form = new FormData(event.currentTarget);
-        const name = String(form.get("name") || "").trim();
+        const name = String(form.get("sessionTitle") || "").trim();
         const type = String(form.get("type") || "");
+        const normalizedName = name.toLocaleLowerCase();
+        if (
+            sessions.some(
+                (session) =>
+                    session.name?.trim().toLocaleLowerCase() === normalizedName,
+            )
+        ) {
+            setError("A session with this title already exists. Choose another title.");
+            return;
+        }
         const files = sessionFiles.filter(
             (file) => file instanceof File && file.size > 0,
         );
@@ -342,6 +424,7 @@ function App() {
                 body: JSON.stringify({
                     username: user.username,
                     sessionType: type,
+                    sessionTitle: name,
                     files: payloadFiles,
                 }),
             });
@@ -488,6 +571,35 @@ function App() {
         setError("");
         setAuthOpen(true);
     };
+    const signOut = async () => {
+        forgetUser();
+        const logoutRequest = fetch(`${API}/logout`, { method: "POST" }).then(
+            (response) => {
+                if (!response.ok) throw new Error("Logout request failed.");
+            },
+        );
+
+        setUser(null);
+        setSessions([]);
+        setNotes([]);
+        setActiveSession(null);
+        setActiveNote(null);
+        setSessionFiles([]);
+        setSessionChatMessages({});
+        setSessionChatBusy({});
+        setSessionChatInput("");
+        setChatMessages([]);
+        setChatInput("");
+        setChatOpen(false);
+        setPage("Dashboard");
+
+        try {
+            await logoutRequest;
+            showToast("Signed out.");
+        } catch {
+            showToast("Signed out here, but the server logout request failed.");
+        }
+    };
     const title = page === "Session" ? active?.name || "Study session" : page;
 
     return (
@@ -503,14 +615,7 @@ function App() {
                 setDark={setDark}
                 user={user}
                 greeting={greeting}
-                onSignOut={() => {
-                    setUser(null);
-                    setSessions([]);
-                    setNotes([]);
-                    setActiveSession(null);
-                    setActiveNote(null);
-                    showToast("Signed out.");
-                }}
+                onSignOut={signOut}
                 onLogin={openLogin}
             />
             <main className="main-area">

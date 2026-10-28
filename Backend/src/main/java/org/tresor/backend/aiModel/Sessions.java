@@ -99,37 +99,40 @@ public class Sessions {
                 eq("username", user.getUsername())
         ).first();
 
+        //initializes the list tha will store all the user sessions
+        ArrayList<Session> userSessionsList = new ArrayList<>();
+
         //initializes the list that will store the session ids the user doc has
         ArrayList<?> userSessionsId;
         if(userDoc != null){ //if the user doc is not null
             //adds the list of user sessionsIdArray to the userSessionsId
-            userSessionsId = (ArrayList<?>) userDoc.getList("SessionIdArray", ObjectId.class);
+            userSessionsId = (ArrayList<?>) userDoc.getList("SessionsIdArray", Object.class);
 
-            //initializes the list tha will store all the user sessions
-            ArrayList<Session> userSessionsList = new ArrayList<>();
 
             //iterates through the list of user sessions id and get the actual session and store it in the Session
             //object, and finally add it to the userSessionsList
-            for(int i = 0; i < userSessionsId.size()-1; i++){
-                //initialize a new session object on each iteration
-                Session currSession = new Session();
-                //find the session object in the database with the current session id from userSessionsId
-                Document sessionDoc = sessionsCollection.find(
-                        eq("_id", userSessionsId.get(i))
-                ).first();
-                //adds the userDoc information to the session object
-                if(sessionDoc != null){
+            for (Object rawId : userSessionsId) {
+                ObjectId id = (rawId instanceof ObjectId)
+                        ? (ObjectId) rawId
+                        : new ObjectId(rawId.toString());
+
+                Document sessionDoc = sessionsCollection.find(eq("_id", id)).first();
+
+                if (sessionDoc != null) {
+                    Session currSession = new Session();
                     currSession.setTitle(sessionDoc.getString("title"));
                     currSession.setSessionType(sessionDoc.getString("session_type"));
                     currSession.setContent(sessionDoc.getString("content"));
+                    userSessionsList.add(currSession);
                 }
-                //adds the session object to the userSessionsList
-                userSessionsList.add(currSession);
             }
+
             //returns the final userSessionsList containing all the user sessions.
             return userSessionsList;
+
         }
-        return null;
+        //returns an empty list if the user is null
+        return userSessionsList;
     }
 
 

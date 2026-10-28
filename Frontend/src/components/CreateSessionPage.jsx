@@ -32,7 +32,7 @@ export default function CreateSessionPage({
             <form className="session-builder glass-surface" onSubmit={onSubmit}>
                 <label className="field-label session-name-field">
                     <input
-                        name="name"
+                        name="sessionTitle"
                         placeholder="Session Title"
                         autoComplete="off"
                         required

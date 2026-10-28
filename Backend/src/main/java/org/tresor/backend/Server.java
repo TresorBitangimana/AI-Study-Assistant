@@ -1,5 +1,6 @@
 package org.tresor.backend;
 
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ public class Server {
 
     private final ChatBot chatBot = new ChatBot();
     private final Account account = new Account();
+    private final DataReturn dataReturn = new DataReturn();
     private User currentLoggedInUser;
 
     public Server() throws IOException {
@@ -89,7 +91,6 @@ public class Server {
             //instantiates the Notes and Sessions class to use their methods that
             Sessions sessions = new Sessions();
             Notes notes = new Notes();
-            DataReturn dataReturn = new DataReturn();
 
             // calls functions and returns userdata
             sessionsList = sessions.getSessions(currentLoggedInUser);
@@ -101,6 +102,18 @@ public class Server {
 
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(dataReturn);
         }
+    }
+
+    /**
+     * logs out the user by setting the currentLoggedInUser to null and dataReturn to null.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(){
+        currentLoggedInUser = null;
+        dataReturn.setSessionsList(null);
+        dataReturn.setNotesList(null);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("");
     }
 
     /**
