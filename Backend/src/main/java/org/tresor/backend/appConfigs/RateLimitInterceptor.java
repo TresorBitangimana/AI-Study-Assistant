@@ -1,4 +1,4 @@
-package org.tresor.backend;
+package org.tresor.backend.appConfigs;
 
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;

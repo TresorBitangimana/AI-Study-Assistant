@@ -87,7 +87,7 @@ public class Notes {
      */
     public boolean doesNoteTitleExist(User user ,String noteTitle){
         boolean doesTitleExist = false;
-        //gets the user Document from database using the users username.
+        //gets the user Document from database using the user's username.
         Document userDoc = usersCollection.find(
                 eq("username", user.getUsername())
         ).first();

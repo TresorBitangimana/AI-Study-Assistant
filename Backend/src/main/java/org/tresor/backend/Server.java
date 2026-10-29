@@ -1,6 +1,5 @@
 package org.tresor.backend;
 
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,7 +69,7 @@ public class Server {
      * 
      * @param inComingUser user to be signed in
      */
-    @PostMapping("/login")
+    @GetMapping("/login")
     public ResponseEntity<?> logIn(@RequestBody User inComingUser) {
         User user = new User(inComingUser.getFullName(), inComingUser.getUsername(), inComingUser.getPassword());
 
@@ -79,14 +78,12 @@ public class Server {
         if (!isAuthenticated) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
         } else {
-            // finds the user using their username
-            User authenticatedUser = account.findUserByUsername(user.getUsername());
             // user the current LoggedIn User to the user that just logged in
             currentLoggedInUser = user;
 
             //initializes the list that will store the notes and sessions
-            ArrayList<Note> notesList = new ArrayList<>();
-            ArrayList<Session> sessionsList = new ArrayList<>();
+            ArrayList<Note> notesList;
+            ArrayList<Session> sessionsList;
 
             //instantiates the Notes and Sessions class to use their methods that
             Sessions sessions = new Sessions();
@@ -177,7 +174,7 @@ public class Server {
      * @return accepted status is successful
      *         conflict status otherwise
      */
-    @PostMapping("/delete_note")
+    @DeleteMapping("/delete_note")
     public ResponseEntity<?> deleteNote(@RequestBody NoteRequest request) {
         Notes notes = new Notes();
         boolean isSuccessFull = notes.deleteNote(currentLoggedInUser, request.getTitle());
@@ -196,7 +193,7 @@ public class Server {
      * @return accepted status is successful
      *         conflict status otherwise
      */
-    @PostMapping("/edit_note_title")
+    @PatchMapping("/edit_note_title")
     public ResponseEntity<?> editNoteTitle(@RequestBody NoteRequest request) {
         Notes notes = new Notes();
         boolean isSuccessFull = notes.editNoteTitle(currentLoggedInUser,request.getTitle(), request.getNewTitle());
@@ -215,7 +212,7 @@ public class Server {
      * @return accepted status is successful
      *         conflict status otherwise
      */
-    @PostMapping("/edit_note_content")
+    @PatchMapping("/edit_note_content")
     public ResponseEntity<?> editNoteContent(@RequestBody NoteRequest request) {
         Notes notes = new Notes();
         boolean isSuccessFull = notes.editNoteContent( currentLoggedInUser,request.getTitle(), request.getContent());

@@ -244,7 +244,7 @@ function App() {
         if (!user?.username) return true;
         try {
             const response = await fetch(`${API}/delete_note`, {
-                method: "POST",
+                method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title: note.title }),
             });
@@ -267,7 +267,7 @@ function App() {
         if (oldTitle === newTitle) return true;
         try {
             const response = await fetch(`${API}/edit_note_title`, {
-                method: "POST",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title: oldTitle, newTitle }),
             });
@@ -284,7 +284,7 @@ function App() {
     const editNoteContent = async (title, content) => {
         try {
             const response = await fetch(`${API}/edit_note_content`, {
-                method: "POST",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title, content }),
             });
@@ -311,11 +311,17 @@ function App() {
             password: String(form.get("password") || ""),
         };
         try {
-            const response = await fetch(`${API}/${mode}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
+            const response =
+                mode === "login"
+                    ? await fetch(
+                          `${API}/login?${new URLSearchParams(payload)}`,
+                          { method: "GET" },
+                      )
+                    : await fetch(`${API}/${mode}`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(payload),
+                      });
             if (!response.ok)
                 throw new Error(
                     mode === "login"

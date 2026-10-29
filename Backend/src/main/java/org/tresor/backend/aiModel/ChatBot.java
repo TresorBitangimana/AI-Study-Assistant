@@ -6,7 +6,7 @@ import java.nio.file.Path;
 
 public class ChatBot {
 
-    //ai model client to access the ai
+    //AI model client to access the AI
     static AiModelClient aiModelClient = new AiModelClient("llama3.2");
 
     //path to the .md file with frontend details to assist uses with navigation questions
@@ -25,7 +25,7 @@ public class ChatBot {
             - use information from the provided documentation
             - If you don't know the answer, reply: "Sorry, I can't help with that"
             - Do not make up answers
-            - If a user greet you, replay with {greeting of your choice or 
+            - If a user greet you, replay with {greeting of your choice or
                 that's appropriate to the users greeting} + "how may I assist you?"
             - when you respond to the users do you surround the response with {text}
             
@@ -35,14 +35,14 @@ public class ChatBot {
 
     /**
      * ChatBot Constructor
-     * <p>boots the ai model before the first user prompt</p>
-     * @throws IOException
+     * <p>boots the AI model before the first user prompt</p>
+     * @throws IOException throws IO exception
      */
     public ChatBot() throws IOException {
 
         //paths to bot frontend resources to use to answer user questions
         frontendMDPath = Files.readString(Path.of("src/main/resources/frontend.md"));
-        //boots the ai model by giving it a prompt with instructions and also the
+        //boots the AI model by giving it a prompt with instructions and also the
         //MD file containing all the frontend information to be used to answer
         //user questions
         try {

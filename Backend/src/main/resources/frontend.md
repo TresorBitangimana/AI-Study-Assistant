@@ -1,330 +1,97 @@
 # Frontend Guide for AI Assistant
 
-This document explains the frontend of the StudyAI app in plain language so an AI assistant can help users navigate the app, understand what each section does, and answer common questions.
+Use this guide to help users navigate the current StudyAI frontend. Start with simple, user-friendly directions. Explain implementation details only when the user asks for them. Describe features that are present now; do not refer to removed pages or unfinished features as if they were available.
 
-Use simple, user-friendly wording first. Do not explain implementation details, code structure, frameworks, or engineering choices unless the user explicitly asks for technical information.
+## What the app does
 
-## Purpose of the App
+StudyAI is a study workspace with a dashboard, study sessions, notes, a focus timer, and a floating AI assistant. The app supports light and dark appearance.
 
-StudyAI is a study workspace that helps users organize learning sessions, take notes, review flashcards, and use a focus timer. The app is built around the idea of creating study sessions and then using different tools to support learning.
+## Main areas
 
-The interface is designed to feel like a central study dashboard with side navigation, a main workspace, and an assistant chat panel.
+The left sidebar contains these main destinations:
 
-## How the App Is Organized
+- `Dashboard` — start a study session.
+- `Notes` — create and edit notes.
+- `Focus Timer` — run a focus or break timer, including a custom duration.
 
-The app has three main areas:
+The sidebar also lists the user's study sessions. Select a session there to reopen it. Flashcards are shown inside a flashcard session; there is no separate Flashcards navigation page.
 
-1. A left sidebar for navigation and session management
-2. A main content area where the selected tool or page opens
-3. A floating AI assistant chat panel on the right side
+The top bar includes search for sessions. The floating assistant button opens the general `Study Assistant` chat panel.
 
-## Main Navigation
+## Sign in and account menu
 
-Users can move between these main sections from the left sidebar:
+Open the profile menu using the `···` button in the profile row. The menu provides Settings, appearance switching, and `Log out` when signed in (or `Sign in` when signed out). The appearance option is inside Settings.
 
-- `Dashboard`
-- `Notes`
-- `Flashcards`
-- `Focus Timer`
+Users should sign in to create notes or study sessions that sync with the backend. The frontend keeps a per-user browser cache of notes, sessions, and appearance preferences to restore state and support updates. It also remembers the signed-in identity for reloads in the current browser tab; it does not store the password. Signing out clears the active app data and asks the backend to end the session.
 
-There is also a `Sessions` area in the sidebar. Sessions are not a separate main page button, but users can open individual sessions from the session list.
+If login fails even with valid credentials, the backend's current `/login` handler may still expect a JSON body while the browser frontend sends credentials as GET query parameters. Browser `fetch` does not permit a request body with GET. The backend must bind the query parameters, or login should use POST with a JSON body.
 
-## Top Actions
+## Dashboard and creating sessions
 
-At the top of the main area, users will usually see:
+The Dashboard is the starting page. Choose `New study session` or `Create a study session` to open the full session setup page.
 
-- `New Session`
-- `Add Note`
+To create a session:
 
-### New Session
+1. Enter a unique session title.
+2. Upload one or more TXT, Markdown, or PDF files. Files can also be dragged into the upload area.
+3. Choose a study format: `Create Flashcards`, `Generate Quiz`, `Chat with AI`, or `Explain like I'm 5`.
+4. Select `Create study session`.
 
-This starts the process of creating a study session.
+The session title and at least one uploaded file and study format are required. If a title already exists in the current session list, the frontend asks the user to choose another. The app sends the files and session details to the backend to generate the session. If generation succeeds, the new session opens automatically and appears in the sidebar.
 
-### Add Note
+Use `Cancel` to leave session setup without creating a session.
 
-This immediately takes the user to the Notes section and creates a new note.
+## Study sessions
 
-## Dashboard
+Selecting a session from the sidebar opens its study material and the source files attached to it. The available session view depends on the chosen format:
 
-The Dashboard is the starting point of the app. It has three tabs:
+- `Create Flashcards` shows one card at a time. Select the card to flip between its question and answer; use Previous and Next to navigate.
+- `Generate Quiz` displays questions and choices. Use `Reveal answer` to show an answer when one is available.
+- `Chat with AI` opens a session chat with a message box for follow-up questions.
+- `Explain like I'm 5` displays a simpler explanation of the study material.
 
-- `Overview`
-- `Progress`
-- `Resources`
-
-### Overview Tab
-
-This is the main setup area for creating study sessions.
-
-If the user has not started creating a session yet, the Overview tab shows instructions telling them to begin with `New Session`.
-
-If the user starts a new session, the Dashboard briefly switches into setup mode. In this setup mode, the user can:
-
-- name the session
-- upload study materials
-- choose what kind of study workflow they want
-
-### Uploading Materials
-
-The app currently allows users to upload:
-
-- text files
-- markdown files
-- PDF files
-
-Uploaded files appear in a list, and each file can be removed before the session is finalized.
-
-### Session Type Choices
-
-After naming a session, the user can choose one of these options:
-
-- `Create Flashcards`
-- `Generate Quiz`
-- `Chat with AI`
-- `Explain like I'm 5`
-
-Selecting one of these options creates the session and opens that session's page.
-
-Important: the session page currently shows the session name and session type, but it does not yet show a full working tool for that session type.
-
-### Progress Tab
-
-The Progress tab exists in the interface, but it is currently not fully built out.
-
-Users may see placeholder content here. If asked, describe it as a future progress-tracking area rather than a completed feature.
-
-### Resources Tab
-
-The Resources tab is also present, but it currently appears to be an empty placeholder area.
-
-If users ask what it does, explain that it appears intended for study resources, but it is not yet populated with active content.
-
-## Sessions
-
-Sessions help users organize separate study tasks or topics.
-
-Each session has:
-
-- a name
-- a selected study type
-
-Users can:
-
-- create a new session
-- open an existing session
-- rename a session
-- delete a session
-
-### Creating a Session
-
-The user clicks `New Session`, gives the session a name, and then chooses a study workflow from the Dashboard setup screen.
-
-### Opening a Session
-
-Clicking a session in the sidebar opens that session in the main workspace.
-
-### Renaming a Session
-
-Each session has an options menu with a rename action.
-
-### Deleting a Session
-
-Each session also has a delete action in its options menu.
+For non-chat session types, `Ask a follow-up` opens the floating assistant. Use `Dashboard` at the top of the session page to return to the dashboard.
 
 ## Notes
 
-The Notes section is a simple writing workspace for study notes.
+The Notes page has a list of notes on the left and an editor on the right. Select a note to edit its title or content. Note content is saved periodically while the user types and is flushed when they leave or delete the note.
 
-Users can:
+To create a note, choose `Add Note` or the `+` button in Notes. A prompt asks for the new note's title. Titles must not duplicate an existing note title; if the backend reports a conflict, the error appears in the title prompt and the note is not created.
 
-- create multiple notes
-- switch between notes
-- rename a note by editing its title field
-- write or edit note content
-- delete notes
+Use a note's `···` menu to:
 
-### Notes Layout
+- Rename the note.
+- Pin or unpin it. Pinned notes move to the top of the list.
+- Delete the note.
 
-The Notes area has:
-
-- a note list on the left
-- an editor on the right
-
-### Creating Notes
-
-Users can create a new note by:
-
-- clicking `Add Note` from the top of the app
-- clicking the `+` button inside the Notes section
-
-### Editing Notes
-
-When a note is selected, the user can edit:
-
-- the note title
-- the note body
-
-### Note Formatting Tools
-
-The editor includes quick formatting buttons for:
-
-- bold
-- italic
-- underline
-- large headings
-- subheadings
-- bulleted lists
-- numbered lists
-- inline code style
-- quote formatting
-
-These tools are best described as simple writing shortcuts.
-
-## Flashcards
-
-The Flashcards section is a basic flashcard review screen.
-
-Users can:
-
-- click a card to flip it
-- move to previous or next cards using the controls
-
-The current screen shows example flashcard content rather than a clearly connected set of cards from a created session.
-
-If users ask whether flashcards are already being generated from their uploaded files, do not imply that this is fully working unless they confirm they can see that behavior in the app.
+Clicking outside an open note menu closes it. Deleting a note asks the backend to delete it by title; a note missing from the server can still be removed from the local browser list.
 
 ## Focus Timer
 
-The Focus Timer is a study timer designed to support focused work sessions and breaks.
+The Focus Timer provides `Focus`, `Short break`, `Long break`, and `Custom` modes. The default durations are 25 minutes for Focus, 5 minutes for a short break, and 15 minutes for a long break. In Custom mode, enter a duration in minutes and seconds.
 
-It includes these modes:
+Use the timer controls to start or pause and to reset the current duration. The timer is a standalone focus tool; it does not require a study session.
 
-- `Timer`
-- `Short Break`
-- `Long Break`
-- `Custom`
+## AI Assistant
 
-### What Users Can Do in the Timer
+The floating assistant button opens or closes the `Study Assistant` panel. Users can type a question or select one of the suggested prompts. The assistant sends the message to the study backend and displays the response. A session's `Ask a follow-up` button opens this panel for follow-up help.
 
-Users can:
+If the assistant cannot respond, check that the backend is running and reachable. Responses can be inaccurate, so users should verify important details against their study materials.
 
-- start or pause the timer
-- reset the current timer
-- skip to the next timer stage
-- switch between timer modes
-- enter a custom number of minutes in Custom mode
+## Appearance and screen size
 
-### Timer Flow
+Use the profile menu's Settings option to switch between light and dark appearance. The selected appearance is saved in the user's browser cache.
 
-The timer is designed around a focus cycle:
+On smaller screens, the sidebar can collapse. Use the navigation control in the top bar to open it and choose a page or session.
 
-- a regular focus session
-- short breaks between sessions
-- a long break after several completed focus rounds
+## Accuracy guidance
 
-If a user asks what the dots under the timer mean, explain that they track progress through focus cycles.
+- Do not direct users to a separate Flashcards page; flashcards are a study-session format.
+- Do not describe Dashboard tabs named Overview, Progress, or Resources; the current Dashboard is a session-start page.
+- Do not promise that sessions or notes synchronize across devices. The frontend has per-user browser caching and uses the backend for logged-in operations.
+- If login is failing, mention the GET/query-parameter versus backend request-body mismatch described above.
+- If file processing, session generation, saving, or chat fails, suggest checking the backend connection rather than implying the action succeeded.
 
-## AI Assistant Chat Panel
+## Suggested response style
 
-The app includes a floating assistant button that opens a chat panel.
-
-When open, the panel shows:
-
-- example conversation messages
-- quick action suggestion chips
-- a message box for typing
-
-Quick action examples include:
-
-- `Explain simply`
-- `Make flashcards`
-- `Practice problems`
-- `Summarize notes`
-
-Important: the current chat panel appears to present a chat interface, but this document should not assume the AI features are fully connected unless the user confirms that they are working in their version.
-
-## Theme Switching
-
-The app includes a profile area near the bottom of the sidebar.
-
-From there, users can switch between:
-
-- light mode
-- dark mode
-
-If a user asks where to change the theme, direct them to the profile menu in the lower part of the left sidebar.
-
-## Mobile and Small Screen Behavior
-
-On smaller screens, the session list can collapse into a simpler mobile-friendly control. Users can still open the session list and select sessions from there.
-
-If a user says they cannot see the full session list on mobile, explain that the app may condense the session list into a compact menu.
-
-## What the AI Assistant Should Help Users Do
-
-The AI should be ready to guide users through:
-
-- finding the right section of the app
-- creating a study session
-- uploading study materials
-- choosing a session type
-- opening, renaming, or deleting sessions
-- creating and organizing notes
-- using note formatting tools
-- reviewing flashcards
-- using the focus timer
-- opening the assistant chat
-- switching between light and dark mode
-
-## Important Limitations and Accuracy Rules
-
-To avoid misleading users, follow these rules:
-
-- Do not claim that every visible feature is fully functional.
-- If a page looks incomplete or placeholder-based, describe it carefully as available in the interface but not fully built out.
-- Do not promise that uploaded files are automatically turned into flashcards, quizzes, or AI answers unless the user confirms that behavior.
-- Do not claim that session content is deeply populated; the current session view mainly shows session identity and type.
-- Do not assume progress tracking is complete.
-- Do not assume the Resources tab is fully active.
-- Do not assume notes, sessions, or uploads are permanently saved unless the user confirms that their version of the app supports saving across refreshes or sign-ins.
-
-## How to Answer Users
-
-When helping users:
-
-- prioritize navigation help first
-- explain what button, tab, or section to open
-- use the visible names from the interface exactly as written
-- keep answers short, clear, and step-by-step when needed
-- avoid technical language unless asked
-
-## Suggested Tone for the AI
-
-Use a tone that is:
-
-- calm
-- helpful
-- direct
-- non-technical
-
-Good example:
-
-"Open `New Session`, give your study session a name, then choose the study format you want from the Dashboard setup screen."
-
-Avoid answers like:
-
-"The component updates app state and routes you to a conditional render branch."
-
-## Short Feature Summary
-
-StudyAI currently presents itself as a study dashboard with:
-
-- session creation and management
-- file upload during session setup
-- note-taking
-- a flashcard review screen
-- a focus timer
-- a built-in assistant chat panel
-- light and dark theme switching
-
-Some sections are already usable for navigation and interaction, while others still appear to be placeholders or early-stage screens.
+Keep instructions short and direct. Use the exact labels shown in the interface and give clear steps, for example: “Choose `New study session`, enter a title, upload at least one study file, select a format, then choose `Create study session`.”
