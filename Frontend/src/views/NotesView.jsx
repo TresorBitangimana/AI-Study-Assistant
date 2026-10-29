@@ -309,9 +309,7 @@ function NotesView({
                             </div>
                         ))
                     ) : (
-                        <p className="sidebar-empty">
-                            {/* Your notes will live here. */}
-                        </p>
+                        <p className="sidebar-empty" />
                     )}
                 </aside>
                 {note ? (

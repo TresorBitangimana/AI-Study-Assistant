@@ -7,7 +7,6 @@ const icons = {
     Spark: "✳",
     Book: "▣",
     File: "▧",
-    Arrow: "↗",
     Menu: "☰",
 };
 

@@ -41,14 +41,8 @@ export default function Dashboard({ greeting, onNewSession }) {
                         </div>
                         <div className="float-note note-three">Aa</div>
                     </div>
-                    <div className="hero-footer">
-                        {/* <span>hero-footer content to be added</span> */}
-                    </div>
                 </section>
             </div>
-            <footer className="page-footer">
-                {/* <span>footer content to be added later</span> */}
-            </footer>
         </>
     );
 }
