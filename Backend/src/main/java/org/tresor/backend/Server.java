@@ -199,7 +199,7 @@ public class Server {
     @PostMapping("/edit_note_title")
     public ResponseEntity<?> editNoteTitle(@RequestBody NoteRequest request) {
         Notes notes = new Notes();
-        boolean isSuccessFull = notes.editNoteTitle(request.getTitle(), request.getNewTitle());
+        boolean isSuccessFull = notes.editNoteTitle(currentLoggedInUser,request.getTitle(), request.getNewTitle());
 
         if (isSuccessFull) {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");
@@ -218,7 +218,7 @@ public class Server {
     @PostMapping("/edit_note_content")
     public ResponseEntity<?> editNoteContent(@RequestBody NoteRequest request) {
         Notes notes = new Notes();
-        boolean isSuccessFull = notes.editNoteContent(request.getTitle(), request.getContent());
+        boolean isSuccessFull = notes.editNoteContent( currentLoggedInUser,request.getTitle(), request.getContent());
 
         if (isSuccessFull) {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successful");

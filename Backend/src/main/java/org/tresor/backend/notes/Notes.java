@@ -85,13 +85,28 @@ public class Notes {
      * @return true if it exists
      *          false, otherwise.
      */
-    public boolean doesNoteTitleExist(String noteTitle){
-        //checks if newNoteTitle already exists, and a note title in the database
+    public boolean doesNoteTitleExist(User user ,String noteTitle){
         boolean doesTitleExist = false;
-        for (Document doc : notesCollection.find()) {
-            if (noteTitle.equals(doc.getString("title"))) {
-                doesTitleExist = true;
-                break;
+        //gets the user Document from database using the users username.
+        Document userDoc = usersCollection.find(
+                eq("username", user.getUsername())
+        ).first();
+
+        //if the user Document is not null
+        if(userDoc != null){
+            //gets the list of notes id in the user Document
+            List<Object> userNotesIds = userDoc.getList("NotesIdArray", Object.class);
+            //checks each note id and matches it with the noteTitle from perimeter to see if it exists already
+            for(Object obj : userNotesIds){
+                //the actual document of the note id that was stored in the NotesIdArray
+                Document doc = notesCollection.find(
+                        eq("_id", obj)
+                ).first();
+                //checks if the document title is equal to the title to be checked
+                if(doc != null && doc.getString("title").equals(noteTitle)){
+                    doesTitleExist = true;
+                    break;
+                }
             }
         }
         return doesTitleExist;
@@ -107,7 +122,7 @@ public class Notes {
     public boolean createNote(User user, String noteTitle) {
 
         //checks if noteTitle already exists, and a note title in the database
-        boolean doesTitleExist = doesNoteTitleExist(noteTitle);
+        boolean doesTitleExist = doesNoteTitleExist(user, noteTitle);
 
         //if the newNoteTitle does not exist then add the note to the database collection.
         if(!doesTitleExist){
@@ -186,11 +201,11 @@ public class Notes {
         return false;
     }
 
-    public boolean editNoteTitle(String oldTitle, String newTitle) {
+    public boolean editNoteTitle(User user, String oldTitle, String newTitle) {
 
         //checks if the both the old title and new title already exists.
-        boolean doesOldTitleExist = doesNoteTitleExist(oldTitle);
-        boolean doesNewTitleExist = doesNoteTitleExist(newTitle);
+        boolean doesOldTitleExist = doesNoteTitleExist(user, oldTitle);
+        boolean doesNewTitleExist = doesNoteTitleExist(user, newTitle);
 
         //if the old title exists and the new title does not exist then
         if(doesOldTitleExist && !doesNewTitleExist){
@@ -203,9 +218,9 @@ public class Notes {
         return false;
     }
 
-    public boolean editNoteContent(String title, String content) {
+    public boolean editNoteContent(User user, String title, String content) {
         //checks if noteTitle already exists, and a note title in the database
-        boolean doesNoteTitleExist = doesNoteTitleExist(title);
+        boolean doesNoteTitleExist = doesNoteTitleExist(user, title);
         //if note title exists then
         if (doesNoteTitleExist) {
             notesCollection.updateOne(

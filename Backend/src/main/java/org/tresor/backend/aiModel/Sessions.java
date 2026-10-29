@@ -45,11 +45,28 @@ public class Sessions {
      * @return true if it exists,
      *          false otherwise
      */
-    public boolean doesSessionTitleExist(String sessionTitle){
+    public boolean doesSessionTitleExist(User user ,String sessionTitle){
         boolean doesTitleExist = false;
-        for(Document doc : sessionsCollection.find()){
-            if(sessionTitle.equals(doc.getString("title"))){
-                doesTitleExist = true;
+        //gets the user Document from database using the user's username.
+        Document userDoc = usersCollection.find(
+                eq("username", user.getUsername())
+        ).first();
+
+        //if the user Document is not null
+        if(userDoc != null){
+            //gets the list of sessions id in the user Document
+            List<Object> userSessionsIds = userDoc.getList("SessionsIdArray", Object.class);
+            //checks each session id and matches it with the sessionTitle from perimeter to see if it exists already
+            for(Object obj : userSessionsIds){
+                //the actual document of the session id that was stored in the SessionsIdArray
+                Document doc = sessionsCollection.find(
+                        eq("_id", obj)
+                ).first();
+                //checks if the document title is equal to the title to be checked
+                if(doc != null && doc.getString("title").equals(sessionTitle)){
+                    doesTitleExist = true;
+                    break;
+                }
             }
         }
         return doesTitleExist;
@@ -65,7 +82,7 @@ public class Sessions {
      */
     public void createSession(User user, String title, String sessionType ,String content){
         //checks if a session with the same title already exists
-        boolean doesTitleExist = doesSessionTitleExist(title);
+        boolean doesTitleExist = doesSessionTitleExist(user, title);
 
         if(!doesTitleExist){
 
